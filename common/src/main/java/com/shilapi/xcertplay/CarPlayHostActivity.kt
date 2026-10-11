@@ -397,7 +397,7 @@ class CarPlayHostActivity : ComponentActivity() {
     private var hideTopBar = true
     private var hideBottomBar = true
     private var safeAreaDrawOutside = true
-    private var mainDisplayDisableSafeArea = true
+    private var mainDisplayDisableSafeArea = false
     private var locationReportingEnabled = false
     private var locationPermissionAvailable = false
     private var microphoneAvailable = false

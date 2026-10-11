@@ -1176,14 +1176,10 @@ object AirPlayPersistence {
             .apply()
     }
 
+    /** Off by default: square full-screen video is for screens that show a gap or wallpaper corners (#578, #586). */
     fun loadMainDisplayDisableSafeArea(context: Context): Boolean =
-        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).let { prefs ->
-            if (prefs.contains(KEY_MAIN_DISPLAY_DISABLE_SAFE_AREA)) {
-                prefs.getBoolean(KEY_MAIN_DISPLAY_DISABLE_SAFE_AREA, true)
-            } else {
-                prefs.getBoolean("disable_safe_area", true)
-            }
-        }
+        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+            .getBoolean(KEY_MAIN_DISPLAY_DISABLE_SAFE_AREA, false)
 
     fun saveMainDisplayDisableSafeArea(context: Context, disable: Boolean) {
         context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit()
