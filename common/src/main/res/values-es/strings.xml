@@ -195,6 +195,9 @@
     <string name="done">Listo</string>
     <string name="drag_to_move_pinch_to_zoom">Arrastra para mover, pellizca para ampliar</string>
     <string name="draw_outside_safe_area">Dibujar fuera de la zona segura</string>
+    <string name="rect_fill_disable_safe_area">Esquinas rectas, sin zona segura</string>
+    <string name="rect_fill_disable_safe_area_description">Pide al iPhone una imagen a pantalla completa con esquinas rectas. Pruébalo si CarPlay deja una franja en un borde o muestra el color del fondo en sus esquinas redondeadas. Mientras esté activado no se usa la zona segura de arriba. Se aplica tras Guardar y reconectar.</string>
+    <string name="safe_area_disabled_rect_fill_summary">Zona segura: desactivada (esquinas rectas, pantalla completa)</string>
     <string name="driving_side">Lado de conducción</string>
     <string name="efficient_video">Vídeo eficiente</string>
     <string name="enable_the_car_s_bluetooth_and_pair_your_iphone_first">Activa primero el Bluetooth del coche y empareja tu iPhone.</string>
@@ -639,7 +642,7 @@
     <string name="carplay_rotation_smoother">Más fluida (1920)</string>
     <string name="carplay_rotation_sharper">Más nítida (tamaño de la pantalla)</string>
     <string name="carplay_call_controls_experimental">Botones de llamadas de CarPlay (experimental)</string>
-    <string name="carplay_call_controls_experimental_description">Activa los botones de llamada, voz y reproducción/pausa de DiLink 3 aún sin verificar. Falta probarlos en el vehículo. Desactivado de forma predeterminada; las tarjetas de llamadas del cuadro tienen un ajuste independiente.</string>
+    <string name="carplay_call_controls_experimental_description">Activa los botones de llamada, voz y reproducción/pausa de DiLink 3 aún sin verificar. Falta probarlos en el vehículo. Mientras suena una llamada de CarPlay, pista siguiente contesta y pista anterior rechaza. Desactivado de forma predeterminada; las tarjetas de llamadas del cuadro tienen un ajuste independiente.</string>
     <string name="side_panel">Panel lateral junto a CarPlay (experimental)</string>
     <string name="side_panel_description">CarPlay puede pasar a dos tercios de la pantalla mientras DiPlay muestra un panel en el resto: del lado del pasajero en una pantalla horizontal, abajo en una vertical (reloj y, si se lee, la batería). Muéstralo y ocúltalo desde el menú de la sesión. Se aplica en la próxima conexión.</string>
     <string name="side_panel_show">Panel lateral</string>
@@ -765,4 +768,9 @@
     <string name="settings_ambient_unavailable">La comprobación de solo lectura falló: falta autorización ADB existente o una interfaz compatible. No se guardaron ajustes. Configura el acceso por separado con el vehículo estacionado; esta función no activa ADB ni solicita autorización.</string>
     <string name="settings_ambient_album">Seguir la portada del álbum</string>
     <string name="settings_ambient_album_description">Usa el color de la portada o colores cercanos disponibles del vehículo. Las portadas grises, negras o ausentes usan los 31 colores; las mayormente blancas pueden usar blanco o blanco frío.</string>
+    <string name="settings_harman_fullscreen_experimental">Pantalla completa Harman (experimental)</string>
+    <string name="settings_harman_fullscreen_experimental_description">Permite que CarPlay ocupe el panel lateral original en unidades Harman compatibles. Se aplica al abrir de nuevo la ventana de CarPlay; otros firmwares podrían mostrarse incorrectamente.</string>
+    <string name="settings_hotspot_name_non_english">Con caracteres chinos u otros no ingleses en el nombre, CarPlay puede quedarse en «Preparando CarPlay…»: algunas unidades emiten ese nombre de una forma que el iPhone no encuentra. Si pasa, cambia el nombre del punto de acceso del coche a letras inglesas y números.</string>
+    <string name="settings_speech_without_low_rates">Voz de navegación más clara por USB (experimental)</string>
+    <string name="settings_speech_without_low_rates_description">Por USB, el iPhone puede enviar las indicaciones de navegación y las respuestas habladas de Siri con calidad telefónica de 8 kHz. Esta opción deja de ofrecer 8 y 16 kHz para ese audio y el iPhone elige una frecuencia mayor. Si las indicaciones dejan de oírse, desactívala. Reconecta CarPlay.</string>
 </resources>
