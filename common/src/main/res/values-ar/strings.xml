@@ -773,4 +773,5 @@
     <string name="settings_hotspot_name_non_english">قد يتوقف CarPlay عند «جارٍ تجهيز CarPlay…» إذا احتوى الاسم على أحرف صينية أو أحرف غير إنجليزية، لأن بعض وحدات السيارة تبث هذا الاسم بصيغة لا يجدها iPhone. إذا حدث ذلك، فأعد تسمية نقطة اتصال السيارة بأحرف إنجليزية وأرقام.</string>
     <string name="settings_speech_without_low_rates">صوت ملاحة أوضح عبر USB (تجريبي)</string>
     <string name="settings_speech_without_low_rates_description">عبر USB قد يرسل iPhone تعليمات الملاحة وردود Siri المنطوقة بجودة هاتفية 8 كيلوهرتز. يوقف هذا الخيار عرض 8 و16 كيلوهرتز لهذا الصوت ليختار iPhone معدلاً أعلى. إذا اختفت التعليمات الصوتية، فأوقفه. يعيد توصيل CarPlay.</string>
+    <string name="bluetooth_connections_not_real">يُبلغ بلوتوث Android في وحدة القيادة هذه عن اتصال، لكن لا شيء يصل إلى iPhone: حتى الاتصال بخدمة غير موجودة ينجح. البلوتوث هنا يديره مكوّن خاص بالشركة المصنّعة لا تستطيع التطبيقات استخدامه، لذلك لا يمكن أن يعمل CarPlay اللاسلكي على وحدة القيادة هذه. جرّب اتصال USB.</string>
 </resources>
