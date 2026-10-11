@@ -830,4 +830,5 @@
     <string name="settings_ambient_album_description">按封面取色並近似匹配原車可用色號。灰黑或無封面時使用全部31色；大面積白色封面可使用白色或冷白。</string>
     <string name="settings_harman_fullscreen_experimental">Harman 車機全螢幕（實驗性）</string>
     <string name="settings_harman_fullscreen_experimental_description">讓 CarPlay 佔用受支援 Harman 車機的原廠側欄區域。下次開啟 CarPlay 視窗時生效；其他韌體可能顯示異常。</string>
+    <string name="settings_hotspot_name_non_english">熱點名稱含中文或其他非英文字元時，部分車機廣播的名稱 iPhone 找不到，CarPlay 會停在「正在準備 CarPlay…」。如出現這種情況，請把車機熱點改為英文字母和數字的名稱。</string>
 </resources>

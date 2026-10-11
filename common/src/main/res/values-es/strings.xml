@@ -770,4 +770,5 @@
     <string name="settings_ambient_album_description">Usa el color de la portada o colores cercanos disponibles del vehículo. Las portadas grises, negras o ausentes usan los 31 colores; las mayormente blancas pueden usar blanco o blanco frío.</string>
     <string name="settings_harman_fullscreen_experimental">Pantalla completa Harman (experimental)</string>
     <string name="settings_harman_fullscreen_experimental_description">Permite que CarPlay ocupe el panel lateral original en unidades Harman compatibles. Se aplica al abrir de nuevo la ventana de CarPlay; otros firmwares podrían mostrarse incorrectamente.</string>
+    <string name="settings_hotspot_name_non_english">Con caracteres chinos u otros no ingleses en el nombre, CarPlay puede quedarse en «Preparando CarPlay…»: algunas unidades emiten ese nombre de una forma que el iPhone no encuentra. Si pasa, cambia el nombre del punto de acceso del coche a letras inglesas y números.</string>
 </resources>
