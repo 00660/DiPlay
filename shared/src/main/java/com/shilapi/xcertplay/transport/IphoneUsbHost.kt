@@ -452,8 +452,7 @@ class Iap2UsbSession internal constructor(
             val completed = try {
                 requests.await(timeoutMillis)
             } catch (_: TimeoutException) {
-                drainCancelledRead(request)
-                return@synchronized null
+                return@synchronized drainTimedOutRead(request, buffer)
             }
             if (completed == null) {
                 throw failSession("Android returned no USBMUX read request")
@@ -498,17 +497,30 @@ class Iap2UsbSession internal constructor(
         if (closed) throw IphoneUsbException.DeviceUnavailable("USBMUX session is closed")
     }
 
-    private fun drainCancelledRead(request: UsbRequest) {
-        if (!request.cancel()) {
-            throw failSession("Android could not cancel timed out USBMUX read request")
-        }
+    /**
+     * Cancels a read that timed out and takes it back from Android. A read that completes between
+     * the timeout and the cancel can no longer be cancelled: it is already on its way back. That
+     * race ended the whole session every few minutes on a Telechips and a DiLink 5.1 head unit
+     * (#610, #301). The read is drained either way, and any bytes it carries are returned so the
+     * USBMUX stream stays intact.
+     */
+    private fun drainTimedOutRead(request: UsbRequest, buffer: ByteBuffer): ByteArray? {
+        val cancelled = request.cancel()
         val completed = try {
             requests.await(CANCEL_DRAIN_TIMEOUT_MILLIS)
         } catch (_: TimeoutException) {
-            throw failSession("Timed out draining cancelled USBMUX read request")
+            throw failSession(
+                if (cancelled) "Timed out draining cancelled USBMUX read request"
+                else "Android could not cancel timed out USBMUX read request",
+            )
         }
         if (completed !== request) {
             throw failSession("Android did not drain the cancelled USBMUX read request")
+        }
+        if (buffer.position() == 0) return null
+        return ByteArray(buffer.position()).also {
+            buffer.flip()
+            buffer.get(it)
         }
     }
 
