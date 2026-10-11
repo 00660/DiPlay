@@ -59,7 +59,13 @@ object MtkDecoderTuning {
     fun legacyAcodecDecoderName(mime: String): String? = candidates(mime)
         .firstOrNull()?.name?.takeIf(::supportsLegacyAcodecKeys)
 
-    private fun candidates(mime: String): List<MtkDecoderCandidate> = runCatching {
+    // The codec list does not change while DiPlay runs, and Settings asks on every render.
+    private val candidatesByMime = java.util.concurrent.ConcurrentHashMap<String, List<MtkDecoderCandidate>>()
+
+    private fun candidates(mime: String): List<MtkDecoderCandidate> =
+        candidatesByMime.getOrPut(mime.lowercase()) { listCandidates(mime) }
+
+    private fun listCandidates(mime: String): List<MtkDecoderCandidate> = runCatching {
         MediaCodecList(MediaCodecList.REGULAR_CODECS).codecInfos.mapNotNull { info ->
             if (info.isEncoder || (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && info.isAlias) ||
                 info.supportedTypes.none { it.equals(mime, ignoreCase = true) }) return@mapNotNull null
