@@ -45,6 +45,7 @@ object AirPlayPersistence {
     private const val KEY_ADVANCED_AUDIO_CHANNEL_MAPPING = "advanced_audio_channel_mapping"
     private const val KEY_AUDIO_FOCUS_ENABLED = "audio_focus_enabled"
     private const val KEY_AUDIO_FOCUS_AUTO_YIELD = "audio_focus_auto_yield"
+    private const val KEY_DISABLE_MEDIA_KEY_AUDIO_FOCUS = "disable_media_key_audio_focus"
     private const val KEY_MEDIA_AUDIO_CHANNEL = "media_audio_channel"
     private const val KEY_NAVIGATION_AUDIO_CHANNEL = "navigation_audio_channel"
     private const val KEY_NAVIGATION_STREAM_TYPE = "navigation_stream_type"
@@ -238,6 +239,17 @@ object AirPlayPersistence {
     fun saveAudioFocusAutoYield(context: Context, enabled: Boolean) {
         context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit()
             .putBoolean(KEY_AUDIO_FOCUS_AUTO_YIELD, enabled)
+            .apply()
+    }
+
+    /** Opt-out for head units that route physical volume buttons to DiPlay's focus owner. */
+    fun loadDisableMediaKeyAudioFocus(context: Context): Boolean =
+        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+            .getBoolean(KEY_DISABLE_MEDIA_KEY_AUDIO_FOCUS, false)
+
+    fun saveDisableMediaKeyAudioFocus(context: Context, disabled: Boolean) {
+        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit()
+            .putBoolean(KEY_DISABLE_MEDIA_KEY_AUDIO_FOCUS, disabled)
             .apply()
     }
 

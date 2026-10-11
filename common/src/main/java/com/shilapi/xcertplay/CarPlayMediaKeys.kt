@@ -31,10 +31,10 @@ import kotlin.math.roundToInt
 /**
  * Steering-wheel and other hardware media buttons for CarPlay.
  *
- * Android delivers media keys to a media session; BYD picks the session of the audio-focus
- * owner. Once CarPlay plays music, DiPlay holds audio focus and an active session until the
- * CarPlay session ends, so play also works after a pause. Keys go to the iPhone as CarPlay media
- * HID presses ([CarPlayMediaButton]).
+ * Android delivers media keys to a media session; some head units pick the session of the
+ * audio-focus owner. DiPlay normally holds focus and an active session until the CarPlay session
+ * ends, but focus can be disabled on head units that otherwise route physical volume buttons to
+ * DiPlay. Keys go to the iPhone as CarPlay media HID presses ([CarPlayMediaButton]).
  */
 internal object CarPlayMediaKeys {
     private const val TAG = "DiPlay-MediaKeys"
@@ -269,29 +269,40 @@ internal object CarPlayMediaKeys {
     }
 
     private fun start(context: Context) {
-        val expectedController = controller ?: return
-        val owner = Any().also { focusOwner = it }
-        focusEventRevision = 0L
-        val audio = context.getSystemService(AudioManager::class.java)
-        val request = AudioFocusRequestCompat(
-            AudioManager.AUDIOFOCUS_GAIN,
-            AudioAttributes.Builder()
-                .setUsage(AudioAttributes.USAGE_MEDIA)
-                .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
-                .build(),
-            { change -> onFocusChanged(expectedController, owner, change) },
-            mainHandler,
-        )
-        val granted = audio?.let(request::request) == AudioManager.AUDIOFOCUS_REQUEST_GRANTED
-        focusRequest = request
-        focusHeld = granted
-        if (granted) forwardGrantedFocusLocked()
+        val focusDisabled = AirPlayPersistence.loadDisableMediaKeyAudioFocus(context)
+        val granted = if (focusDisabled) {
+            // Some OEMs route physical volume buttons to the focus owner. Keep an active
+            // MediaSession without permanent focus so those buttons remain vehicle-owned.
+            focusOwner = null
+            focusRequest = null
+            focusHeld = false
+            false
+        } else {
+            val expectedController = controller ?: return
+            val owner = Any().also { focusOwner = it }
+            focusEventRevision = 0L
+            val audio = context.getSystemService(AudioManager::class.java)
+            val request = AudioFocusRequestCompat(
+                AudioManager.AUDIOFOCUS_GAIN,
+                AudioAttributes.Builder()
+                    .setUsage(AudioAttributes.USAGE_MEDIA)
+                    .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                    .build(),
+                { change -> onFocusChanged(expectedController, owner, change) },
+                mainHandler,
+            )
+            focusRequest = request
+            (audio?.let(request::request) == AudioManager.AUDIOFOCUS_REQUEST_GRANTED).also {
+                focusHeld = it
+                if (it) forwardGrantedFocusLocked()
+            }
+        }
         session = MediaSession(context, "DiPlay CarPlay").apply {
             setCallback(callback, mainHandler)
             setMetadata(androidMetadata(nowPlaying, shownArtworkLocked()))
             isActive = true
         }
-        Log.i(TAG, "media keys active focusGranted=$granted")
+        Log.i(TAG, "media keys active focusDisabled=$focusDisabled focusGranted=$granted")
     }
 
     private fun forwardGrantedFocusLocked() {

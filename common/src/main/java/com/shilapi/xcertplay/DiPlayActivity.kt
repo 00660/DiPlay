@@ -4913,6 +4913,7 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
                     appendLine("Authentication: local experimental beta identity; no remote fallback")
                     appendLine("CarPlay setup: ${if (setupError == null) "ready" else "authentication unavailable"}")
                     appendLine("Saved video preference (may differ from active session): ${if (AirPlayPersistence.loadHevcEnabled(appContext)) "HEVC" else "H.264"}; ${AirPlayPersistence.loadFps(appContext)} fps")
+                    appendLine("Media-key audio focus: ${if (AirPlayPersistence.loadDisableMediaKeyAudioFocus(appContext)) "disabled" else "enabled"}")
                     appendLine("CarPlay size: ${com.shilapi.xcertplay.airplay.CarPlaySize.fromWidthMillimeters(AirPlayPersistence.loadWidthPhysicalMm(appContext)).label}")
                     appendLine("Saved resolution preference (may differ from active session): ${AirPlayPersistence.loadDisplayScalePercent(appContext)}%")
                     appendLine("Session: ${if (CarPlayBackgroundSession.active) "active" else if (CarPlayBackgroundSession.hasSession()) "connecting" else "stopped"}")
@@ -5149,6 +5150,12 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
         parent.addView(card, LinearLayout.LayoutParams(-1, -2).apply { bottomMargin = dp(SETTINGS_BLOCK_GAP_DP) })
     }
     private fun audioFocusControls(parent: LinearLayout) {
+        toggle(parent, getString(R.string.settings_disable_media_key_audio_focus),
+            getString(R.string.settings_disable_media_key_audio_focus_description),
+            AirPlayPersistence.loadDisableMediaKeyAudioFocus(this)) {
+            AirPlayPersistence.saveDisableMediaKeyAudioFocus(this, it)
+            markReconnectNeeded()
+        }
         val enabled = AirPlayPersistence.loadAudioFocusEnabled(this)
         val dependent = column().apply { visibility = if (enabled) View.VISIBLE else View.GONE }
         toggle(parent, getString(R.string.contrib_audio_home_toggle_audio_focus),
