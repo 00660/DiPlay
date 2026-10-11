@@ -420,4 +420,27 @@ class AirPlayInfoPlistTest {
         val clusterView = (clusterDisplay["viewAreas"] as List<*>).single() as Map<*, *>
         assertTrue(clusterView.containsKey("safeArea"))
     }
+
+    @Test
+    fun speechWithout8And16KhzLeavesHigherRatesAndOtherStreams() {
+        val base = AirPlayConfig(
+            deviceName = "test",
+            deviceId = "02:00:00:00:00:02",
+            btMac = "02:00:00:00:00:02",
+            sourceVersion = "366.0",
+            main = AirPlayDisplayConfig(widthPixels = 1280, heightPixels = 720),
+        )
+        fun outputs(config: AirPlayConfig, type: Int, audioType: String): Int =
+            (AirPlayInfoPlist.build(config)["audioFormats"] as List<*>).map { it as Map<*, *> }
+                .single { it["type"] == type && it["audioType"] == audioType }["audioOutputFormats"] as Int
+        val on = base.copy(speechWithout8And16Khz = true)
+        // #148, #341: over USB the iPhone picked 0x8, PCM 8 kHz stereo, for navigation prompts.
+        for ((type, audioType) in listOf(100 to "default", 100 to "alert", 101 to "default")) {
+            assertEquals(0x3c, outputs(base, type, audioType) and 0x3c)
+            assertEquals(0, outputs(on, type, audioType) and 0x3c)
+            assertEquals(outputs(base, type, audioType) and 0x3c.inv(), outputs(on, type, audioType))
+        }
+        assertEquals(outputs(base, 100, "telephony"), outputs(on, 100, "telephony"))
+        assertEquals(outputs(base, 100, "media"), outputs(on, 100, "media"))
+    }
 }
