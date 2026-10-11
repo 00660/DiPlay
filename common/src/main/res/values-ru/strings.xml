@@ -195,6 +195,9 @@
     <string name="done">Готово</string>
     <string name="drag_to_move_pinch_to_zoom">Перетаскивайте для перемещения, щипайте для масштабирования</string>
     <string name="draw_outside_safe_area">Рисовать за пределами безопасной области</string>
+    <string name="rect_fill_disable_safe_area">Прямые углы без безопасной области</string>
+    <string name="rect_fill_disable_safe_area_description">Запрашивает у iPhone полноэкранное изображение с прямыми углами. Попробуйте, если CarPlay оставляет полосу у края экрана или показывает цвет обоев в скруглённых углах. Пока параметр включён, безопасная область выше не используется. Применяется после «Сохранить и переподключить».</string>
+    <string name="safe_area_disabled_rect_fill_summary">Безопасная область: выкл. (прямые углы, весь экран)</string>
     <string name="driving_side">Сторона управления</string>
     <string name="efficient_video">Энергоэффективное видео</string>
     <string name="enable_the_car_s_bluetooth_and_pair_your_iphone_first">Сначала включите Bluetooth автомобиля и свяжите iPhone.</string>
@@ -765,4 +768,6 @@
     <string name="settings_ambient_unavailable">Проверка без записи не пройдена: нет существующей авторизации ADB или подходящего интерфейса. Настройки не сохранены. Настройте доступ отдельно на стоянке; функция не включает ADB и не запрашивает авторизацию.</string>
     <string name="settings_ambient_album">Цвет обложки альбома</string>
     <string name="settings_ambient_album_description">Цвет обложки приближённо сопоставляется с доступными цветами автомобиля. Для серой, чёрной или отсутствующей обложки используются все 31 цвет; для преимущественно белой — белый или холодный белый.</string>
+    <string name="settings_harman_fullscreen_experimental">Полный экран Harman (экспериментально)</string>
+    <string name="settings_harman_fullscreen_experimental_description">Позволяет CarPlay занять область штатной боковой панели на совместимых устройствах Harman. Применяется при следующем открытии окна CarPlay; на других прошивках возможны ошибки отображения.</string>
 </resources>

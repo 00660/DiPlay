@@ -202,6 +202,9 @@
     <string name="done">Done</string>
     <string name="drag_to_move_pinch_to_zoom">Drag to move, pinch to zoom</string>
     <string name="draw_outside_safe_area">Draw outside safe area</string>
+    <string name="rect_fill_disable_safe_area">Square corners, no safe area</string>
+    <string name="rect_fill_disable_safe_area_description">Asks the iPhone for a full-screen picture with square corners. Try it when CarPlay leaves a strip at an edge or shows the wallpaper color in its rounded corners. The safe area above is not used while this is on. Applies after Save and reconnect.</string>
+    <string name="safe_area_disabled_rect_fill_summary">Safe area: off (square corners, full screen)</string>
     <string name="driving_side">Driving side</string>
     <string name="efficient_video">Efficient video</string>
     <string name="enable_the_car_s_bluetooth_and_pair_your_iphone_first">Enable the car’s Bluetooth and pair your iPhone first.</string>
@@ -866,4 +869,6 @@
     <string name="turn_card_theme_night">Always night</string>
     <string name="settings_ambient_album">Follow album cover</string>
     <string name="settings_ambient_album_description">Use the cover’s color or nearby available car colors. Grey, black or missing covers use all 31 colors; mostly white covers can use white or cold white.</string>
+    <string name="settings_harman_fullscreen_experimental">Harman head-unit full screen (experimental)</string>
+    <string name="settings_harman_fullscreen_experimental_description">Let CarPlay occupy the OEM side-panel area on supported Harman head units. Applies when the CarPlay window next opens; other firmware may display incorrectly.</string>
 </resources>

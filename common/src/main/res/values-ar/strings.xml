@@ -195,6 +195,9 @@
     <string name="done">تم</string>
     <string name="drag_to_move_pinch_to_zoom">اسحب للتحريك، وقرّب للتكبير</string>
     <string name="draw_outside_safe_area">الرسم خارج المنطقة الآمنة</string>
+    <string name="rect_fill_disable_safe_area">زوايا قائمة بلا منطقة آمنة</string>
+    <string name="rect_fill_disable_safe_area_description">يطلب من iPhone صورة بملء الشاشة بزوايا قائمة. جرّبه عندما يترك CarPlay شريطًا عند حافة الشاشة أو يُظهر لون الخلفية في زواياه المستديرة. لا تُستخدم المنطقة الآمنة أعلاه أثناء تشغيله. يُطبّق بعد الحفظ وإعادة الاتصال.</string>
+    <string name="safe_area_disabled_rect_fill_summary">المنطقة الآمنة: متوقفة (زوايا قائمة، ملء الشاشة)</string>
     <string name="driving_side">جانب القيادة</string>
     <string name="efficient_video">فيديو كفؤ</string>
     <string name="enable_the_car_s_bluetooth_and_pair_your_iphone_first">فعّل بلوتوث السيارة واقترن بـ iPhone أولاً.</string>
@@ -765,4 +768,6 @@
     <string name="settings_ambient_unavailable">فشل التحقق للقراءة فقط: تفويض ADB الموجود أو واجهة الإضاءة المدعومة غير متاحة. لم تُحفظ الإعدادات. اضبط الوصول بشكل منفصل أثناء الوقوف؛ هذه الميزة لا تفعّل ADB ولا تطلب التفويض.</string>
     <string name="settings_ambient_album">اتباع غلاف الألبوم</string>
     <string name="settings_ambient_album_description">يُطابق لون الغلاف تقريبياً مع ألوان السيارة المتاحة. تستخدم الأغلفة الرمادية أو السوداء أو المفقودة جميع الألوان الـ31؛ وقد تستخدم الأغلفة البيضاء غالباً الأبيض أو الأبيض البارد.</string>
+    <string name="settings_harman_fullscreen_experimental">ملء شاشة Harman (تجريبي)</string>
+    <string name="settings_harman_fullscreen_experimental_description">يتيح لـ CarPlay شغل منطقة اللوحة الجانبية الأصلية في وحدات Harman المدعومة. يُطبّق عند فتح نافذة CarPlay التالية؛ وقد تظهر أخطاء على برامج ثابتة أخرى.</string>
 </resources>
