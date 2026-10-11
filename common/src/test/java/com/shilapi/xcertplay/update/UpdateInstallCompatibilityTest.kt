@@ -32,6 +32,7 @@ class UpdateInstallCompatibilityTest {
 
     private fun install(publicUriReadable: Boolean, installers: Int, publicBytes: ByteArray = byteArrayOf(1)): Intent {
         val activity = Robolectric.buildActivity(DiPlayActivity::class.java).get()
+        activity.updateInstallWorker = { it.run() }
         val apk = File(activity.cacheDir, "update/test/DiPlay.apk").apply {
             parentFile!!.mkdirs()
             writeBytes(byteArrayOf(1))
