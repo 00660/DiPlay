@@ -53,7 +53,7 @@ class Iap2WiredControlClient(
         send(powerSourceUpdate(availableCurrentMilliAmps), deadlineNanos)
         for (subscription in subscriptions()) send(subscription, deadlineNanos)
         stage = Iap2WiredControlStage.SUBSCRIBED
-        onProgress("iap2 power/subscriptions sent")
+        onProgress("iap2 power/subscriptions sent availableCurrentMa=$availableCurrentMilliAmps")
 
         var forwardedFrames = 0
         var carPlayStartSessions = 0
