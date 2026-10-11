@@ -873,6 +873,12 @@
     <string name="settings_disable_media_key_audio_focus_description">Stops DiPlay from requesting media audio focus while CarPlay music is active. Enable this if your head unit routes its physical volume buttons to DiPlay and they no longer adjust volume. Steering-wheel play, pause and track controls may stop working on head units that require focus. Applies at the next CarPlay connection.</string>
     <string name="settings_ambient_album">Follow album cover</string>
     <string name="settings_ambient_album_description">Use the cover’s color or nearby available car colors. Grey, black or missing covers use all 31 colors; mostly white covers can use white or cold white.</string>
+    <string name="settings_cluster_speedometer">Cluster speedometer (experimental)</string>
+    <string name="settings_cluster_speedometer_description">Shows vehicle speed through authorized ADB. Hidden when a reading is unavailable or stale. Changes apply immediately.</string>
+    <string name="settings_cluster_speedometer_horizontal">Speedometer horizontal position</string>
+    <string name="settings_cluster_speedometer_vertical">Speedometer vertical position</string>
+    <string name="settings_cluster_speedometer_size">Speedometer size</string>
+    <string name="settings_cluster_speedometer_opacity">Speedometer opacity</string>
     <string name="settings_harman_fullscreen_experimental">Harman head-unit full screen (experimental)</string>
     <string name="settings_harman_fullscreen_experimental_description">Let CarPlay occupy the OEM side-panel area on supported Harman head units. Applies when the CarPlay window next opens; other firmware may display incorrectly.</string>
     <string name="settings_hotspot_name_non_english">Names with Chinese or other non-English characters can leave CarPlay on “Getting CarPlay ready…”: some head units broadcast them in a form the iPhone doesn’t find. If that happens, rename the car hotspot with English letters and digits.</string>

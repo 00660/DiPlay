@@ -47,6 +47,7 @@ import androidx.core.view.WindowInsetsControllerCompat
 import com.shilapi.xcertplay.adb.LocalAdb
 import com.shilapi.xcertplay.airplay.CarPlayClusterDisplay
 import com.shilapi.xcertplay.airplay.CarPlayDisplayScale
+import com.shilapi.xcertplay.airplay.ClusterSpeedometerOverlay
 import com.shilapi.xcertplay.airplay.ClusterTurnCardOverlay
 import com.shilapi.xcertplay.compat.closeCompat
 import com.shilapi.xcertplay.hud.BydAdbAccess
@@ -1928,6 +1929,7 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
                 render()
             }
             if (clusterMapEnabled) {
+                clusterSpeedometerControls(card)
                 toggle(card, getString(R.string.center_map_card),
                     if (clusterDisplay != null || adbCluster) getString(R.string.center_map_card_description)
                     else getString(R.string.center_map_card_virtual_description),
@@ -3160,6 +3162,44 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
         step == 0 -> getString(R.string.marker_centre_default)
         step < 0 -> "$negative ${-step * CarPlayClusterDisplay.MARKER_STEP_PERCENT} %"
         else -> "$positive ${step * CarPlayClusterDisplay.MARKER_STEP_PERCENT} %"
+    }
+
+    private fun clusterSpeedometerControls(card: LinearLayout) {
+        toggle(card, getString(R.string.settings_cluster_speedometer),
+            getString(R.string.settings_cluster_speedometer_description), AirPlayPersistence.loadClusterSpeedometerEnabled(this)) {
+            AirPlayPersistence.saveClusterSpeedometerEnabled(this, it)
+            render()
+        }
+        if (AirPlayPersistence.loadClusterSpeedometerEnabled(this)) {
+            card.addView(overlaySliderRow(
+                getString(R.string.settings_cluster_speedometer_horizontal), ClusterSpeedometerOverlay.xPercents,
+                AirPlayPersistence.loadClusterSpeedometerX(this),
+            ) { value -> "$value %" }.also { row ->
+                row.getChildAt(0).layoutDirection = android.text.TextUtils.getLayoutDirectionFromLocale(resources.configuration.locales[0])
+                row.onSave = { value -> AirPlayPersistence.saveClusterSpeedometerX(this, value) }
+            })
+            card.addView(overlaySliderRow(
+                getString(R.string.settings_cluster_speedometer_vertical), ClusterSpeedometerOverlay.yPercents,
+                AirPlayPersistence.loadClusterSpeedometerY(this),
+            ) { value -> "$value %" }.also { row ->
+                row.getChildAt(0).layoutDirection = android.text.TextUtils.getLayoutDirectionFromLocale(resources.configuration.locales[0])
+                row.onSave = { value -> AirPlayPersistence.saveClusterSpeedometerY(this, value) }
+            })
+            card.addView(overlaySliderRow(
+                getString(R.string.settings_cluster_speedometer_size), ClusterSpeedometerOverlay.sizePercents,
+                AirPlayPersistence.loadClusterSpeedometerSize(this),
+            ) { value -> "$value %" }.also { row ->
+                row.getChildAt(0).layoutDirection = android.text.TextUtils.getLayoutDirectionFromLocale(resources.configuration.locales[0])
+                row.onSave = { value -> AirPlayPersistence.saveClusterSpeedometerSize(this, value) }
+            })
+            card.addView(overlaySliderRow(
+                getString(R.string.settings_cluster_speedometer_opacity), ClusterSpeedometerOverlay.opacityPercents,
+                AirPlayPersistence.loadClusterSpeedometerOpacity(this),
+            ) { value -> "$value %" }.also { row ->
+                row.getChildAt(0).layoutDirection = android.text.TextUtils.getLayoutDirectionFromLocale(resources.configuration.locales[0])
+                row.onSave = { value -> AirPlayPersistence.saveClusterSpeedometerOpacity(this, value) }
+            })
+        }
     }
 
     /** A 1%-step slider row for overlay placement; every step saves, so the card moves live. */

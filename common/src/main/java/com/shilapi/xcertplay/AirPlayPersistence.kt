@@ -6,6 +6,7 @@ import com.shilapi.xcertplay.airplay.AirPlayDisplaySettings
 import com.shilapi.xcertplay.airplay.AirPlayPhysicalSizeBasis
 import com.shilapi.xcertplay.airplay.CarPlayDisplayScale
 import com.shilapi.xcertplay.airplay.CarPlayClusterDisplay
+import com.shilapi.xcertplay.airplay.ClusterSpeedometerOverlay
 import com.shilapi.xcertplay.airplay.ClusterTurnCardOverlay
 import com.shilapi.xcertplay.airplay.CarPlayUiScale
 import com.shilapi.xcertplay.airplay.AirPlayIdentity
@@ -791,6 +792,59 @@ object AirPlayPersistence {
 
     fun saveLauncherMapSharing(context: Context, enabled: Boolean) {
         context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().putBoolean(KEY_LAUNCHER_MAP_SHARING, enabled).apply()
+    }
+
+    fun loadClusterSpeedometerEnabled(context: Context): Boolean =
+        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getBoolean("cluster_speedometer_enabled", false)
+
+    fun saveClusterSpeedometerEnabled(context: Context, enabled: Boolean) {
+        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit()
+            .putBoolean("cluster_speedometer_enabled", enabled).apply()
+    }
+
+    internal fun observeClusterSpeedometer(context: Context, changed: () -> Unit): () -> Unit {
+        val prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+        val listener = android.content.SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+            if (key?.startsWith("cluster_speedometer_") == true) changed()
+        }
+        prefs.registerOnSharedPreferenceChangeListener(listener)
+        return { prefs.unregisterOnSharedPreferenceChangeListener(listener) }
+    }
+
+    fun loadClusterSpeedometerX(context: Context): Int =
+        ClusterSpeedometerOverlay.snap(context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+            .getInt("cluster_speedometer_x", ClusterSpeedometerOverlay.DEFAULT_X_PERCENT), ClusterSpeedometerOverlay.xPercents)
+
+    fun saveClusterSpeedometerX(context: Context, value: Int) {
+        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit()
+            .putInt("cluster_speedometer_x", ClusterSpeedometerOverlay.snap(value, ClusterSpeedometerOverlay.xPercents)).apply()
+    }
+
+    fun loadClusterSpeedometerY(context: Context): Int =
+        ClusterSpeedometerOverlay.snap(context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+            .getInt("cluster_speedometer_y", ClusterSpeedometerOverlay.DEFAULT_Y_PERCENT), ClusterSpeedometerOverlay.yPercents)
+
+    fun saveClusterSpeedometerY(context: Context, value: Int) {
+        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit()
+            .putInt("cluster_speedometer_y", ClusterSpeedometerOverlay.snap(value, ClusterSpeedometerOverlay.yPercents)).apply()
+    }
+
+    fun loadClusterSpeedometerSize(context: Context): Int =
+        ClusterSpeedometerOverlay.snap(context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+            .getInt("cluster_speedometer_size", ClusterSpeedometerOverlay.DEFAULT_SIZE_PERCENT), ClusterSpeedometerOverlay.sizePercents)
+
+    fun saveClusterSpeedometerSize(context: Context, value: Int) {
+        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit()
+            .putInt("cluster_speedometer_size", ClusterSpeedometerOverlay.snap(value, ClusterSpeedometerOverlay.sizePercents)).apply()
+    }
+
+    fun loadClusterSpeedometerOpacity(context: Context): Int =
+        ClusterSpeedometerOverlay.snap(context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+            .getInt("cluster_speedometer_opacity", ClusterSpeedometerOverlay.DEFAULT_OPACITY_PERCENT), ClusterSpeedometerOverlay.opacityPercents)
+
+    fun saveClusterSpeedometerOpacity(context: Context, value: Int) {
+        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit()
+            .putInt("cluster_speedometer_opacity", ClusterSpeedometerOverlay.snap(value, ClusterSpeedometerOverlay.opacityPercents)).apply()
     }
 
     /** Observe consent changes for already attached launcher maps; call the returned function to unregister. */

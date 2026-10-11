@@ -772,6 +772,12 @@
     <string name="settings_disable_media_key_audio_focus_description">Запрещает DiPlay запрашивать аудиофокус мультимедиа во время воспроизведения музыки CarPlay. Включите, если головное устройство перенаправляет физические кнопки громкости в DiPlay и они перестают регулировать громкость. Кнопки воспроизведения, паузы и смены трека на руле могут перестать работать на устройствах, которым нужен аудиофокус. Применяется при следующем подключении CarPlay.</string>
     <string name="settings_ambient_album">Цвет обложки альбома</string>
     <string name="settings_ambient_album_description">Цвет обложки приближённо сопоставляется с доступными цветами автомобиля. Для серой, чёрной или отсутствующей обложки используются все 31 цвет; для преимущественно белой — белый или холодный белый.</string>
+    <string name="settings_cluster_speedometer">Спидометр приборной панели (экспериментально)</string>
+    <string name="settings_cluster_speedometer_description">Показывает скорость автомобиля через авторизованный ADB. Скрывается, если данные недоступны или устарели. Изменения применяются сразу.</string>
+    <string name="settings_cluster_speedometer_horizontal">Положение спидометра по горизонтали</string>
+    <string name="settings_cluster_speedometer_vertical">Положение спидометра по вертикали</string>
+    <string name="settings_cluster_speedometer_size">Размер спидометра</string>
+    <string name="settings_cluster_speedometer_opacity">Непрозрачность спидометра</string>
     <string name="settings_harman_fullscreen_experimental">Полный экран Harman (экспериментально)</string>
     <string name="settings_harman_fullscreen_experimental_description">Позволяет CarPlay занять область штатной боковой панели на совместимых устройствах Harman. Применяется при следующем открытии окна CarPlay; на других прошивках возможны ошибки отображения.</string>
     <string name="settings_hotspot_name_non_english">Если в имени есть китайские или другие нелатинские символы, CarPlay может остановиться на «Подготовка CarPlay…»: некоторые головные устройства передают такое имя в виде, который iPhone не находит. В этом случае переименуйте точку доступа автомобиля латинскими буквами и цифрами.</string>

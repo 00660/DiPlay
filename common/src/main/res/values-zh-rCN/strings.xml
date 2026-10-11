@@ -832,6 +832,12 @@
     <string name="settings_disable_media_key_audio_focus_description">CarPlay 音乐播放时不再由 DiPlay 申请媒体音频焦点。若车机将实体音量键路由给 DiPlay，导致音量键无法调节音量，请开启此项。部分依赖音频焦点的车机可能无法继续使用方向盘播放、暂停和切歌键。下次连接 CarPlay 时生效。</string>
     <string name="settings_ambient_album">跟随专辑封面</string>
     <string name="settings_ambient_album_description">按封面取色并近似匹配原车可用色号。灰黑或无封面时使用全部31色；大面积白色封面可使用白色或冷白。</string>
+    <string name="settings_cluster_speedometer">仪表盘速度计（实验性）</string>
+    <string name="settings_cluster_speedometer_description">通过已授权的 ADB 显示车辆速度。读数不可用或过期时隐藏。更改立即生效。</string>
+    <string name="settings_cluster_speedometer_horizontal">速度计水平位置</string>
+    <string name="settings_cluster_speedometer_vertical">速度计垂直位置</string>
+    <string name="settings_cluster_speedometer_size">速度计大小</string>
+    <string name="settings_cluster_speedometer_opacity">速度计不透明度</string>
     <string name="settings_harman_fullscreen_experimental">哈曼车机全屏（实验性）</string>
     <string name="settings_harman_fullscreen_experimental_description">让 CarPlay 占用受支持哈曼车机的原厂侧栏区域。下次打开 CarPlay 窗口时生效；其他固件可能显示异常。</string>
     <string name="settings_hotspot_name_non_english">热点名称含中文或其他非英文字符时，部分车机广播的名称 iPhone 找不到，CarPlay 会停在「正在准备 CarPlay…」。如出现这种情况，请把车机热点改为英文字母和数字的名称。</string>
