@@ -269,6 +269,7 @@ internal object CarPlayMediaKeys {
     }
 
     private fun start(context: Context) {
+        val expectedController = controller ?: return
         val focusDisabled = AirPlayPersistence.loadDisableMediaKeyAudioFocus(context)
         val granted = if (focusDisabled) {
             // Some OEMs route physical volume buttons to the focus owner. Keep an active
@@ -278,7 +279,6 @@ internal object CarPlayMediaKeys {
             focusHeld = false
             false
         } else {
-            val expectedController = controller ?: return
             val owner = Any().also { focusOwner = it }
             focusEventRevision = 0L
             val audio = context.getSystemService(AudioManager::class.java)
