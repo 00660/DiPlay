@@ -21,6 +21,7 @@ import android.graphics.drawable.GradientDrawable
 import android.graphics.drawable.RippleDrawable
 import android.media.AudioFormat
 import android.media.AudioTrack
+import android.media.MediaFormat
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -46,6 +47,7 @@ import androidx.core.view.WindowInsetsControllerCompat
 import com.shilapi.xcertplay.adb.LocalAdb
 import com.shilapi.xcertplay.airplay.CarPlayClusterDisplay
 import com.shilapi.xcertplay.airplay.CarPlayDisplayScale
+import com.shilapi.xcertplay.airplay.ClusterSpeedometerOverlay
 import com.shilapi.xcertplay.airplay.ClusterTurnCardOverlay
 import com.shilapi.xcertplay.compat.closeCompat
 import com.shilapi.xcertplay.hud.BydAdbAccess
@@ -62,6 +64,7 @@ import com.shilapi.xcertplay.media.AmbientColorSpeed
 import com.shilapi.xcertplay.media.AmbientMusicController
 import com.shilapi.xcertplay.media.AmbientColorSource
 import com.shilapi.xcertplay.media.AmbientMusicSettings
+import com.shilapi.xcertplay.media.MtkDecoderTuning
 import com.shilapi.xcertplay.network.CarHotspotSettings
 import com.shilapi.xcertplay.network.CarHotspotTethering
 import com.shilapi.xcertplay.network.WifiP2pChannels
@@ -88,7 +91,7 @@ import java.util.Locale
 import kotlin.math.roundToInt
 
 internal enum class SettingsCategory {
-    OVERVIEW, CONNECTION, DISPLAY, AUDIO, NAVIGATION, VEHICLE, LANGUAGE, ABOUT, DIAGNOSTICS, ADVANCED,
+    OVERVIEW, CONNECTION, DISPLAY, AUDIO, NAVIGATION, VEHICLE, LANGUAGE, DIAGNOSTICS, ADVANCED, ABOUT,
 }
 
 /** A settings card. Every entry needs one category in [SettingsInformationArchitecture]; see AGENTS.md. */
@@ -183,6 +186,7 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
     internal var usbPermissionOperationFactory: (Context) -> UsbPermissionSetup.Operation = {
         UsbPermissionSetup.Operation(it.applicationContext)
     }
+    internal var selectedMtkDecoderName: (String) -> String? = MtkDecoderTuning::selectedDecoderName
     private var navigationStreamType = 14
     private var testToneTrack: AudioTrack? = null
     private var toneStop: Runnable? = null
@@ -216,6 +220,9 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
     private var adbStatus: TextView? = null
     private var availableUpdate: UpdateRelease? = null
     private var updateSavedPath: String? = null
+    private var updateSavedUri: Uri? = null
+    /** Runs the check of the public update copy; tests run it inline. */
+    internal var updateInstallWorker: (Runnable) -> Unit = { Thread(it, "diplay-update-install").start() }
     @Volatile private var updateStage = UpdateStage.IDLE
     @Volatile private var updateGeneration = 0
     @Volatile private var updateProgress: Int? = null
@@ -661,7 +668,6 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
                 "connection" -> connectionSetup(content)
                 "setup" -> setupGuide(content)
                 "settings" -> settingsCategoryContent(content)
-                "about" -> about(content)
                 else -> home(content)
             }
             scroll
@@ -757,10 +763,6 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
         }
         val returnCategory = connectionSettingsReturnCategory
         when {
-            page == "about" -> {
-                page = "settings"
-                settingsCategory = SettingsCategory.OVERVIEW
-            }
             page == "setup" && setupStep > SetupGuide.STEP_CAR -> setupStep--
             page == "setup" -> {
                 closeSetupGuide()
@@ -1188,8 +1190,7 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
     }
 
     private fun openSettingsCategory(category: SettingsCategory) {
-        if (category == SettingsCategory.ABOUT) page = "about"
-        else settingsCategory = category
+        settingsCategory = category
         render()
     }
 
@@ -1788,7 +1789,23 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
                     AirPlayPersistence.saveHideBydCallPopup(this, it)
                 }
             }
-            toggle(card, getString(R.string.efficient_video), getString(R.string.use_hevc_leave_off_for_the_widest_head_unit_compatibility), AirPlayPersistence.loadHevcEnabled(this)) { AirPlayPersistence.saveHevcEnabled(this, it); markReconnectNeeded() }
+            toggle(card, getString(R.string.efficient_video), getString(R.string.use_hevc_leave_off_for_the_widest_head_unit_compatibility), AirPlayPersistence.loadHevcEnabled(this)) {
+                AirPlayPersistence.saveHevcEnabled(this, it)
+                markReconnectNeeded()
+                render()
+            }
+            val hevc = AirPlayPersistence.loadHevcEnabled(this)
+            val selectedMime = if (hevc) MediaFormat.MIMETYPE_VIDEO_HEVC else MediaFormat.MIMETYPE_VIDEO_AVC
+            val mtkDecoder = if (hevc && AirPlayPersistence.loadHevcSoftwareDecoderEnabled(this)) null
+                else selectedMtkDecoderName(selectedMime)
+            if (mtkDecoder != null) {
+                toggle(card, getString(R.string.settings_mtk_decoder_tuning),
+                    getString(R.string.settings_mtk_decoder_tuning_description, mtkDecoder),
+                    AirPlayPersistence.loadMtkDecoderTuning(this)) {
+                    AirPlayPersistence.saveMtkDecoderTuning(this, it)
+                    markReconnectNeeded()
+                }
+            }
             toggle(card, getString(R.string.smooth_video), getString(R.string.smooth_video_description),
                 AirPlayPersistence.loadSmoothVideo(this)) {
                 AirPlayPersistence.saveSmoothVideo(this, it)
@@ -1912,6 +1929,7 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
                 render()
             }
             if (clusterMapEnabled) {
+                clusterSpeedometerControls(card)
                 toggle(card, getString(R.string.center_map_card),
                     if (clusterDisplay != null || adbCluster) getString(R.string.center_map_card_description)
                     else getString(R.string.center_map_card_virtual_description),
@@ -2187,8 +2205,7 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
     }
 
     private fun about(content: LinearLayout) {
-        content.addView(label(getString(R.string.diplay), 40, TEXT, true))
-        content.addView(label(getString(R.string.carplay_at_home_in_your_car), 20, MUTED).apply { setPadding(0, dp(8), 0, dp(24)) })
+        settingsPageTitle(content, getString(R.string.about_diplay), getString(R.string.carplay_at_home_in_your_car))
         section(content, getString(R.string.about_public_preview_prefix, version())) { card ->
             card.addView(label(getString(R.string.an_independent_carplay_receiver_for_android_head_units_wir), 17, TEXT))
             card.addView(updateRow())
@@ -2269,7 +2286,8 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
         updateRelease = release
         updateMessage = null
         updateStage = UpdateStage.AVAILABLE
-        page = "about"
+        page = "settings"
+        settingsCategory = SettingsCategory.ABOUT
         render()
     }
 
@@ -2283,6 +2301,7 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
         lateinit var release: UpdateRelease
         updateStage = UpdateStage.DOWNLOADING
         updateSavedPath = null
+        updateSavedUri = null
         updateProgress = null
         updateMessage = null
         val generation = ++updateGeneration
@@ -2312,7 +2331,7 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
                 }
                 apkFile
             }.onFailure { directory.deleteRecursively() }
-            val savedPath = outcome.getOrNull()?.let { UpdateApkExport.copy(applicationContext, it) }
+            val saved = outcome.getOrNull()?.let { UpdateApkExport.copy(applicationContext, it) }
             runOnUiThread {
                 if (generation != updateGeneration || isFinishing || isDestroyed) {
                     directory.deleteRecursively()
@@ -2322,7 +2341,8 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
                     { file ->
                         updateRelease = release
                         updateFile = file
-                        updateSavedPath = savedPath
+                        updateSavedPath = saved?.path
+                        updateSavedUri = saved?.uri
                         updateStage = UpdateStage.READY
                         render()
                     },
@@ -2338,28 +2358,56 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
     }
 
     private fun installUpdate() {
-        val file = updateFile ?: return
-        // Before Oreo, the installer handles the global unknown-sources setting.
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O || packageManager.canRequestPackageInstalls()) {
-            installApk(file)
-        } else {
-            startActivity(Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES, Uri.parse("package:$packageName")))
-        }
+        // No unknown-sources pre-check: some head units answer its settings page with "Not supported yet".
+        // The chosen installer asks for that permission itself.
+        installApk(updateFile ?: return)
     }
 
     private fun installApk(file: File) {
-        val uri = FileProvider.getUriForFile(this, "$packageName.update-apks", file)
-        startActivity(
-            Intent(Intent.ACTION_VIEW).apply {
-                setDataAndType(uri, "application/vnd.android.package-archive")
-                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_ACTIVITY_NEW_TASK)
-            },
-        )
+        // The public copy lets file managers such as MT Manager open the APK. The private provider URI is the fallback,
+        // including when the driver deleted the public copy.
+        // The public copy is outside the app's control, so it must still match the verified file. Hashing two
+        // APKs takes seconds on a slow head unit, so it runs off the main thread.
+        val savedUri = updateSavedUri
+        val generation = updateGeneration
+        updateInstallWorker(Runnable {
+            val publicUri = savedUri?.takeIf { sameContent(it, file) }
+            runOnUiThread {
+                if (generation == updateGeneration && !isFinishing && !isDestroyed) startInstaller(file, publicUri)
+            }
+        })
     }
+
+    private fun startInstaller(file: File, publicUri: Uri?) {
+        val uri = publicUri ?: FileProvider.getUriForFile(this, "$packageName.update-apks", file)
+        val view = Intent(Intent.ACTION_VIEW).apply {
+            setDataAndType(uri, "application/vnd.android.package-archive")
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        }
+        // Ask only when several installers exist. A lone system installer opens directly, as before.
+        val installers = packageManager.queryIntentActivities(view, PackageManager.MATCH_DEFAULT_ONLY).size
+        val launch = if (installers > 1) Intent.createChooser(view, null) else view
+        val outcome = "${if (installers > 1) "chooser" else "direct"} uri=${if (publicUri != null) "public" else "provider"} installers=$installers"
+        try {
+            startActivity(launch.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+            Log.i("DiPlay-Update", "install started: $outcome")
+            UpdateAvailability.recordInstall(applicationContext, System.currentTimeMillis(), outcome)
+        } catch (failure: RuntimeException) {
+            Log.w("DiPlay-Update", "install failed to start: $outcome", failure)
+            UpdateAvailability.recordInstall(applicationContext, System.currentTimeMillis(), "$outcome failed=${failure.javaClass.simpleName}")
+            updateMessage = getString(R.string.update_failed)
+            render()
+        }
+    }
+
+    private fun sameContent(uri: Uri, verified: File): Boolean = runCatching {
+        val copy = contentResolver.openInputStream(uri)?.use { UpdateChecksums.sha256Hex(it) }
+        copy != null && copy == UpdateChecksums.sha256Hex(verified)
+    }.getOrDefault(false)
 
     private fun refreshUpdateUi(generation: Int) {
         runOnUiThread {
-            if (generation != updateGeneration || isFinishing || isDestroyed || page != "about") return@runOnUiThread
+            if (generation != updateGeneration || isFinishing || isDestroyed || !(page == "settings" && settingsCategory == SettingsCategory.ABOUT)) return@runOnUiThread
             render()
         }
     }
@@ -3114,6 +3162,44 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
         step == 0 -> getString(R.string.marker_centre_default)
         step < 0 -> "$negative ${-step * CarPlayClusterDisplay.MARKER_STEP_PERCENT} %"
         else -> "$positive ${step * CarPlayClusterDisplay.MARKER_STEP_PERCENT} %"
+    }
+
+    private fun clusterSpeedometerControls(card: LinearLayout) {
+        toggle(card, getString(R.string.settings_cluster_speedometer),
+            getString(R.string.settings_cluster_speedometer_description), AirPlayPersistence.loadClusterSpeedometerEnabled(this)) {
+            AirPlayPersistence.saveClusterSpeedometerEnabled(this, it)
+            render()
+        }
+        if (AirPlayPersistence.loadClusterSpeedometerEnabled(this)) {
+            card.addView(overlaySliderRow(
+                getString(R.string.settings_cluster_speedometer_horizontal), ClusterSpeedometerOverlay.xPercents,
+                AirPlayPersistence.loadClusterSpeedometerX(this),
+            ) { value -> "$value %" }.also { row ->
+                row.getChildAt(0).layoutDirection = android.text.TextUtils.getLayoutDirectionFromLocale(resources.configuration.locales[0])
+                row.onSave = { value -> AirPlayPersistence.saveClusterSpeedometerX(this, value) }
+            })
+            card.addView(overlaySliderRow(
+                getString(R.string.settings_cluster_speedometer_vertical), ClusterSpeedometerOverlay.yPercents,
+                AirPlayPersistence.loadClusterSpeedometerY(this),
+            ) { value -> "$value %" }.also { row ->
+                row.getChildAt(0).layoutDirection = android.text.TextUtils.getLayoutDirectionFromLocale(resources.configuration.locales[0])
+                row.onSave = { value -> AirPlayPersistence.saveClusterSpeedometerY(this, value) }
+            })
+            card.addView(overlaySliderRow(
+                getString(R.string.settings_cluster_speedometer_size), ClusterSpeedometerOverlay.sizePercents,
+                AirPlayPersistence.loadClusterSpeedometerSize(this),
+            ) { value -> "$value %" }.also { row ->
+                row.getChildAt(0).layoutDirection = android.text.TextUtils.getLayoutDirectionFromLocale(resources.configuration.locales[0])
+                row.onSave = { value -> AirPlayPersistence.saveClusterSpeedometerSize(this, value) }
+            })
+            card.addView(overlaySliderRow(
+                getString(R.string.settings_cluster_speedometer_opacity), ClusterSpeedometerOverlay.opacityPercents,
+                AirPlayPersistence.loadClusterSpeedometerOpacity(this),
+            ) { value -> "$value %" }.also { row ->
+                row.getChildAt(0).layoutDirection = android.text.TextUtils.getLayoutDirectionFromLocale(resources.configuration.locales[0])
+                row.onSave = { value -> AirPlayPersistence.saveClusterSpeedometerOpacity(this, value) }
+            })
+        }
     }
 
     /** A 1%-step slider row for overlay placement; every step saves, so the card moves live. */
@@ -4935,6 +5021,8 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
                     appendLine("Authentication: local experimental beta identity; no remote fallback")
                     appendLine("CarPlay setup: ${if (setupError == null) "ready" else "authentication unavailable"}")
                     appendLine("Saved video preference (may differ from active session): ${if (AirPlayPersistence.loadHevcEnabled(appContext)) "HEVC" else "H.264"}; ${AirPlayPersistence.loadFps(appContext)} fps")
+                    appendLine("Media-key audio focus: ${if (AirPlayPersistence.loadDisableMediaKeyAudioFocus(appContext)) "disabled" else "enabled"}")
+                    appendLine("MTK decoder tuning preference: ${if (AirPlayPersistence.loadMtkDecoderTuning(appContext)) "enabled" else "disabled"}")
                     appendLine("CarPlay size: ${com.shilapi.xcertplay.airplay.CarPlaySize.fromWidthMillimeters(AirPlayPersistence.loadWidthPhysicalMm(appContext)).label}")
                     appendLine("Saved resolution preference (may differ from active session): ${AirPlayPersistence.loadDisplayScalePercent(appContext)}%")
                     appendLine("Session: ${if (CarPlayBackgroundSession.active) "active" else if (CarPlayBackgroundSession.hasSession()) "connecting" else "stopped"}")
@@ -5172,6 +5260,12 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
         parent.addView(card, LinearLayout.LayoutParams(-1, -2).apply { bottomMargin = dp(SETTINGS_BLOCK_GAP_DP) })
     }
     private fun audioFocusControls(parent: LinearLayout) {
+        toggle(parent, getString(R.string.settings_disable_media_key_audio_focus),
+            getString(R.string.settings_disable_media_key_audio_focus_description),
+            AirPlayPersistence.loadDisableMediaKeyAudioFocus(this)) {
+            AirPlayPersistence.saveDisableMediaKeyAudioFocus(this, it)
+            markReconnectNeeded()
+        }
         val enabled = AirPlayPersistence.loadAudioFocusEnabled(this)
         val dependent = column().apply { visibility = if (enabled) View.VISIBLE else View.GONE }
         toggle(parent, getString(R.string.contrib_audio_home_toggle_audio_focus),

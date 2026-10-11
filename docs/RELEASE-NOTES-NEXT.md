@@ -29,3 +29,7 @@ Changes through DiPlay 0.2.17 are documented in [0.2.17 release notes](RELEASE-N
 ## Vehicle
 
 - With **CarPlay call keys (experimental)** on, the wheel's next-track key answers and previous-track declines while a CarPlay call rings. The Song Pro DM-i's wheel has no dedicated answer key ([#272](https://github.com/shihabal3amri/DiPlay/issues/272)). The keys skip tracks as before at all other times. [#622](https://github.com/shihabal3amri/DiPlay/pull/622)
+
+## Settings
+
+- About now opens inside Settings like the other categories. On wide screens the category rail stays visible, and About is the last entry in it. The page uses the same title style. [#597](https://github.com/shihabal3amri/DiPlay/pull/597)

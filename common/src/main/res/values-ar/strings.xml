@@ -657,6 +657,8 @@
     <string name="call_voice_filter_description">يخفض الجهير في صوت مكالمات CarPlay. قد يغيّر صوت المتحدثين. يُطبَّق عند الاتصال التالي بـ CarPlay.</string>
     <string name="smooth_video">فيديو سلس (تجريبي)</string>
     <string name="smooth_video_description">يعرض كل إطار من الشاشة الرئيسية لـ CarPlay في الوقت الذي وسمه به iPhone مع تأخير قصير، بدلًا من عرضه فور فك ترميزه. يضبط التأخير نفسه تلقائيًا حتى يُفك ترميز معظم الإطارات في الوقت المناسب، وتُعرض الإطارات غير الجاهزة في وقتها رغم ذلك فورًا. قد يبدو التمرير أكثر انتظامًا، لكن الاستجابة للمس تتأخر. لا تنطبق إعدادات الصورة. يعيد توصيل CarPlay.</string>
+    <string name="settings_mtk_decoder_tuning">زمن استجابة منخفض لوحدة فك ترميز MTK (تجريبي)</string>
+    <string name="settings_mtk_decoder_tuning_description">تم اكتشاف %1$s لتنسيق الفيديو المحدد. يستخدم مفكك MTK مخصصًا لزمن الاستجابة المنخفض عند توفره. أما مفككات OMX القديمة فتجرّب أولًا عدم إعادة الترتيب مع زمن استجابة منخفض، ثم زمن الاستجابة المنخفض وحده. يعود تلقائيًا إذا رفض المفكك الإعداد أو فشل. قد يقل تأخر الفيديو، لكن بعض البرامج الثابتة قد تتلعثم أو تفشل. يُطبّق عند اتصال CarPlay التالي.</string>
     <string name="settings_direct_video_output">إخراج الفيديو المباشر (تجريبي)</string>
     <string name="settings_direct_video_output_description">يرسل صورة CarPlay مباشرة إلى مُركِّب شاشة الوحدة الرئيسية بدلًا من رسمها داخل نافذة DiPlay. قد يقلل التأخير بمقدار تحديث شاشة واحد تقريبًا. لا تنطبق تعديلات الصورة. يعيد الاتصال بـ CarPlay.</string>
     <string name="settings_low_latency_decoder">فك ترميز منخفض التأخير (تجريبي)</string>
@@ -766,11 +768,20 @@
     <string name="settings_ambient_parked_notice">اضبط أثناء الوقوف. دعم تجريبي لبعض واجهات BYD؛ التوافق يختلف حسب الطراز والبرنامج الثابت. المستوى 0 يعني أدنى مستوى للمصنع وليس إطفاء الإضاءة.</string>
     <string name="settings_ambient_checking">جارٍ التحقق…</string>
     <string name="settings_ambient_unavailable">فشل التحقق للقراءة فقط: تفويض ADB الموجود أو واجهة الإضاءة المدعومة غير متاحة. لم تُحفظ الإعدادات. اضبط الوصول بشكل منفصل أثناء الوقوف؛ هذه الميزة لا تفعّل ADB ولا تطلب التفويض.</string>
+    <string name="settings_disable_media_key_audio_focus">تعطيل تركيز الصوت لمفاتيح الوسائط (تجريبي)</string>
+    <string name="settings_disable_media_key_audio_focus_description">يمنع DiPlay من طلب تركيز صوت الوسائط أثناء تشغيل موسيقى CarPlay. فعّله إذا كانت وحدة السيارة توجّه أزرار مستوى الصوت الفعلية إلى DiPlay فلا تعود تضبط مستوى الصوت. قد تتوقف أزرار التشغيل والإيقاف المؤقت وتغيير المسار في عجلة القيادة على الوحدات التي تتطلب التركيز. يُطبّق عند اتصال CarPlay التالي.</string>
     <string name="settings_ambient_album">اتباع غلاف الألبوم</string>
     <string name="settings_ambient_album_description">يُطابق لون الغلاف تقريبياً مع ألوان السيارة المتاحة. تستخدم الأغلفة الرمادية أو السوداء أو المفقودة جميع الألوان الـ31؛ وقد تستخدم الأغلفة البيضاء غالباً الأبيض أو الأبيض البارد.</string>
+    <string name="settings_cluster_speedometer">عداد سرعة لوحة العدادات (تجريبي)</string>
+    <string name="settings_cluster_speedometer_description">يعرض سرعة السيارة عبر ADB المصرح به. يختفي إذا كانت القراءة غير متاحة أو قديمة. تُطبّق التغييرات فورًا.</string>
+    <string name="settings_cluster_speedometer_horizontal">الموضع الأفقي لعداد السرعة</string>
+    <string name="settings_cluster_speedometer_vertical">الموضع العمودي لعداد السرعة</string>
+    <string name="settings_cluster_speedometer_size">حجم عداد السرعة</string>
+    <string name="settings_cluster_speedometer_opacity">عتامة عداد السرعة</string>
     <string name="settings_harman_fullscreen_experimental">ملء شاشة Harman (تجريبي)</string>
     <string name="settings_harman_fullscreen_experimental_description">يتيح لـ CarPlay شغل منطقة اللوحة الجانبية الأصلية في وحدات Harman المدعومة. يُطبّق عند فتح نافذة CarPlay التالية؛ وقد تظهر أخطاء على برامج ثابتة أخرى.</string>
     <string name="settings_hotspot_name_non_english">قد يتوقف CarPlay عند «جارٍ تجهيز CarPlay…» إذا احتوى الاسم على أحرف صينية أو أحرف غير إنجليزية، لأن بعض وحدات السيارة تبث هذا الاسم بصيغة لا يجدها iPhone. إذا حدث ذلك، فأعد تسمية نقطة اتصال السيارة بأحرف إنجليزية وأرقام.</string>
     <string name="settings_speech_without_low_rates">صوت ملاحة أوضح عبر USB (تجريبي)</string>
     <string name="settings_speech_without_low_rates_description">عبر USB قد يرسل iPhone تعليمات الملاحة وردود Siri المنطوقة بجودة هاتفية 8 كيلوهرتز. يوقف هذا الخيار عرض 8 و16 كيلوهرتز لهذا الصوت ليختار iPhone معدلاً أعلى. إذا اختفت التعليمات الصوتية، فأوقفه. يعيد توصيل CarPlay.</string>
+    <string name="bluetooth_connections_not_real">يُبلغ بلوتوث Android في وحدة القيادة هذه عن اتصال، لكن لا شيء يصل إلى iPhone: حتى الاتصال بخدمة غير موجودة ينجح. البلوتوث هنا يديره مكوّن خاص بالشركة المصنّعة لا تستطيع التطبيقات استخدامه، لذلك لا يمكن أن يعمل CarPlay اللاسلكي على وحدة القيادة هذه. جرّب اتصال USB.</string>
 </resources>

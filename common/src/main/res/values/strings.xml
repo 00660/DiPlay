@@ -754,6 +754,8 @@
     <string name="call_voice_filter_description">Cuts bass from CarPlay call audio. This may change how voices sound. Applies at the next CarPlay connection.</string>
     <string name="smooth_video">Smooth video (experimental)</string>
     <string name="smooth_video_description">Shows each main-screen CarPlay frame at the time the iPhone stamped on it plus a short delay, instead of as soon as it is decoded. The delay adjusts itself so that most frames are decoded in time; frames still not ready by their time are shown at once. Scrolling can look more even, but touches respond later. Picture adjustments do not apply. Reconnects CarPlay.</string>
+    <string name="settings_mtk_decoder_tuning">MTK decoder low latency (experimental)</string>
+    <string name="settings_mtk_decoder_tuning_description">Detected %1$s for the selected video format. Uses a dedicated MTK low-latency decoder when available. Legacy OMX decoders instead try no-reorder plus low latency, then low latency alone. Automatically falls back if the decoder rejects or fails. It may reduce video delay, but some firmware can stutter or fail. Applies at the next CarPlay connection.</string>
     <string name="settings_direct_video_output">Direct video output (experimental)</string>
     <string name="settings_direct_video_output_description">Sends the CarPlay picture straight to the head unit\'s compositor instead of drawing it inside the DiPlay window. Can lower the delay by about one screen refresh. Picture adjustments do not apply. Reconnects CarPlay.</string>
     <string name="settings_low_latency_decoder">Low-latency decoding (experimental)</string>
@@ -867,11 +869,20 @@
     <string name="cluster_small_window_card_opacity">Small-window turn card · opacity</string>
     <string name="turn_card_theme_day">Always day</string>
     <string name="turn_card_theme_night">Always night</string>
+    <string name="settings_disable_media_key_audio_focus">Disable media-key audio focus (experimental)</string>
+    <string name="settings_disable_media_key_audio_focus_description">Stops DiPlay from requesting media audio focus while CarPlay music is active. Enable this if your head unit routes its physical volume buttons to DiPlay and they no longer adjust volume. Steering-wheel play, pause and track controls may stop working on head units that require focus. Applies at the next CarPlay connection.</string>
     <string name="settings_ambient_album">Follow album cover</string>
     <string name="settings_ambient_album_description">Use the cover’s color or nearby available car colors. Grey, black or missing covers use all 31 colors; mostly white covers can use white or cold white.</string>
+    <string name="settings_cluster_speedometer">Cluster speedometer (experimental)</string>
+    <string name="settings_cluster_speedometer_description">Shows vehicle speed through authorized ADB. Hidden when a reading is unavailable or stale. Changes apply immediately.</string>
+    <string name="settings_cluster_speedometer_horizontal">Speedometer horizontal position</string>
+    <string name="settings_cluster_speedometer_vertical">Speedometer vertical position</string>
+    <string name="settings_cluster_speedometer_size">Speedometer size</string>
+    <string name="settings_cluster_speedometer_opacity">Speedometer opacity</string>
     <string name="settings_harman_fullscreen_experimental">Harman head-unit full screen (experimental)</string>
     <string name="settings_harman_fullscreen_experimental_description">Let CarPlay occupy the OEM side-panel area on supported Harman head units. Applies when the CarPlay window next opens; other firmware may display incorrectly.</string>
     <string name="settings_hotspot_name_non_english">Names with Chinese or other non-English characters can leave CarPlay on “Getting CarPlay ready…”: some head units broadcast them in a form the iPhone doesn’t find. If that happens, rename the car hotspot with English letters and digits.</string>
     <string name="settings_speech_without_low_rates">Clearer navigation voice over USB (experimental)</string>
     <string name="settings_speech_without_low_rates_description">Over USB the iPhone can send navigation prompts and Siri’s spoken replies as 8 kHz phone-quality audio. This stops offering 8 and 16 kHz for that audio so the iPhone picks a higher rate. If prompts go silent, turn it off. Reconnects CarPlay.</string>
+    <string name="bluetooth_connections_not_real">This head unit’s Android Bluetooth reports a connection, but nothing reaches the iPhone: even a connection to a service that does not exist succeeds. Bluetooth here is handled by the maker’s own module, which apps cannot use, so wireless CarPlay cannot work on this head unit. Try a USB connection.</string>
 </resources>
