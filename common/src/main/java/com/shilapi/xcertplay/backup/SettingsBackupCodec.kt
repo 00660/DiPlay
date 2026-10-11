@@ -88,7 +88,7 @@ object SettingsBackupCodec {
     fun import(context: Context, document: ByteArray): SettingsImportOutcome {
         val root = runCatching { JSONObject(document.toString(Charsets.UTF_8)) }.getOrNull()
             ?: return SettingsImportOutcome(0, 0, invalid = true)
-        if (root.optString("format") != FORMAT || root.optInt("version") > VERSION) {
+        if (root.optString("format") != FORMAT || root.optInt("version", Int.MIN_VALUE) !in 1..VERSION) {
             return SettingsImportOutcome(0, 0, invalid = true)
         }
         val files = root.optJSONObject("settings")
@@ -113,9 +113,9 @@ object SettingsBackupCodec {
                 }
                 val stored = when (val target = current[key]) {
                     is Boolean -> if (value is Boolean) { editor.putBoolean(key, value); true } else false
-                    is Int -> number(value)?.let { editor.putInt(key, it.toInt()); true } ?: false
-                    is Long -> number(value)?.let { editor.putLong(key, it.toLong()); true } ?: false
-                    is Float -> number(value)?.let { editor.putFloat(key, it.toFloat()); true } ?: false
+                    is Int -> integral(value)?.takeIf { it in Int.MIN_VALUE..Int.MAX_VALUE }?.let { editor.putInt(key, it.toInt()); true } ?: false
+                    is Long -> integral(value)?.let { editor.putLong(key, it); true } ?: false
+                    is Float -> decimal(value)?.let { editor.putFloat(key, it); true } ?: false
                     is String -> if (value is String) { editor.putString(key, value); true } else false
                     is Set<*> -> stringSet(value)?.let { editor.putStringSet(key, it); true } ?: false
                     null -> inferred(editor, key, value)
@@ -131,23 +131,29 @@ object SettingsBackupCodec {
     private fun inferred(editor: Editor, key: String, value: Any?): Boolean = when (value) {
         is Boolean -> { editor.putBoolean(key, value); true }
         is String -> { editor.putString(key, value); true }
-        is Int -> { editor.putInt(key, value); true }
-        is Long -> { editor.putLong(key, value); true }
-        is Double -> if (value % 1.0 == 0.0 && kotlin.math.abs(value) <= Int.MAX_VALUE) {
-            editor.putInt(key, value.toInt()); true
-        } else {
-            editor.putFloat(key, value.toFloat()); true
+        else -> {
+            val integral = integral(value)
+            when {
+                integral != null && integral in Int.MIN_VALUE..Int.MAX_VALUE -> { editor.putInt(key, integral.toInt()); true }
+                integral != null -> { editor.putLong(key, integral); true }
+                else -> decimal(value)?.let { editor.putFloat(key, it); true } ?: false
+            }
         }
-        else -> false
     }
 
-    private fun number(value: Any?): Number? {
+    private fun integral(value: Any?): Long? {
         val number = value as? Number ?: return null
-        return if (number.toDouble() % 1.0 == 0.0) {
-            if (number.toDouble() > Int.MAX_VALUE || number.toDouble() < Int.MIN_VALUE) number.toLong() else number.toInt()
-        } else {
-            number.toDouble()
-        }
+        val double = number.toDouble()
+        if (!double.isFinite() || double % 1.0 != 0.0 || double < Long.MIN_VALUE || double > Long.MAX_VALUE) return null
+        return double.toLong()
+    }
+
+    private fun decimal(value: Any?): Float? {
+        val number = value as? Number ?: return null
+        val double = number.toDouble()
+        if (!double.isFinite()) return null
+        val float = double.toFloat()
+        return float.takeIf { it.isFinite() }
     }
 
     private fun stringSet(value: Any?): Set<String>? {

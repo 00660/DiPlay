@@ -96,6 +96,33 @@ class SettingsBackupCodecTest {
     }
 
     @Test
+    fun importRejectsMissingOrUnsupportedVersions() {
+        assertTrue(SettingsBackupCodec.import(context, "{\"format\":\"diplay-settings\",\"settings\":{}}".toByteArray()).invalid)
+        assertTrue(SettingsBackupCodec.import(context, "{\"format\":\"diplay-settings\",\"version\":0,\"settings\":{}}".toByteArray()).invalid)
+        assertTrue(SettingsBackupCodec.import(context, "{\"format\":\"diplay-settings\",\"version\":-1,\"settings\":{}}".toByteArray()).invalid)
+    }
+
+    @Test
+    fun importRejectsOutOfRangeOrFractionalNumbers() {
+        prefs("xcertplay_airplay").edit()
+            .putLong("big_counter", 5L)
+            .putFloat("ui_scale_percent", 1f)
+            .putInt("display_fps", 60)
+            .apply()
+        val document = """
+            {"format": "diplay-settings", "version": 1, "settings": {
+              "xcertplay_airplay": {"big_counter": 1.5, "ui_scale_percent": 1e300, "display_fps": 3000000000}
+            }}
+        """.trimIndent()
+        val outcome = SettingsBackupCodec.import(context, document.toByteArray())
+        assertEquals(0, outcome.applied)
+        assertEquals(3, outcome.skipped)
+        assertEquals(5L, prefs("xcertplay_airplay").getLong("big_counter", 0L))
+        assertEquals(1f, prefs("xcertplay_airplay").getFloat("ui_scale_percent", 0f))
+        assertEquals(60, prefs("xcertplay_airplay").getInt("display_fps", 0))
+    }
+
+    @Test
     fun exportImportRoundTripRestoresValues() {
         prefs("xcertplay_airplay").edit()
             .putInt("display_fps", 60)
