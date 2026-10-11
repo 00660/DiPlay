@@ -1632,17 +1632,15 @@ class CarPlayHostActivity : ComponentActivity() {
             gravity = Gravity.CENTER
         }
         panel.addView(instructions)
-        val recovery = Button(this).apply {
+        val recovery = DiPlayButton(this).apply {
             text = getString(R.string.reset_carplay_wi_fi)
-            isAllCaps = false
             visibility = View.GONE
             setOnClickListener { showDiPlayHome("wireless-recovery") }
             wifiRecoveryButton = this
         }
         panel.addView(recovery, LinearLayout.LayoutParams(dp(300), dp(64)).apply { bottomMargin = dp(12) })
-        val retry = Button(this).apply {
+        val retry = DiPlayButton(this).apply {
             text = getString(R.string.retry_carplay_connection)
-            isAllCaps = false
             visibility = View.GONE
             setOnClickListener {
                 if (!CarPlayBackgroundSession.isOwner(this@CarPlayHostActivity) ||
@@ -1656,9 +1654,8 @@ class CarPlayHostActivity : ComponentActivity() {
             startupRetryButton = this
         }
         panel.addView(retry, LinearLayout.LayoutParams(dp(300), dp(64)).apply { bottomMargin = dp(12) })
-        val back = Button(this).apply {
+        val back = DiPlayButton(this).apply {
             text = getString(R.string.back_to_diplay)
-            isAllCaps = false
             setOnClickListener { showDiPlayHome() }
         }
         panel.addView(back, LinearLayout.LayoutParams(dp(300), dp(64)))
@@ -1675,11 +1672,9 @@ class CarPlayHostActivity : ComponentActivity() {
             instructions.setTextColor(colors.secondary)
             gestureHint.setTextColor(colors.secondary)
             val buttonPalette = DiPlayPalette.of(darkMode)
-            back.setTextColor(buttonPalette.onAccent)
-            back.background = GradientDrawable().apply {
-                setColor(buttonPalette.accent)
-                cornerRadius = dp(20).toFloat()
-            }
+            back.style(DiPlayButtonKind.PRIMARY, buttonPalette, overlay = false)
+            retry.style(DiPlayButtonKind.SECONDARY, buttonPalette, overlay = false)
+            recovery.style(DiPlayButtonKind.SECONDARY, buttonPalette, overlay = false)
         }
         paintWaitingScreen()
         viewport.addView(panel, FrameLayout.LayoutParams(-1, -2, Gravity.CENTER))
@@ -2463,9 +2458,11 @@ class CarPlayHostActivity : ComponentActivity() {
             ),
         )
         if (sessionDisplay?.viewAreas?.sidePanel() != null) {
-            content.addView(Button(this).apply {
+            content.addView(DiPlayButton(this).apply {
                 text = getString(if (sidePanelShown) R.string.side_panel_full_screen else R.string.side_panel_show)
-                textSize = 20f
+                textSize = 17f
+                minHeight = dp(52)
+                style(DiPlayButtonKind.SECONDARY, overlayPalette, overlay = true)
                 setOnClickListener {
                     cancelSettingsEdits()
                     showSidePanel(!sidePanelShown)
@@ -2832,13 +2829,11 @@ class CarPlayHostActivity : ComponentActivity() {
             ).apply { topMargin = dp(30) },
         )
 
-        val save = Button(this).apply {
+        val save = DiPlayButton(this).apply {
             text = getString(R.string.save_and_reconnect)
-            isAllCaps = false
             textSize = 17f
-            setTextColor(MENU_BUTTON_TEXT)
-            backgroundTintList = ColorStateList.valueOf(MENU_ACCENT)
             minHeight = dp(52)
+            style(DiPlayButtonKind.PRIMARY, overlayPalette, overlay = true)
             setOnClickListener { saveSettingsAndReconnect() }
         }
         content.addView(
@@ -2849,13 +2844,11 @@ class CarPlayHostActivity : ComponentActivity() {
             ).apply { topMargin = dp(46) },
         )
 
-        val exitApplicationButton = Button(this).apply {
+        val exitApplicationButton = DiPlayButton(this).apply {
             text = getString(R.string.exit_application)
-            isAllCaps = false
             textSize = 17f
-            setTextColor(Color.WHITE)
-            backgroundTintList = ColorStateList.valueOf(MENU_DANGER)
             minHeight = dp(52)
+            style(DiPlayButtonKind.DANGER, overlayPalette, overlay = true)
             setOnClickListener { exitApplication() }
         }
         content.addView(
@@ -2866,16 +2859,18 @@ class CarPlayHostActivity : ComponentActivity() {
             ).apply { topMargin = dp(12) },
         )
 
-        content.addView(Button(this).apply {
+        content.addView(DiPlayButton(this).apply {
             text = getString(R.string.language_app_language)
-            isAllCaps = false
             textSize = 17f
+            minHeight = dp(52)
+            style(DiPlayButtonKind.SECONDARY, overlayPalette, overlay = true)
             setOnClickListener { AppLocale.showPicker(this@CarPlayHostActivity) }
         }, LinearLayout.LayoutParams(-1, -2).apply { topMargin = dp(12) })
 
-        val gestureButton = Button(this).apply {
-            isAllCaps = false
+        val gestureButton = DiPlayButton(this).apply {
             textSize = 17f
+            minHeight = dp(52)
+            style(DiPlayButtonKind.SECONDARY, overlayPalette, overlay = true)
             setOnClickListener {
                 gestureFingerCount = when (gestureFingerCount) { 0 -> 2; 4 -> 0; else -> gestureFingerCount + 1 }
                 text = settingsGestureButtonText()
@@ -2884,13 +2879,11 @@ class CarPlayHostActivity : ComponentActivity() {
         gestureButton.text = settingsGestureButtonText()
         content.addView(gestureButton, LinearLayout.LayoutParams(-1, -2).apply { topMargin = dp(12) })
 
-        val openDiPlaySettingsButton = Button(this).apply {
+        val openDiPlaySettingsButton = DiPlayButton(this).apply {
             text = "${getString(R.string.app_name)} ${getString(R.string.settings)}"
-            isAllCaps = false
             textSize = 17f
-            setTextColor(MENU_PRIMARY)
-            backgroundTintList = ColorStateList.valueOf(MENU_TRACK_OFF)
             minHeight = dp(52)
+            style(DiPlayButtonKind.SECONDARY, overlayPalette, overlay = true)
             setOnClickListener {
                 leaveSettingsMenu { showDiPlayHome("settings") }
             }
@@ -2921,12 +2914,10 @@ class CarPlayHostActivity : ComponentActivity() {
             ),
         )
         panel.addView(
-            Button(this).apply {
+            DiPlayButton(this).apply {
                 text = "X"
-                isAllCaps = false
                 textSize = 22f
-                setTextColor(MENU_PRIMARY)
-                backgroundTintList = ColorStateList.valueOf(MENU_TRACK_OFF)
+                style(DiPlayButtonKind.SECONDARY, overlayPalette, overlay = true)
                 contentDescription = getString(R.string.discard_changes_and_exit_settings)
                 minWidth = 0
                 minHeight = 0
@@ -3435,9 +3426,9 @@ class CarPlayHostActivity : ComponentActivity() {
             orientation = LinearLayout.VERTICAL
         }
         actions.addView(
-            Button(this).apply {
+            DiPlayButton(this).apply {
                 text = getString(R.string.choose_image)
-                isAllCaps = false
+                style(DiPlayButtonKind.SECONDARY, overlayPalette, overlay = true)
                 setOnClickListener {
                     externalActivityInProgress = true
                     launchCarButtonImagePicker(
@@ -3459,9 +3450,9 @@ class CarPlayHostActivity : ComponentActivity() {
             ),
         )
         actions.addView(
-            Button(this).apply {
+            DiPlayButton(this).apply {
                 text = getString(R.string.default_icon)
-                isAllCaps = false
+                style(DiPlayButtonKind.SECONDARY, overlayPalette, overlay = true)
                 setOnClickListener {
                     AirPlayPersistence.clearCustomAirPlayIcon(this@CarPlayHostActivity)
                     updateAirPlayIconPreview()
@@ -3655,17 +3646,17 @@ class CarPlayHostActivity : ComponentActivity() {
             orientation = LinearLayout.HORIZONTAL
         }
         buttons.addView(
-            Button(this).apply {
+            DiPlayButton(this).apply {
                 text = getString(R.string.set)
-                isAllCaps = false
+                style(DiPlayButtonKind.PRIMARY, overlayPalette, overlay = true)
                 setOnClickListener { openSafeAreaEditor() }
             },
             LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f),
         )
         buttons.addView(
-            Button(this).apply {
+            DiPlayButton(this).apply {
                 text = getString(R.string.reset)
-                isAllCaps = false
+                style(DiPlayButtonKind.SECONDARY, overlayPalette, overlay = true)
                 setOnClickListener { resetSafeAreaForCurrentSize() }
             },
             LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f).apply {
@@ -3742,17 +3733,17 @@ class CarPlayHostActivity : ComponentActivity() {
             setPadding(dp(16), dp(10), dp(16), dp(16))
         }
         controls.addView(
-            Button(this).apply {
+            DiPlayButton(this).apply {
                 text = getString(R.string.cancel)
-                isAllCaps = false
+                style(DiPlayButtonKind.SECONDARY, overlayPalette, overlay = true)
                 setOnClickListener { closeSafeAreaEditor() }
             },
             LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f),
         )
         controls.addView(
-            Button(this).apply {
+            DiPlayButton(this).apply {
                 text = getString(R.string.save)
-                isAllCaps = false
+                style(DiPlayButtonKind.PRIMARY, overlayPalette, overlay = true)
                 setOnClickListener { saveSafeAreaEditor() }
             },
             LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f).apply {
