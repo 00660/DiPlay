@@ -23,6 +23,7 @@ class FceClusterBridgeTest {
     fun setUp() {
         app = RuntimeEnvironment.getApplication()
         BydOutputSettings.setEnabled(app, true)
+        BydOutputSettings.setFceCluster(app, true)
         FceClusterBridge.resetForTest({ id, value -> writes += id to value; true }, app)
     }
 
@@ -46,6 +47,15 @@ class FceClusterBridgeTest {
     private val icon = FceClusterProperties.ICON
     private val icon2 = FceClusterProperties.ICON_SET_2
     private val distance = FceClusterProperties.DISTANCE
+
+    @Test
+    fun `nothing is written until the driver opts in`() {
+        BydOutputSettings.setFceCluster(app, false)
+        maneuver(index = 2, type = 1)
+        route(state = 1, distance = 178, current = 2)
+
+        assertEquals(emptyList<Pair<Int, Int>>(), writes)
+    }
 
     @Test
     fun `carplay maneuver reaches the cluster`() {

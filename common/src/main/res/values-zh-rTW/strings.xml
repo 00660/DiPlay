@@ -825,4 +825,6 @@
     <string name="settings_ambient_unavailable">唯讀檢查失敗：缺少既有 ADB 授權或支援的燈光介面。未儲存燈光設定。請停車後另行設定存取；本功能不啟用 ADB，也不請求授權。</string>
     <string name="settings_ambient_album">跟隨專輯封面</string>
     <string name="settings_ambient_album_description">按封面取色並近似匹配原車可用色號。灰黑或無封面時使用全部31色；大面積白色封面可使用白色或冷白。</string>
+    <string name="settings_fce_cluster_guidance">FCE 儀表導航（實驗性）</string>
+    <string name="settings_fce_cluster_guidance_description">在 FCE 平台車機上，透過車機的車輛服務把 CarPlay 轉向箭頭和到下一路口的距離顯示在儀表的導航畫面。僅在一輛車上測試過；如果儀表顯示異常，請關閉。</string>
 </resources>

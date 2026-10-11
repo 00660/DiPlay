@@ -8,8 +8,8 @@ import java.util.concurrent.TimeUnit
 
 /**
  * Publishes CarPlay arrows and distance to the instrument cluster of FCE head units through
- * [FceCarPropertyWriter], independently of the BYD outputs. Follows the navigation output switch
- * ([BydOutputSettings.enabled]).
+ * [FceCarPropertyWriter], independently of the BYD outputs. Needs both the navigation output switch
+ * ([BydOutputSettings.enabled]) and its own opt-in ([BydOutputSettings.fceCluster]).
  */
 internal object FceClusterBridge {
     private const val TAG = "DiPlay-FCE-Cluster"
@@ -54,7 +54,8 @@ internal object FceClusterBridge {
     // off mid-route, so check every second.
     private fun tick() = synchronized(lock) { if (context != null) refreshLocked() }
 
-    private fun enabledLocked(): Boolean = context?.let(BydOutputSettings::enabled) == true
+    private fun enabledLocked(): Boolean =
+        context?.let { BydOutputSettings.enabled(it) && BydOutputSettings.fceCluster(it) } == true
 
     private fun refreshLocked() {
         if (!enabledLocked()) return output.stop()

@@ -765,4 +765,6 @@
     <string name="settings_ambient_unavailable">فشل التحقق للقراءة فقط: تفويض ADB الموجود أو واجهة الإضاءة المدعومة غير متاحة. لم تُحفظ الإعدادات. اضبط الوصول بشكل منفصل أثناء الوقوف؛ هذه الميزة لا تفعّل ADB ولا تطلب التفويض.</string>
     <string name="settings_ambient_album">اتباع غلاف الألبوم</string>
     <string name="settings_ambient_album_description">يُطابق لون الغلاف تقريبياً مع ألوان السيارة المتاحة. تستخدم الأغلفة الرمادية أو السوداء أو المفقودة جميع الألوان الـ31؛ وقد تستخدم الأغلفة البيضاء غالباً الأبيض أو الأبيض البارد.</string>
+    <string name="settings_fce_cluster_guidance">الإرشاد في عدادات FCE (تجريبي)</string>
+    <string name="settings_fce_cluster_guidance_description">يعرض أسهم CarPlay ومسافة المنعطف التالي في واجهة الملاحة بلوحة العدادات على وحدات FCE، عبر الكتابة إلى خدمة المركبة في الوحدة. جُرّب على سيارة واحدة فقط؛ أوقفه إذا تصرفت لوحة العدادات بشكل غير متوقع.</string>
 </resources>

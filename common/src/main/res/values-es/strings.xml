@@ -765,4 +765,6 @@
     <string name="settings_ambient_unavailable">La comprobación de solo lectura falló: falta autorización ADB existente o una interfaz compatible. No se guardaron ajustes. Configura el acceso por separado con el vehículo estacionado; esta función no activa ADB ni solicita autorización.</string>
     <string name="settings_ambient_album">Seguir la portada del álbum</string>
     <string name="settings_ambient_album_description">Usa el color de la portada o colores cercanos disponibles del vehículo. Las portadas grises, negras o ausentes usan los 31 colores; las mayormente blancas pueden usar blanco o blanco frío.</string>
+    <string name="settings_fce_cluster_guidance">Indicaciones en el cuadro FCE (experimental)</string>
+    <string name="settings_fce_cluster_guidance_description">Muestra las flechas de CarPlay y la distancia al próximo giro en la vista de navegación del cuadro de instrumentos en unidades FCE, escribiendo en el servicio del vehículo de la unidad. Probado solo en un coche; desactívalo si el cuadro se comporta de forma inesperada.</string>
 </resources>

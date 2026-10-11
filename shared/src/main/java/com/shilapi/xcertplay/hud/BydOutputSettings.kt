@@ -21,6 +21,7 @@ object BydOutputSettings {
     private const val KEY_HUD_SONG = "hud_song"
     private const val KEY_CARPLAY_CALLS = "carplay_calls"
     private const val KEY_CARPLAY_CALL_CONTROLS = "carplay_call_controls_experimental"
+    private const val KEY_FCE_CLUSTER = "fce_cluster_guidance_experimental"
     private const val KEY_OEM_CLUSTER_HOLD = "oem_cluster_hold"
     private const val KEY_LEGACY_VEHICLE_PROBE = "legacy_vehicle_probe"
     const val DEFAULT_LOW_CHARGE_PERCENT = 20
@@ -152,6 +153,15 @@ object BydOutputSettings {
 
     /** Whether the head unit has the FCE vehicle-property service that feeds its cluster's navigation view. */
     fun fceClusterAvailable(): Boolean = FceClusterBridge.available()
+
+    /**
+     * Opt-in for [FceClusterBridge]: it writes vendor vehicle properties whose meaning was confirmed on one
+     * car only, and another head unit with the same service could read them differently.
+     */
+    fun fceCluster(context: Context): Boolean = prefs(context).getBoolean(KEY_FCE_CLUSTER, false)
+
+    fun setFceCluster(context: Context, enabled: Boolean) =
+        prefs(context).edit().putBoolean(KEY_FCE_CLUSTER, enabled).apply()
 
     /** Whether the head unit has a BYD navigation receiver or is a BYD head unit, so settings can show navigation/map options. */
     fun available(context: Context): Boolean =

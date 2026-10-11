@@ -2155,13 +2155,18 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
                 }
             }
         }
-        // FCE head units take the same navigation switch for their cluster's navigation view.
+        // FCE head units show this card for their cluster's navigation view, which has its own opt-in.
         val bydNavigation = BydOutputSettings.available(this)
         if (bydNavigation || BydOutputSettings.fceClusterAvailable()) filteredSection(content, SettingsSection.BYD_NAVIGATION,
             getString(R.string.byd_navigation), R.drawable.ic_dp_navigation) { card ->
             toggle(card, getString(R.string.navigation_on_hud_and_instrument_cluster),
                 getString(R.string.show_phone_navigation_arrows_distance_and_street_names_on),
                 com.shilapi.xcertplay.hud.BydOutputSettings.enabled(this)) { com.shilapi.xcertplay.hud.BydOutputSettings.setEnabled(this, it) }
+            if (BydOutputSettings.fceClusterAvailable()) {
+                toggle(card, getString(R.string.settings_fce_cluster_guidance),
+                    getString(R.string.settings_fce_cluster_guidance_description),
+                    BydOutputSettings.fceCluster(this)) { BydOutputSettings.setFceCluster(this, it) }
+            }
             if (BydOutputSettings.standaloneHudAvailable(this)) {
                 toggle(card, getString(R.string.song_on_hud), getString(R.string.song_on_hud_description),
                     BydOutputSettings.hudSong(this)) { BydOutputSettings.setHudSong(this, it) }
