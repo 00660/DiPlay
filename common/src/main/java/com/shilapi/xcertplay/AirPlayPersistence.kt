@@ -46,6 +46,7 @@ object AirPlayPersistence {
     private const val KEY_ADVANCED_AUDIO_CHANNEL_MAPPING = "advanced_audio_channel_mapping"
     private const val KEY_AUDIO_FOCUS_ENABLED = "audio_focus_enabled"
     private const val KEY_AUDIO_FOCUS_AUTO_YIELD = "audio_focus_auto_yield"
+    private const val KEY_DISABLE_MEDIA_KEY_AUDIO_FOCUS = "disable_media_key_audio_focus"
     private const val KEY_MEDIA_AUDIO_CHANNEL = "media_audio_channel"
     private const val KEY_NAVIGATION_AUDIO_CHANNEL = "navigation_audio_channel"
     private const val KEY_NAVIGATION_STREAM_TYPE = "navigation_stream_type"
@@ -69,10 +70,12 @@ object AirPlayPersistence {
     private const val KEY_FPS = "display_fps"
     private const val KEY_MEDIA_BUFFER_MS = "media_buffer_ms"
     private const val KEY_MAIN_BUFFERED_AUDIO = "main_buffered_audio"
+    private const val KEY_SPEECH_WITHOUT_8_16_KHZ = "speech_without_8_16_khz"
     private const val KEY_CAR_BLUETOOTH_AUDIO = "car_bluetooth_audio"
     private const val KEY_CALL_ECHO_CANCELLATION = "call_echo_cancellation"
     private const val KEY_CALL_VOICE_FILTER = "call_voice_filter"
     private const val KEY_SMOOTH_VIDEO = "smooth_video"
+    private const val KEY_MTK_DECODER_TUNING = "mtk_decoder_tuning"
     private const val KEY_DIRECT_VIDEO_OUTPUT = "direct_video_output"
     private const val KEY_LOW_LATENCY_DECODER = "low_latency_decoder"
     private const val KEY_FPS_COUNTER = "fps_counter"
@@ -241,6 +244,17 @@ object AirPlayPersistence {
     fun saveAudioFocusAutoYield(context: Context, enabled: Boolean) {
         context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit()
             .putBoolean(KEY_AUDIO_FOCUS_AUTO_YIELD, enabled)
+            .apply()
+    }
+
+    /** Opt-out for head units that route physical volume buttons to DiPlay's focus owner. */
+    fun loadDisableMediaKeyAudioFocus(context: Context): Boolean =
+        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+            .getBoolean(KEY_DISABLE_MEDIA_KEY_AUDIO_FOCUS, false)
+
+    fun saveDisableMediaKeyAudioFocus(context: Context, disabled: Boolean) {
+        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit()
+            .putBoolean(KEY_DISABLE_MEDIA_KEY_AUDIO_FOCUS, disabled)
             .apply()
     }
 
@@ -605,6 +619,14 @@ object AirPlayPersistence {
         context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().putBoolean(KEY_MAIN_BUFFERED_AUDIO, enabled).apply()
     }
 
+    /** Do not offer 8 and 16 kHz PCM for navigation prompts and alerts; applies at reconnect. */
+    fun loadSpeechWithout8And16Khz(context: Context): Boolean =
+        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getBoolean(KEY_SPEECH_WITHOUT_8_16_KHZ, false)
+
+    fun saveSpeechWithout8And16Khz(context: Context, enabled: Boolean) {
+        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().putBoolean(KEY_SPEECH_WITHOUT_8_16_KHZ, enabled).apply()
+    }
+
     /** Offer no CarPlay audio, so the iPhone keeps audio on its Bluetooth link with the car; applies at reconnect. */
     fun loadCarBluetoothAudio(context: Context): Boolean =
         context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getBoolean(KEY_CAR_BLUETOOTH_AUDIO, false)
@@ -618,6 +640,15 @@ object AirPlayPersistence {
 
     fun saveSmoothVideo(context: Context, enabled: Boolean) {
         context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().putBoolean(KEY_SMOOTH_VIDEO, enabled).apply()
+    }
+
+    /** MediaTek's legacy low-latency/no-reorder decoder path; opt-in and applied at reconnect. */
+    fun loadMtkDecoderTuning(context: Context): Boolean =
+        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getBoolean(KEY_MTK_DECODER_TUNING, false)
+
+    fun saveMtkDecoderTuning(context: Context, enabled: Boolean) {
+        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit()
+            .putBoolean(KEY_MTK_DECODER_TUNING, enabled).apply()
     }
 
     fun loadDirectVideoOutput(context: Context): Boolean =

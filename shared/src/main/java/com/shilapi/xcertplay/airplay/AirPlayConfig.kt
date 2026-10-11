@@ -91,6 +91,11 @@ data class AirPlayConfig(
      * ahead of time over TCP, so short Wi-Fi gaps do not interrupt it.
      */
     val mainBufferedAudio: Boolean = false,
+    /**
+     * Over USB the iPhone sent navigation prompts as 8 kHz PCM, the lowest rate offered for the
+     * default stream (#148, #341). When set, 8 and 16 kHz are not offered for default and alert audio.
+     */
+    val speechWithout8And16Khz: Boolean = false,
 )
 
 /** The offer, SETUP and controls must all honor the user's audio-output setting. */
