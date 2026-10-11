@@ -330,7 +330,7 @@
     <string name="s_1_0x">1.0倍</string>
     <string name="s_1_choose_your_connection">1 · 接続方法を選択</string>
     <string name="s_1_connect_a_computer_with_adb_installed_to_the_car_using">1. ADBをインストールしたパソコンを、既存のUSBまたは無線デバッグ接続で車載端末につなぎます。車載端末に確認が表示されたらデバッグを許可します。\n\n2. パソコンのターミナルで次のコマンドを実行します。</string>
-    <string name="s_1_open_car_hotspot_settings_turn_the_hotspot_on_and_sele">1. 車のホットスポット設定を開き、ホットスポットをオンにして、可能なら5 GHzを選びます。\n2. ネットワーク名とパスワードを下へ正確に入力します。\n3. ホットスポットをオンにしたままDiPlayへ戻ってください。</string>
+    <string name="s_1_open_car_hotspot_settings_turn_the_hotspot_on_and_sele">1. 車のホットスポット設定を開き、オンにして、可能なら5 GHzを選びます。\n2. ネットワーク名とパスワードを下へ正確に入力します。\n3. 接続するときもホットスポットをオンにしてください。DiPlayがBluetooth経由で接続情報を送り、iPhoneは自動的に参加します。</string>
     <string name="s_2_4_ghz">2.4 GHz</string>
     <string name="s_2_pair_your_iphone">2 · iPhoneをペアリング</string>
     <string name="s_300_ms_default">300 ms · 標準</string>
@@ -387,7 +387,7 @@
     <string name="settings_display_summary">外観・全画面・解像度・フレームレート</string>
     <string name="settings_audio_summary">スピーカー出力と音楽のバッファ</string>
     <string name="settings_navigation_summary">位置情報の送信と対応メーターへの案内表示</string>
-    <string name="settings_vehicle_summary">ハンドル位置・ステアリングスイッチ・車両ボタン・操作ジェスチャー</string>
+    <string name="settings_vehicle_summary">運転席側・ステアリングスイッチ・車両ボタン・CarPlayのジェスチャー</string>
     <string name="settings_reconnect_pending">保存しました。一部の変更はCarPlayの再接続後に有効になります。</string>
     <string name="settings_reconnect_now">今すぐ再接続</string>
     <string name="settings_byd_navigation_unavailable">この車載端末ではBYDメーターとHUDへの案内表示を利用できません。</string>
@@ -502,7 +502,7 @@
     <string name="turn_card_distance_km">%1$.1f km</string>
     <string name="turn_card_exit">出口%1$d</string>
     <string name="center_map_follows_dashboard">ホーム画面の地図をメーターと同期</string>
-    <string name="center_map_follows_dashboard_description">オン：ホーム画面の地図カードにメーターと同じ地図を表示します。オフ：ホーム画面のカードを隠し、メーターにだけ地図を表示します。</string>
+    <string name="center_map_follows_dashboard_description">オン：ホーム画面の地図カードにメーターと同じ地図を表示します。オフ：ホーム画面のカードを隠し、メーターにだけ地図を表示します。CarPlayのメイン画面は変更されません。</string>
     <string name="cluster_small_window_off">オフ</string>
     <string name="cluster_small_window_on">オン · 小画面用の位置を使用</string>
     <string name="cluster_small_window_auto">自動（実験的機能）</string>
@@ -578,7 +578,7 @@
     <string name="vehicle_field_charging">充電状態</string>
     <string name="adb_battery_reconnect">バッテリーの準備前にCarPlayを接続した場合は、「適用して再接続」を実行すると残量送信が有効になります。</string>
     <string name="wheel_speed_for_tunnels">トンネル内で車輪速度を使用</string>
-    <string name="wheel_speed_for_tunnels_description">iPhoneへの位置情報送信が有効な場合に、車輪速度とギア位置も送信します。トンネル内でもAppleマップが車両位置を推定しやすくなります。</string>
+    <string name="wheel_speed_for_tunnels_description">iPhoneへの位置情報送信が有効な場合、車輪速度とギア位置も送ります。トンネルや駐車場内でもAppleマップが車両位置を追跡しやすくなります。CarPlayを再接続すると反映されます。車載端末のネットワークADBが必要です。</string>
     <string name="video_while_parked">駐車中の動画再生</string>
     <string name="video_while_parked_description">iOS 27向けの機能です。車を駐車（シフト位置P）した状態では、iPhoneからCarPlayへ送った動画を車載画面で再生できます。P以外に切り替えるとプレーヤーを閉じます。ADBがない場合は映像再生を無効にし、音声のみiPhoneで再生します。Safariなどから送る通常のHTTPS動画には対応しますが、Apple TV+などFairPlayで保護された動画にはライセンスを持つレシーバーが必要なため再生できません。CarPlayを再接続すると反映されます。車載端末のネットワークADBが必要です。</string>
     <string name="cluster_song">メーターに曲を表示</string>
@@ -709,7 +709,7 @@
     <string name="carplay_calls_on_dashboard">CarPlayの通話をメーターに表示</string>
     <string name="settings_built_in_car_hotspot_recommended">車載ホットスポット（推奨）</string>
     <string name="settings_wifi_direct_auto_band">自動 · %1$s</string>
-    <string name="settings_wifi_direct_band_note">「自動 · 5 GHz」と「自動 · 2.4 GHz」では、指定した周波数帯を維持し、車載端末がチャンネルを選びます。対応しない周波数帯の場合は、切り替えずにメッセージを表示して接続を停止します。</string>
+    <string name="settings_wifi_direct_band_note">「自動 · 5 GHz」と「自動 · 2.4 GHz」では、Wi-Fi Directの周波数帯を固定し、車載端末がチャンネルを選びます。車載端末がその周波数帯に対応していない場合は、別の帯域へ切り替えず、メッセージを表示して接続を停止します。</string>
     <string name="carplay_calls_on_dashboard_description">CarPlayの着信中と通話中、BYD純正のCarPlayアプリと同様に発信者をメーターへ、通話時間をメーターとHUDへ表示します。通話中は車の送風量も下がります。変更はすぐに反映されます。車載端末のネットワークADBが必要です。</string>
     <string name="cluster_safe_area_edit">メーターのセーフエリア · 範囲を編集</string>
     <string name="cluster_safe_area_reset">メーターのセーフエリアをリセット</string>
@@ -895,7 +895,7 @@
     <string name="settings_hotspot_name_non_english">中国語など英数字以外の文字を含むホットスポット名では、CarPlayが「準備中」のままになる場合があります。一部の車載端末がiPhoneから検出できない形式で送信するためです。その場合はホットスポット名を英数字に変更してください。</string>
     <string name="settings_speech_without_low_rates">USBナビ案内の音声を明瞭にする（実験的機能）</string>
     <string name="settings_speech_without_low_rates_description">USBではiPhoneのナビ案内やSiriの応答が電話品質の8 kHz音声で送信される場合があります。8 kHzと16 kHzを使用候補から外し、より高い音質を選ばせます。案内音声が出なくなったらオフにしてください。CarPlayを再接続します。</string>
-    <string name="bluetooth_connections_not_real">この車載端末のAndroid Bluetoothは接続を報告しますが、iPhoneへ実際には通信が届きません。存在しないサービスへの接続も成功と表示されます。Bluetoothがメーカー独自のモジュールで処理され、アプリから利用できない可能性があります。</string>
+    <string name="bluetooth_connections_not_real">この車載端末のAndroid Bluetoothは接続中と報告しますが、iPhoneには実際の通信が届きません。存在しないサービスへの接続さえ成功と表示されます。メーカー独自のBluetoothモジュールをアプリが利用できないため、この端末ではワイヤレスCarPlayを使用できません。USB接続をお試しください。</string>
     <string name="settings_fce_cluster_guidance">FCEメーターへの案内表示（実験的機能）</string>
     <string name="settings_fce_cluster_guidance_description">FCE車載端末の車両サービスに情報を書き込み、CarPlayの案内矢印と次の曲がり角までの距離をメーターのナビ画面に表示します。実車検証は1台のみです。メーターに異常が起きたらオフにしてください。</string>
 </resources>

@@ -57,7 +57,7 @@
     <string name="hotspot_join_apply">自動接続情報を追加</string>
     <string name="hotspot_join_restore">保存済みホットスポットを復元</string>
     <string name="hotspot_join_working">確認または更新中… キャンセルした場合、結果確認のため再チェックが必要になることがあります。</string>
-    <string name="hotspot_join_confirm">停車中にCarPlayを切断し、先に車の設定でホットスポットをオフにしてください。この操作では保存済みのホットスポット構成だけを変更し、読み戻して検証します。その後は手動でホットスポットをオンにして電波情報を更新してください。接続中の端末は切断されます。</string>
+    <string name="hotspot_join_confirm">停車中にCarPlayを切断し、先に車の設定でホットスポットをオフにしてください。この操作では保存済みのホットスポット構成だけを変更し、読み戻して検証します。その後は手動でホットスポットをオンにして電波情報を更新してください。オフにすると接続中の端末も切断されます。元に戻せるよう、非公開のバックアップを保管してください。</string>
     <string name="hotspot_join_disconnect">ホットスポットを変更する前にCarPlayを切断してください。</string>
     <string name="hotspot_join_ready">対応する5 GHz構成です。非公開の完全バックアップを準備しました。ホットスポットはまだ変更していません。</string>
     <string name="hotspot_join_present">確認済みの情報はすでに存在します。重複追加は行いません。既存の項目に対してDiPlayは復元権限を持ちません。</string>
@@ -83,7 +83,7 @@
     <string name="picture_reset">画質をリセット</string>
     <string name="settings_language_summary">DiPlayで使用する言語を選択</string>
     <string name="platform21_cluster_mode">Platform 21メーター表示（実験的機能）</string>
-    <string name="platform21_cluster_description">2023年式Tang DM-iのコントローラー21向けです。標準ではオフです。検証済みの投影ディスプレイだけを使用し、中央寄せの半幅地図を維持します。純正メーターのモードや純正地図は変更しません。事前に許可済みのローカルADBが必要です。</string>
+    <string name="platform21_cluster_description">2023年式Tang DM-iのコントローラー21向けの機能です。初期状態ではオフです。検証済みの投影ディスプレイだけを使用し、中央寄せの半幅地図を維持します。純正メーターのモードや純正地図は変更しません。事前に許可されたローカルADBが必要です。設定を適用するとCarPlayが再接続されます。この統合機能は停車中の実車検証が必要です。</string>
     <string name="default_connection_mode">標準の接続方法</string>
     <string name="default_connection_last_used">前回使用した方法</string>
     <string name="default_connection_wireless">ワイヤレス</string>
