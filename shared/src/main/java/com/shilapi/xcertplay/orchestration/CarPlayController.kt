@@ -2426,48 +2426,32 @@ class CarPlayController(
             if (service != null && owner != null) closeBestEffort("AirPlay service") { service.detachWireless(owner) }
         }
 
-    private fun isBluetoothDeviceConnected(device: BluetoothDevice): Boolean {
-        val reflectionConnected = try {
-            val method = BluetoothDevice::class.java.getMethod("isConnected")
-            method.invoke(device) as? Boolean == true
-        } catch (_: ReflectiveOperationException) {
-            false
-        } catch (error: RuntimeException) {
-            Log.w(IphoneCarPlayConfiguration.TAG, "Could not read Bluetooth connection state via reflection", error)
-            false
-        }
-        if (reflectionConnected) return true
-
-        val adapter = bluetoothAdapter ?: return false
-        val sinkProfiles = intArrayOf(
-            BluetoothProfile.HEADSET,
-            BluetoothProfile.A2DP,
-            11, // BluetoothProfile.A2DP_SINK
-            16, // BluetoothProfile.HEADSET_CLIENT
-        )
-        for (profile in sinkProfiles) {
-            try {
-                if (adapter.getProfileConnectionState(profile) == BluetoothProfile.STATE_CONNECTED) {
-                    val connected = connectedBluetoothDevices(adapter, profile, BluetoothProfile::class.java)
-                    if (connected.any { it.address.equals(device.address, ignoreCase = true) }) {
-                        return true
-                    }
-                }
-            } catch (error: SecurityException) {
-                Log.w(IphoneCarPlayConfiguration.TAG, "Permission denied reading profile connection state ", error)
-            } catch (error: RuntimeException) {
-                Log.w(IphoneCarPlayConfiguration.TAG, "Error reading profile connection state ", error)
-            }
-        }
-        return false
+    private fun isBluetoothDeviceConnected(device: BluetoothDevice): Boolean = try {
+        val method = BluetoothDevice::class.java.getMethod("isConnected")
+        method.invoke(device) as? Boolean == true
+    } catch (error: ReflectiveOperationException) {
+        false
+    } catch (error: RuntimeException) {
+        Log.w(IphoneCarPlayConfiguration.TAG, "Could not read Bluetooth connection state", error)
+        false
     }
 
     private fun connectedBluetoothDevices(adapter: BluetoothAdapter): Set<BluetoothDevice> =
         buildSet {
             addAll(connectedBluetoothDevices(adapter, BluetoothProfile.HEADSET, BluetoothHeadset::class.java))
             addAll(connectedBluetoothDevices(adapter, BluetoothProfile.A2DP, BluetoothA2dp::class.java))
-            addAll(connectedBluetoothDevices(adapter, 11, BluetoothProfile::class.java)) // BluetoothProfile.A2DP_SINK
-            addAll(connectedBluetoothDevices(adapter, 16, BluetoothProfile::class.java)) // BluetoothProfile.HEADSET_CLIENT
+            // A head unit is the sink side of a phone's audio and calls, so the iPhone shows up under
+            // these hidden profiles. Asked only when connected: an absent profile service never
+            // answers the proxy request and would cost its full timeout.
+            for (profile in intArrayOf(PROFILE_A2DP_SINK, PROFILE_HEADSET_CLIENT)) {
+                val connected = try {
+                    adapter.getProfileConnectionState(profile) == BluetoothProfile.STATE_CONNECTED
+                } catch (error: SecurityException) {
+                    Log.w(IphoneCarPlayConfiguration.TAG, "Could not read Bluetooth profile $profile state", error)
+                    false
+                }
+                if (connected) addAll(connectedBluetoothDevices(adapter, profile, BluetoothProfile::class.java))
+            }
         }
 
     private fun <T : BluetoothProfile> connectedBluetoothDevices(
@@ -2848,6 +2832,9 @@ class CarPlayController(
         private const val TELEPHONY_DROP = 3
         private val diagnosticAttempts = AtomicInteger()
         private const val IAP2_IPHONE_UUID = "00000000-deca-fade-deca-deafdecacafe"
+        // BluetoothProfile.A2DP_SINK and HEADSET_CLIENT, hidden from the public SDK.
+        private const val PROFILE_A2DP_SINK = 11
+        private const val PROFILE_HEADSET_CLIENT = 16
         private const val HOTSPOT_START_TIMEOUT_MILLIS = 60_000L
         private const val WIFI_P2P_START_TIMEOUT_MILLIS = 20_000L
         private const val PAIR_TIMEOUT_MILLIS = 5 * 60_000L
