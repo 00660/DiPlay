@@ -446,7 +446,9 @@ class WheelKeyService : AccessibilityService() {
          * Android takes the service off the allowed list when the app is force-stopped (BYD's system does
          * that), and an update or a crash can leave it unbound. With a wheel key setting or the call controls on, DiPlay
          * puts it back over the car's adb, already allowed, when it is still not running a few seconds after
-         * DiPlay starts, so the keys work without a visit to the settings.
+         * a DiPlay screen opens or comes back to the front, so the keys work without a visit to the settings.
+         * The front check matters when the service stays unbound after the retries at startup: the keys
+         * stayed on "Allowed, starting…" with the car's adb working until DiPlay was restarted (#606).
          */
         fun restoreIfNeeded(context: Context) {
             val app = context.applicationContext
