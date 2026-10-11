@@ -437,10 +437,12 @@ class WheelKeyService : AccessibilityService() {
 
         /**
          * The call controls need the service too: outside the CarPlay screen the call key reaches DiPlay
-         * only through it, and without it BYD's window manager opens its own phone app instead.
+         * only through it, and without it BYD's window manager opens its own phone app instead. So does the
+         * watcher for other apps' calls, which runs only while something keeps DiPlay alive.
          */
         internal fun wanted(context: Context): Boolean = WheelZoomSettings.anyEnabled(context) ||
-            BydOutputSettings.carPlayCallControls(context) || NavigationWheelSettings.restoreAllowed(context)
+            BydOutputSettings.carPlayCallControls(context) || NavigationWheelSettings.restoreAllowed(context) ||
+            BydOutputSettings.phoneAudioRouteApps(context)
 
         /**
          * Android takes the service off the allowed list when the app is force-stopped (BYD's system does
