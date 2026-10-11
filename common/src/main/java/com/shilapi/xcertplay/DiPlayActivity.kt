@@ -88,7 +88,7 @@ import java.util.Locale
 import kotlin.math.roundToInt
 
 internal enum class SettingsCategory {
-    OVERVIEW, CONNECTION, DISPLAY, AUDIO, NAVIGATION, VEHICLE, LANGUAGE, ABOUT, DIAGNOSTICS, ADVANCED,
+    OVERVIEW, CONNECTION, DISPLAY, AUDIO, NAVIGATION, VEHICLE, LANGUAGE, DIAGNOSTICS, ADVANCED, ABOUT,
 }
 
 /** A settings card. Every entry needs one category in [SettingsInformationArchitecture]; see AGENTS.md. */
@@ -349,7 +349,6 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
         rememberLaunchAppearance()
         languagePreferenceAtCreate = AppLocale.preference(this)
         com.shilapi.xcertplay.hud.BydNavigationOutputs.onAppOpened(applicationContext)
-        WheelKeyService.restoreIfNeeded(this)
         WindowCompat.setDecorFitsSystemWindows(window, false)
         if (Build.VERSION.SDK_INT >= 28) {
             window.attributes = window.attributes.apply {
@@ -477,6 +476,7 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
 
     override fun onResume() {
         super.onResume()
+        WheelKeyService.restoreIfNeeded(this)
         applyFullscreenMode()
         // Returning from another activity can bring the head unit's own density back.
         if (enforceInterfaceSize()) render()
@@ -661,7 +661,6 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
                 "connection" -> connectionSetup(content)
                 "setup" -> setupGuide(content)
                 "settings" -> settingsCategoryContent(content)
-                "about" -> about(content)
                 else -> home(content)
             }
             scroll
@@ -757,10 +756,6 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
         }
         val returnCategory = connectionSettingsReturnCategory
         when {
-            page == "about" -> {
-                page = "settings"
-                settingsCategory = SettingsCategory.OVERVIEW
-            }
             page == "setup" && setupStep > SetupGuide.STEP_CAR -> setupStep--
             page == "setup" -> {
                 closeSetupGuide()
@@ -1188,8 +1183,7 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
     }
 
     private fun openSettingsCategory(category: SettingsCategory) {
-        if (category == SettingsCategory.ABOUT) page = "about"
-        else settingsCategory = category
+        settingsCategory = category
         render()
     }
 
@@ -1747,6 +1741,11 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
         }
         filteredSection(content, SettingsSection.EXPERIMENTAL_DISPLAY,
             getString(R.string.settings_experimental_display), R.drawable.ic_dp_display) { card ->
+            toggle(card, getString(R.string.settings_harman_fullscreen_experimental),
+                getString(R.string.settings_harman_fullscreen_experimental_description),
+                AirPlayPersistence.loadHarmanFullscreen(this)) { enabled ->
+                AirPlayPersistence.saveHarmanFullscreen(this, enabled)
+            }
             toggle(card, getString(R.string.split_screen_areas), getString(R.string.split_screen_areas_description),
                 SplitScreenSettings.enabled(this)) {
                 SplitScreenSettings.setEnabled(this, it)
@@ -1823,6 +1822,11 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
             toggle(card, getString(R.string.main_buffered_audio), getString(R.string.main_buffered_audio_description),
                 AirPlayPersistence.loadMainBufferedAudio(this)) {
                 AirPlayPersistence.saveMainBufferedAudio(this, it)
+                reconnectIfRunning()
+            }
+            toggle(card, getString(R.string.settings_speech_without_low_rates), getString(R.string.settings_speech_without_low_rates_description),
+                AirPlayPersistence.loadSpeechWithout8And16Khz(this)) {
+                AirPlayPersistence.saveSpeechWithout8And16Khz(this, it)
                 reconnectIfRunning()
             }
             toggle(card, getString(R.string.settings_car_bluetooth_audio), getString(R.string.settings_car_bluetooth_audio_description),
@@ -2177,8 +2181,7 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
     }
 
     private fun about(content: LinearLayout) {
-        content.addView(label(getString(R.string.diplay), 40, TEXT, true))
-        content.addView(label(getString(R.string.carplay_at_home_in_your_car), 20, MUTED).apply { setPadding(0, dp(8), 0, dp(24)) })
+        settingsPageTitle(content, getString(R.string.about_diplay), getString(R.string.carplay_at_home_in_your_car))
         section(content, getString(R.string.about_public_preview_prefix, version())) { card ->
             card.addView(label(getString(R.string.an_independent_carplay_receiver_for_android_head_units_wir), 17, TEXT))
             card.addView(updateRow())
@@ -2259,7 +2262,8 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
         updateRelease = release
         updateMessage = null
         updateStage = UpdateStage.AVAILABLE
-        page = "about"
+        page = "settings"
+        settingsCategory = SettingsCategory.ABOUT
         render()
     }
 
@@ -2349,7 +2353,7 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
 
     private fun refreshUpdateUi(generation: Int) {
         runOnUiThread {
-            if (generation != updateGeneration || isFinishing || isDestroyed || page != "about") return@runOnUiThread
+            if (generation != updateGeneration || isFinishing || isDestroyed || !(page == "settings" && settingsCategory == SettingsCategory.ABOUT)) return@runOnUiThread
             render()
         }
     }
@@ -3023,7 +3027,19 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
         password.setOnEditorActionListener { _, action, _ ->
             if (action == android.view.inputmethod.EditorInfo.IME_ACTION_DONE) { hideKeyboard(); true } else false
         }
-        fields.addView(ssid); fields.addView(password)
+        val nameWarning = label(getString(R.string.settings_hotspot_name_non_english), 14, WARNING)
+        fun updateNameWarning() {
+            nameWarning.visibility = if (!existingWifi &&
+                com.shilapi.xcertplay.orchestration.ManualHotspotValidation.nameMayNotReachIphone(ssid.text.toString())
+            ) View.VISIBLE else View.GONE
+        }
+        updateNameWarning()
+        ssid.addTextChangedListener(object : android.text.TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) = Unit
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) = Unit
+            override fun afterTextChanged(s: android.text.Editable?) = updateNameWarning()
+        })
+        fields.addView(ssid); fields.addView(nameWarning); fields.addView(password)
         fields.addView(CheckBox(dialogContext).apply {
             text = getString(R.string.show_password)
             setOnCheckedChangeListener { _, checked ->
@@ -4964,6 +4980,7 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
                     appendLine(StartupDiagnosticSnapshot.report(appContext))
                     appendLine("Startup settings: openAfterBoot=${AirPlayPersistence.loadAutoStartOnBoot(appContext)} " +
                         "connectWhenOpened=${DiPlayPreferences.autoConnect(appContext)}")
+                    appendLine(WheelKeyService.report(appContext))
                     appendLine()
                     appendLine(UpdateAvailability.report(appContext, System.currentTimeMillis()))
                     appendLine()
