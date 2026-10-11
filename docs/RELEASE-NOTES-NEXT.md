@@ -29,6 +29,7 @@ Changes through DiPlay 0.2.17 are documented in [0.2.17 release notes](RELEASE-N
 ## Vehicle
 
 - With **CarPlay call keys (experimental)** on, the wheel's next-track key answers and previous-track declines while a CarPlay call rings. The Song Pro DM-i's wheel has no dedicated answer key ([#272](https://github.com/shihabal3amri/DiPlay/issues/272)). The keys skip tracks as before at all other times. [#622](https://github.com/shihabal3amri/DiPlay/pull/622)
+- Show CarPlay arrows and the next-turn distance in the cluster's navigation view on head units built on the FCE/Coagent T7 platform, through their stock `fce_misc_service_hal_property` service, without ADB. Off by default: turn on **Guidance in the FCE cluster (experimental)** in the **Navigation on HUD and dashboard** card, which now also appears on these head units. See [BYD navigation](BYD_NAVIGATION.md#cluster-guidance-on-fce-head-units-needs-no-adb). The property path was confirmed in a car with Android Auto guidance; this CarPlay integration has not yet run in a car. [#599](https://github.com/shihabal3amri/DiPlay/pull/599)
 
 ## Settings
 
