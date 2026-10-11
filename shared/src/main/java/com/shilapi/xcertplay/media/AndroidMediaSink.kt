@@ -1438,7 +1438,7 @@ private class VideoDecoder(
                 "video decoder first input avcc=${nalus.size} annexB=${annexB.size}",
             )
         }
-        val index = VideoInputPump.acquire(
+        val index = DecoderInputPump.acquire(
             running = { running }, drain = { if (outputThread == null) drainOutput(codec) },
             dequeue = { codec.dequeueInputBuffer(INPUT_TIMEOUT_US) },
         )
@@ -2154,7 +2154,13 @@ private class AudioRenderer(
     private fun feedCodec(payload: ByteArray, presentationTimeUs: Long) {
         val codec = codec ?: run { decoderUnavailablePackets++; return }
         diagnosticStage = "decoder-input"
-        val index = codec.dequeueInputBuffer(INPUT_TIMEOUT_US)
+        // While a blocking track write holds this thread, decoded output fills up and the decoder
+        // stops taking input. Dropping the packet after one 10 ms wait cut ~21 ms of music every
+        // 10-20 s on DiLink 3.0 (#381); drain the output and keep waiting instead.
+        val index = DecoderInputPump.acquire(
+            running = { running }, drain = { drainCodec(codec) },
+            dequeue = { codec.dequeueInputBuffer(INPUT_TIMEOUT_US) },
+        )
         if (index < 0) {
             inputDropped++
             if (inputDropped == 1) {
