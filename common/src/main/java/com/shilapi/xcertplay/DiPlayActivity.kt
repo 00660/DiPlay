@@ -216,6 +216,9 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
     private var adbStatus: TextView? = null
     private var availableUpdate: UpdateRelease? = null
     private var updateSavedPath: String? = null
+    private var updateSavedUri: Uri? = null
+    /** Runs the check of the public update copy; tests run it inline. */
+    internal var updateInstallWorker: (Runnable) -> Unit = { Thread(it, "diplay-update-install").start() }
     @Volatile private var updateStage = UpdateStage.IDLE
     @Volatile private var updateGeneration = 0
     @Volatile private var updateProgress: Int? = null
@@ -2277,6 +2280,7 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
         lateinit var release: UpdateRelease
         updateStage = UpdateStage.DOWNLOADING
         updateSavedPath = null
+        updateSavedUri = null
         updateProgress = null
         updateMessage = null
         val generation = ++updateGeneration
@@ -2306,7 +2310,7 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
                 }
                 apkFile
             }.onFailure { directory.deleteRecursively() }
-            val savedPath = outcome.getOrNull()?.let { UpdateApkExport.copy(applicationContext, it) }
+            val saved = outcome.getOrNull()?.let { UpdateApkExport.copy(applicationContext, it) }
             runOnUiThread {
                 if (generation != updateGeneration || isFinishing || isDestroyed) {
                     directory.deleteRecursively()
@@ -2316,7 +2320,8 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
                     { file ->
                         updateRelease = release
                         updateFile = file
-                        updateSavedPath = savedPath
+                        updateSavedPath = saved?.path
+                        updateSavedUri = saved?.uri
                         updateStage = UpdateStage.READY
                         render()
                     },
@@ -2332,24 +2337,52 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
     }
 
     private fun installUpdate() {
-        val file = updateFile ?: return
-        // Before Oreo, the installer handles the global unknown-sources setting.
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O || packageManager.canRequestPackageInstalls()) {
-            installApk(file)
-        } else {
-            startActivity(Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES, Uri.parse("package:$packageName")))
-        }
+        // No unknown-sources pre-check: some head units answer its settings page with "Not supported yet".
+        // The chosen installer asks for that permission itself.
+        installApk(updateFile ?: return)
     }
 
     private fun installApk(file: File) {
-        val uri = FileProvider.getUriForFile(this, "$packageName.update-apks", file)
-        startActivity(
-            Intent(Intent.ACTION_VIEW).apply {
-                setDataAndType(uri, "application/vnd.android.package-archive")
-                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_ACTIVITY_NEW_TASK)
-            },
-        )
+        // The public copy lets file managers such as MT Manager open the APK. The private provider URI is the fallback,
+        // including when the driver deleted the public copy.
+        // The public copy is outside the app's control, so it must still match the verified file. Hashing two
+        // APKs takes seconds on a slow head unit, so it runs off the main thread.
+        val savedUri = updateSavedUri
+        val generation = updateGeneration
+        updateInstallWorker(Runnable {
+            val publicUri = savedUri?.takeIf { sameContent(it, file) }
+            runOnUiThread {
+                if (generation == updateGeneration && !isFinishing && !isDestroyed) startInstaller(file, publicUri)
+            }
+        })
     }
+
+    private fun startInstaller(file: File, publicUri: Uri?) {
+        val uri = publicUri ?: FileProvider.getUriForFile(this, "$packageName.update-apks", file)
+        val view = Intent(Intent.ACTION_VIEW).apply {
+            setDataAndType(uri, "application/vnd.android.package-archive")
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        }
+        // Ask only when several installers exist. A lone system installer opens directly, as before.
+        val installers = packageManager.queryIntentActivities(view, PackageManager.MATCH_DEFAULT_ONLY).size
+        val launch = if (installers > 1) Intent.createChooser(view, null) else view
+        val outcome = "${if (installers > 1) "chooser" else "direct"} uri=${if (publicUri != null) "public" else "provider"} installers=$installers"
+        try {
+            startActivity(launch.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+            Log.i("DiPlay-Update", "install started: $outcome")
+            UpdateAvailability.recordInstall(applicationContext, System.currentTimeMillis(), outcome)
+        } catch (failure: RuntimeException) {
+            Log.w("DiPlay-Update", "install failed to start: $outcome", failure)
+            UpdateAvailability.recordInstall(applicationContext, System.currentTimeMillis(), "$outcome failed=${failure.javaClass.simpleName}")
+            updateMessage = getString(R.string.update_failed)
+            render()
+        }
+    }
+
+    private fun sameContent(uri: Uri, verified: File): Boolean = runCatching {
+        val copy = contentResolver.openInputStream(uri)?.use { UpdateChecksums.sha256Hex(it) }
+        copy != null && copy == UpdateChecksums.sha256Hex(verified)
+    }.getOrDefault(false)
 
     private fun refreshUpdateUi(generation: Int) {
         runOnUiThread {
