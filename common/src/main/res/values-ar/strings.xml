@@ -765,4 +765,10 @@
     <string name="settings_ambient_unavailable">فشل التحقق للقراءة فقط: تفويض ADB الموجود أو واجهة الإضاءة المدعومة غير متاحة. لم تُحفظ الإعدادات. اضبط الوصول بشكل منفصل أثناء الوقوف؛ هذه الميزة لا تفعّل ADB ولا تطلب التفويض.</string>
     <string name="settings_ambient_album">اتباع غلاف الألبوم</string>
     <string name="settings_ambient_album_description">يُطابق لون الغلاف تقريبياً مع ألوان السيارة المتاحة. تستخدم الأغلفة الرمادية أو السوداء أو المفقودة جميع الألوان الـ31؛ وقد تستخدم الأغلفة البيضاء غالباً الأبيض أو الأبيض البارد.</string>
+    <string name="settings_cluster_speedometer">عداد سرعة لوحة العدادات (تجريبي)</string>
+    <string name="settings_cluster_speedometer_description">يعرض سرعة السيارة عبر ADB المصرح به. يختفي إذا كانت القراءة غير متاحة أو قديمة. تُطبّق التغييرات فورًا.</string>
+    <string name="settings_cluster_speedometer_horizontal">الموضع الأفقي لعداد السرعة</string>
+    <string name="settings_cluster_speedometer_vertical">الموضع العمودي لعداد السرعة</string>
+    <string name="settings_cluster_speedometer_size">حجم عداد السرعة</string>
+    <string name="settings_cluster_speedometer_opacity">عتامة عداد السرعة</string>
 </resources>

@@ -765,4 +765,10 @@
     <string name="settings_ambient_unavailable">La comprobación de solo lectura falló: falta autorización ADB existente o una interfaz compatible. No se guardaron ajustes. Configura el acceso por separado con el vehículo estacionado; esta función no activa ADB ni solicita autorización.</string>
     <string name="settings_ambient_album">Seguir la portada del álbum</string>
     <string name="settings_ambient_album_description">Usa el color de la portada o colores cercanos disponibles del vehículo. Las portadas grises, negras o ausentes usan los 31 colores; las mayormente blancas pueden usar blanco o blanco frío.</string>
+    <string name="settings_cluster_speedometer">Velocímetro del cluster (experimental)</string>
+    <string name="settings_cluster_speedometer_description">Muestra la velocidad real mediante ADB autorizado. Se oculta si el dato no está disponible o queda desactualizado. Los cambios se aplican al momento.</string>
+    <string name="settings_cluster_speedometer_horizontal">Posición horizontal del velocímetro</string>
+    <string name="settings_cluster_speedometer_vertical">Posición vertical del velocímetro</string>
+    <string name="settings_cluster_speedometer_size">Tamaño del velocímetro</string>
+    <string name="settings_cluster_speedometer_opacity">Opacidad del velocímetro</string>
 </resources>

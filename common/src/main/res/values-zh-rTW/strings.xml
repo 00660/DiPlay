@@ -825,4 +825,10 @@
     <string name="settings_ambient_unavailable">唯讀檢查失敗：缺少既有 ADB 授權或支援的燈光介面。未儲存燈光設定。請停車後另行設定存取；本功能不啟用 ADB，也不請求授權。</string>
     <string name="settings_ambient_album">跟隨專輯封面</string>
     <string name="settings_ambient_album_description">按封面取色並近似匹配原車可用色號。灰黑或無封面時使用全部31色；大面積白色封面可使用白色或冷白。</string>
+    <string name="settings_cluster_speedometer">儀表板速度計（實驗性）</string>
+    <string name="settings_cluster_speedometer_description">透過已授權的 ADB 顯示車輛速度。讀數無法取得或過期時隱藏。變更立即生效。</string>
+    <string name="settings_cluster_speedometer_horizontal">速度計水平位置</string>
+    <string name="settings_cluster_speedometer_vertical">速度計垂直位置</string>
+    <string name="settings_cluster_speedometer_size">速度計大小</string>
+    <string name="settings_cluster_speedometer_opacity">速度計不透明度</string>
 </resources>

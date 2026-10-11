@@ -777,4 +777,10 @@
     <string name="settings_ambient_unavailable">Перевірку без запису не пройдено: немає наявної авторизації ADB або відповідного інтерфейсу. Налаштування не збережено. Налаштуйте доступ окремо на стоянці; функція не вмикає ADB і не запитує авторизацію.</string>
     <string name="settings_ambient_album">Колір обкладинки альбому</string>
     <string name="settings_ambient_album_description">Колір обкладинки приблизно зіставляється з доступними кольорами автомобіля. Для сірої, чорної або відсутньої обкладинки використовуються всі 31 колір; для переважно білої — білий або холодний білий.</string>
+    <string name="settings_cluster_speedometer">Спідометр панелі приладів (експериментально)</string>
+    <string name="settings_cluster_speedometer_description">Показує швидкість автомобіля через авторизований ADB. Приховується, якщо дані недоступні або застарілі. Зміни застосовуються одразу.</string>
+    <string name="settings_cluster_speedometer_horizontal">Положення спідометра по горизонталі</string>
+    <string name="settings_cluster_speedometer_vertical">Положення спідометра по вертикалі</string>
+    <string name="settings_cluster_speedometer_size">Розмір спідометра</string>
+    <string name="settings_cluster_speedometer_opacity">Непрозорість спідометра</string>
 </resources>
