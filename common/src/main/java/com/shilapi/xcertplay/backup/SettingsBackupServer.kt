@@ -27,11 +27,16 @@ class SettingsBackupServer(
     private var token: String = ""
     @Volatile private var closed = true
     var onImported: ((SettingsImportOutcome) -> Unit)? = null
+    /** Called on the server thread when nobody used the page for [idleTimeoutMillis]. */
+    var onIdle: (() -> Unit)? = null
+    var idleTimeoutMillis = IDLE_TIMEOUT_MILLIS
 
     fun start(): SettingsBackupEndpoint? {
         val bound = runCatching {
             ServerSocket().apply {
                 reuseAddress = true
+                // Anyone on the car's network can reach it, so it does not wait for them forever.
+                soTimeout = idleTimeoutMillis
                 bind(InetSocketAddress(0), BACKLOG)
             }
         }.getOrNull() ?: return null
@@ -53,7 +58,17 @@ class SettingsBackupServer(
 
     private fun loop() {
         while (!closed) {
-            val socket = runCatching { server?.accept() }.getOrNull() ?: break
+            val socket = try {
+                server?.accept()
+            } catch (_: SocketTimeoutException) {
+                if (!closed) {
+                    stop()
+                    onIdle?.invoke()
+                }
+                null
+            } catch (_: Exception) {
+                null
+            } ?: break
             handle(socket)
         }
     }
@@ -132,6 +147,7 @@ class SettingsBackupServer(
 
     companion object {
         private const val BACKLOG = 4
+        const val IDLE_TIMEOUT_MILLIS = 10 * 60_000
         private const val MAX_REQUEST = 2 shl 20
         const val EXPORT_FILE = "diplay-settings.json"
 

@@ -12,25 +12,32 @@ object SettingsBackupCodec {
     const val FORMAT = "diplay-settings"
     const val VERSION = 1
 
-    private val SENSITIVE_KEYS = setOf(
-        "identity_private",
-        "identity_public",
-        "pairing_id",
-        "pairing_ids",
-        "lockdown_host_id",
-        "lockdown_system_buid",
-        "lockdown_wifi_mac",
-        "lockdown_device_public",
-        "lockdown_device_cert",
-        "lockdown_host_private",
-        "lockdown_host_cert",
-        "lockdown_root_private",
-        "lockdown_root_cert",
-        "manual_hotspot_passphrase",
-        "remote_mfi_server",
-        "remote_mfi_token",
-        "mfi_i2c_path",
+    /**
+     * The settings of the main file that travel, by name. That file also holds the iPhones' pairing keys
+     * (`pairing.<id>`), lockdown records, the authentication target and the car's hotspot name and
+     * passphrase. An imported file must never set those: a pairing key from someone else's file would make
+     * DiPlay trust their device. So a key travels only once it is listed here; car-specific values (the
+     * detected screen size, the car's hotspot) and consents (sharing the map with other apps) stay out too.
+     */
+    private val AIRPLAY_KEYS = setOf(
+        "display_scale_tenths", "ui_scale_percent", "hevc_enabled", "hevc_software_decoder",
+        "advanced_audio_channel_mapping", "audio_focus_enabled", "audio_focus_auto_yield",
+        "disable_media_key_audio_focus", "media_audio_channel", "navigation_audio_channel",
+        "navigation_stream_type", "wireless_enabled", "wireless_hotspot_mode", "wifi_p2p_preferred_channel",
+        "manual_hotspot_band", "manual_hotspot_channel", "manual_hotspot_security", "app_appearance",
+        "ambient_lux_threshold", "display_fps", "media_buffer_ms", "main_buffered_audio",
+        "speech_without_8_16_khz", "car_bluetooth_audio", "call_echo_cancellation", "call_voice_filter",
+        "smooth_video", "direct_video_output", "low_latency_decoder", "mtk_decoder_tuning", "fps_counter",
+        "adb_cluster_activity_enabled", "center_map_overlay", "center_map_auto_hide",
+        "center_map_follows_dashboard", "settings_gesture_fingers", "display_width_physical_mm",
+        "display_physical_size_basis", "right_hand_drive", "hide_top_bar", "hide_bottom_bar",
+        "harman_fullscreen", "safe_area_draw_outside", "main_display_disable_safe_area",
+        "adapt_pip_resolution", "auto_start_on_boot", "bt_suspend_during_carplay", "hide_byd_call_popup",
+        "bt_suspend_delay_seconds", "location_reporting_enabled", "external_controller", "usb_charging_current",
     )
+
+    /** Families of layout settings with many keys and nothing sensitive in them. */
+    private val AIRPLAY_PREFIXES = listOf("cluster_", "carplay_night_")
     private val DIPLAY_KEYS = setOf(
         "auto_connect",
         "connect_on_phone_bluetooth",
@@ -42,7 +49,7 @@ object SettingsBackupCodec {
         "settings_gesture_fingers",
     )
     private val FILES = mapOf(
-        "xcertplay_airplay" to Policy.Deny(SENSITIVE_KEYS),
+        "xcertplay_airplay" to Policy.Allow(AIRPLAY_KEYS, AIRPLAY_PREFIXES),
         "diplay" to Policy.Allow(DIPLAY_KEYS),
         "carplay_picture" to Policy.All,
         "diplay_car_hotspot" to Policy.All,
@@ -55,12 +62,8 @@ object SettingsBackupCodec {
             override fun includes(key: String) = true
         }
 
-        data class Allow(val keys: Set<String>) : Policy {
-            override fun includes(key: String) = key in keys
-        }
-
-        data class Deny(val keys: Set<String>) : Policy {
-            override fun includes(key: String) = key !in keys
+        data class Allow(val keys: Set<String>, val prefixes: List<String> = emptyList()) : Policy {
+            override fun includes(key: String) = key in keys || prefixes.any(key::startsWith)
         }
     }
 

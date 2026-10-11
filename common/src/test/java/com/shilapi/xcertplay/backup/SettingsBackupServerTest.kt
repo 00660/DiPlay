@@ -56,6 +56,22 @@ class SettingsBackupServerTest {
     }
 
     @Test
+    fun stopsByItselfWhenNobodyUsesThePage() {
+        val idle = java.util.concurrent.CountDownLatch(1)
+        val quiet = SettingsBackupServer(page = ByteArray(0), export = { ByteArray(0) },
+            import = { SettingsImportOutcome(0, 0, invalid = false) })
+        quiet.idleTimeoutMillis = 200
+        quiet.onIdle = { idle.countDown() }
+        val started = quiet.start()!!
+        try {
+            assertTrue(idle.await(5, java.util.concurrent.TimeUnit.SECONDS))
+            assertTrue(runCatching { Socket("127.0.0.1", started.port).close() }.isFailure)
+        } finally {
+            quiet.stop()
+        }
+    }
+
+    @Test
     fun servesThePageOnlyUnderTheTokenPath() {
         val (status, body) = get("/b/${endpoint.token}/")
         assertEquals(200, status)
