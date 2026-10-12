@@ -56,6 +56,7 @@ import android.widget.EditText
 import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.LinearLayout
+import android.widget.HorizontalScrollView
 import android.widget.RadioButton
 import android.widget.RadioGroup
 import android.widget.ScrollView
@@ -340,6 +341,7 @@ class CarPlayHostActivity : ComponentActivity() {
     private var picturePanelGeneration = 0
     private var gestureOverlay: View? = null
     private var settingsMenu: View? = null
+    private var settingsMenuCategoryKey = "connection"
     private var mfiTargetGroup: RadioGroup? = null
     private var mfiI2cFields: View? = null
     private var mfiRemoteFields: View? = null
@@ -2539,9 +2541,11 @@ class CarPlayHostActivity : ComponentActivity() {
 
     private fun buildSettingsMenu(): View {
         val overlay = object : FrameLayout(this) {
+            var fitNavigation: ((Int) -> Unit)? = null
             override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
                 getChildAt(0)?.let { panel ->
                     panel.layoutParams.width = settingsMenuWidth(MeasureSpec.getSize(widthMeasureSpec))
+                    fitNavigation?.invoke(panel.layoutParams.width)
                     val availableHeight = MeasureSpec.getSize(heightMeasureSpec)
                     panel.layoutParams.height = minOf(
                         availableHeight * SWIPE_PANEL_HEIGHT_PERCENT / 100,
@@ -2560,12 +2564,15 @@ class CarPlayHostActivity : ComponentActivity() {
             clipToOutline = true
             elevation = dp(SWIPE_PANEL_ELEVATION_DP).toFloat()
         }
-        val content = LinearLayout(this).apply {
+        val pages = LinkedHashMap<String, LinearLayout>()
+        fun newPage(key: String) = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             gravity = Gravity.CENTER_HORIZONTAL
             setPadding(dp(SWIPE_CHROME_PADDING_DP), dp(SWIPE_CONTENT_TOP_PADDING_DP),
                 dp(SWIPE_CHROME_PADDING_DP), dp(SWIPE_CONTENT_BOTTOM_PADDING_DP))
+            pages[key] = this
         }
+        var content = newPage("connection")
         if (sessionDisplay?.viewAreas?.sidePanel() != null) {
             content.addView(DiPlayButton(this).apply {
                 text = getString(if (sidePanelShown) R.string.side_panel_full_screen else R.string.side_panel_show)
@@ -2663,6 +2670,7 @@ class CarPlayHostActivity : ComponentActivity() {
             ).apply { topMargin = dp(12) },
         )
 
+        content = newPage("navigation")
         content.addView(
             settingsCategoryHeader(getString(R.string.settings_navigation)),
             LinearLayout.LayoutParams(
@@ -2679,6 +2687,7 @@ class CarPlayHostActivity : ComponentActivity() {
         )
 
         if (advancedAudioChannelMappingSupported) {
+            content = newPage("audio")
             content.addView(
                 settingsCategoryHeader(getString(R.string.audio)),
                 LinearLayout.LayoutParams(
@@ -2706,6 +2715,7 @@ class CarPlayHostActivity : ComponentActivity() {
             )
         }
 
+        content = newPage("vehicle")
         content.addView(
             settingsCategoryHeader(getString(R.string.settings_vehicle)),
             LinearLayout.LayoutParams(
@@ -2748,6 +2758,7 @@ class CarPlayHostActivity : ComponentActivity() {
                 ViewGroup.LayoutParams.WRAP_CONTENT,
             ).apply { topMargin = dp(26) },
         )
+        content = newPage("display")
         content.addView(
             settingsCategoryHeader(getString(R.string.settings_display)),
             LinearLayout.LayoutParams(
@@ -2893,6 +2904,16 @@ class CarPlayHostActivity : ComponentActivity() {
             ).apply { topMargin = dp(12) },
         )
 
+        val preview = menuText("", 17f, MENU_SECONDARY)
+        content.addView(
+            preview,
+            LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+            ).apply { topMargin = dp(30) },
+        )
+
+        content = newPage("more")
         content.addView(
             settingsCategoryHeader(getString(R.string.diagnostics)),
             LinearLayout.LayoutParams(
@@ -2928,15 +2949,6 @@ class CarPlayHostActivity : ComponentActivity() {
                 ).apply { topMargin = dp(12) },
             )
         }
-
-        val preview = menuText("", 17f, MENU_SECONDARY)
-        content.addView(
-            preview,
-            LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-            ).apply { topMargin = dp(30) },
-        )
 
         val save = DiPlayButton(this).apply {
             text = getString(R.string.save_and_reconnect)
@@ -2999,16 +3011,117 @@ class CarPlayHostActivity : ComponentActivity() {
             ).apply { topMargin = dp(30) },
         )
 
+        val pageHost = FrameLayout(this)
+        val selectedPage = settingsMenuCategoryKey.takeIf(pages::containsKey) ?: "connection"
+        pages.forEach { (key, page) ->
+            page.visibility = if (key == selectedPage) View.VISIBLE else View.GONE
+            pageHost.addView(page, FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT))
+        }
         val scroll = ScrollView(this).apply {
             isFillViewport = true
             clipToPadding = false
             addView(
-                content,
+                pageHost,
                 ViewGroup.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT,
                     ViewGroup.LayoutParams.WRAP_CONTENT,
                 ),
             )
+        }
+        val categories = listOf(
+            "connection" to R.string.connection,
+            "navigation" to R.string.settings_navigation,
+        ) + (if (advancedAudioChannelMappingSupported) listOf("audio" to R.string.audio) else emptyList()) + listOf(
+            "vehicle" to R.string.settings_vehicle,
+            "display" to R.string.settings_display,
+            "more" to R.string.settings_more,
+        )
+        val categoryButtons = mutableListOf<Pair<String, DiPlayButton>>()
+        lateinit var chips: HorizontalScrollView
+        fun selectCategory(key: String) {
+            settingsMenuCategoryKey = key
+            pages.forEach { (candidate, page) ->
+                page.visibility = if (candidate == key) View.VISIBLE else View.GONE
+            }
+            categoryButtons.forEach { (candidate, button) ->
+                button.style(if (candidate == key) DiPlayButtonKind.PRIMARY else DiPlayButtonKind.SECONDARY,
+                    overlayPalette, overlay = true)
+            }
+            scroll.scrollTo(0, 0)
+            chips.requestLayout()
+        }
+        fun categoryButton(key: String, title: Int) = DiPlayButton(this).apply {
+            text = getString(title)
+            textSize = 16f
+            minHeight = dp(SWIPE_CATEGORY_ACTION_HEIGHT_DP)
+            categoryButtons += key to this
+            style(if (key == selectedPage) DiPlayButtonKind.PRIMARY else DiPlayButtonKind.SECONDARY,
+                overlayPalette, overlay = true)
+            setOnClickListener { selectCategory(key) }
+        }
+        val rail = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(dp(SWIPE_CHROME_PADDING_DP), dp(SWIPE_CHROME_PADDING_DP),
+                dp(SWIPE_CHROME_PADDING_DP), dp(SWIPE_CHROME_PADDING_DP))
+            categories.forEach { (key, title) ->
+                addView(categoryButton(key, title), LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply {
+                    bottomMargin = dp(SWIPE_ACTION_GAP_DP)
+                })
+            }
+        }
+        val railScroll = ScrollView(this).apply {
+            isFillViewport = true
+            setBackgroundColor(ColorUtils.blendARGB(MENU_BACKGROUND, overlayPalette.surface, 0.55f))
+            addView(rail)
+        }
+        val chipRow = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            setPadding(dp(SWIPE_CHROME_PADDING_DP), dp(SWIPE_ACTION_GAP_DP),
+                dp(SWIPE_CHROME_PADDING_DP), dp(SWIPE_ACTION_GAP_DP))
+            categories.forEach { (key, title) ->
+                addView(categoryButton(key, title), LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply {
+                    marginEnd = dp(SWIPE_ACTION_GAP_DP)
+                })
+            }
+        }
+        chips = object : HorizontalScrollView(this) {
+            override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
+                super.onLayout(changed, left, top, right, bottom)
+                val selectedIndex = categories.indexOfFirst { it.first == settingsMenuCategoryKey }
+                if (selectedIndex >= 0) {
+                    scrollTo((chipRow.getChildAt(selectedIndex).left - dp(SWIPE_CHROME_PADDING_DP))
+                        .coerceAtLeast(0), 0)
+                }
+            }
+        }.apply {
+            isHorizontalScrollBarEnabled = false
+            setBackgroundColor(ColorUtils.blendARGB(MENU_BACKGROUND, overlayPalette.surface, 0.55f))
+            addView(chipRow)
+        }
+        val body = LinearLayout(this)
+        var railShown: Boolean? = null
+        overlay.fitNavigation = { panelWidth ->
+            val showRail = panelWidth >= dp(SWIPE_CATEGORY_RAIL_MIN_WIDTH_DP)
+            if (railShown != showRail) {
+                railShown = showRail
+                body.removeAllViews()
+                (scroll.parent as? ViewGroup)?.removeView(scroll)
+                body.orientation = if (showRail) LinearLayout.HORIZONTAL else LinearLayout.VERTICAL
+                if (showRail) {
+                    body.addView(railScroll, LinearLayout.LayoutParams(dp(SWIPE_CATEGORY_RAIL_WIDTH_DP),
+                        ViewGroup.LayoutParams.MATCH_PARENT))
+                    body.addView(scroll, LinearLayout.LayoutParams(0,
+                        ViewGroup.LayoutParams.MATCH_PARENT, 1f))
+                } else {
+                    body.addView(chips, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.WRAP_CONTENT))
+                    body.addView(scroll, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                        0, 1f))
+                }
+            }
         }
         val headerTitle = menuText(getString(R.string.carplay_settings), 20f, MENU_PRIMARY, bold = true).apply {
             maxLines = 1
@@ -3055,7 +3168,7 @@ class CarPlayHostActivity : ComponentActivity() {
             orientation = LinearLayout.VERTICAL
             addView(header, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT))
-            addView(scroll, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f))
+            addView(body, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f))
             addView(footer, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT))
         }, FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
@@ -3068,6 +3181,7 @@ class CarPlayHostActivity : ComponentActivity() {
                 Gravity.CENTER,
             ),
         )
+        overlay.fitNavigation?.invoke(settingsMenuWidth(resources.displayMetrics.widthPixels))
         resolutionValueView = resolutionValue
         resolutionPreviewView = preview
         this.hotspotStatusView = hotspotStatusView
@@ -6215,6 +6329,9 @@ class CarPlayHostActivity : ComponentActivity() {
         const val SWIPE_CONTENT_BOTTOM_PADDING_DP = 36
         const val SWIPE_ACTION_HEIGHT_DP = 52
         const val SWIPE_ACTION_GAP_DP = 8
+        const val SWIPE_CATEGORY_ACTION_HEIGHT_DP = 48
+        const val SWIPE_CATEGORY_RAIL_WIDTH_DP = 208
+        const val SWIPE_CATEGORY_RAIL_MIN_WIDTH_DP = 640
         const val SWIPE_SCRIM_COLOR = 0xB3000000.toInt()
         val NO_VIDEO_BACKGROUND = Color.rgb(0x16, 0x16, 0x18)
     }
