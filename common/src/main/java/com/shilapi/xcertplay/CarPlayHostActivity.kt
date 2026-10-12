@@ -5751,16 +5751,30 @@ class CarPlayHostActivity : ComponentActivity() {
                 if (!texture.isAttachedToWindow) return true
                 removeVideoSurfaceProbe()
                 if (isDestroyed || videoView !== texture) return true
-                val mode = carPlayVideoSurfaceMode(texture.isHardwareAccelerated, smoothVideo, directVideoOutput)
+                val unsafeDecoder = textureUnsafeVideoDecoder()
+                val mode = carPlayVideoSurfaceMode(
+                    texture.isHardwareAccelerated, smoothVideo, directVideoOutput, textureUnsafeDecoder = unsafeDecoder != null)
                 appendLog("Video output mode=$mode windowHardwareAccelerated=${texture.isHardwareAccelerated} " +
-                    "smoothVideo=$smoothVideo directVideoOutput=$directVideoOutput")
+                    "smoothVideo=$smoothVideo directVideoOutput=$directVideoOutput textureUnsafeDecoder=${unsafeDecoder ?: "none"}")
                 if (mode == CarPlayVideoSurfaceMode.TEXTURE) return true
-                useFallbackVideoSurface(texture)
+                useFallbackVideoSurface(texture, unsafeDecoder)
                 return false // Measure the replacement before drawing the software window.
             }
         }
         videoSurfaceProbe = probe
         texture.viewTreeObserver.addOnPreDrawListener(probe)
+    }
+
+    /** The default H.264 decoder, and the HEVC one when HEVC is on, if its pictures cannot be textures. */
+    private fun textureUnsafeVideoDecoder(): String? = try {
+        val decoders = MediaCodecList(MediaCodecList.REGULAR_CODECS).codecInfos
+            .filter { !it.isEncoder }
+            .map { VideoDecoderInfo(it.name, it.supportedTypes.toList()) }
+        val mimes = listOfNotNull(MediaFormat.MIMETYPE_VIDEO_AVC, MediaFormat.MIMETYPE_VIDEO_HEVC.takeIf { hevcEnabled })
+        textureUnsafeDecoder(decoders, mimes)
+    } catch (error: RuntimeException) {
+        appendLog("Video decoder list unavailable: ${error.message}")
+        null
     }
 
     private fun removeVideoSurfaceProbe() {
@@ -5769,7 +5783,7 @@ class CarPlayHostActivity : ComponentActivity() {
         videoSurfaceProbe = null
     }
 
-    private fun useFallbackVideoSurface(texture: TextureView) {
+    private fun useFallbackVideoSurface(texture: TextureView, unsafeDecoder: String?) {
         val root = texture.parent as? FrameLayout ?: return
         val index = root.indexOfChild(texture)
         val viewport = FrameLayout(this).apply { clipChildren = true }
@@ -5800,6 +5814,9 @@ class CarPlayHostActivity : ComponentActivity() {
                 "starting at ${smoothVideoDelayMillis(fps)} ms; picture adjustments unavailable"
         } else if (directVideoOutput) {
             "Using SurfaceView video output: direct video output, frames shown as soon as they are decoded; " +
+                "picture adjustments unavailable"
+        } else if (unsafeDecoder != null) {
+            "Using SurfaceView video output: $unsafeDecoder pictures cannot be shown as a texture; " +
                 "picture adjustments unavailable"
         } else {
             "Using SurfaceView video output: window has no hardware acceleration; picture adjustments unavailable"
