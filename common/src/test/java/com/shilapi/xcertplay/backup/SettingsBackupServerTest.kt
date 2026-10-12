@@ -175,6 +175,178 @@ class SettingsBackupServerTest {
         assertEquals(4, imported.get()?.applied)
     }
 
+    private fun withTypedCode(test: (SettingsBackupServer, SettingsBackupEndpoint, (String) -> Pair<Int, String>) -> Unit) {
+        val typed = SettingsBackupServer(page = "<html>backup-page</html>".toByteArray(), export = { ByteArray(0) },
+            import = { SettingsImportOutcome(0, 0, invalid = false) }, codePage = "<html>code-page</html>".toByteArray())
+        typed.typedPort = 0
+        val started = typed.start()!!
+        fun request(path: String, method: String, body: ByteArray?): Pair<Int, String> {
+            val connection = URL("http://127.0.0.1:${started.port}$path").openConnection() as HttpURLConnection
+            connection.requestMethod = method
+            connection.connectTimeout = 5000
+            connection.readTimeout = 5000
+            if (body != null) {
+                connection.doOutput = true
+                connection.setFixedLengthStreamingMode(body.size)
+                connection.getOutputStream().use { it.write(body) }
+            }
+            val status = connection.responseCode
+            val text = (if (status < 400) connection.inputStream else connection.errorStream)?.readBytes()?.toString(Charsets.UTF_8).orEmpty()
+            connection.disconnect()
+            return status to text
+        }
+        try {
+            test(typed, started) { code -> request("/code", "POST", code.toByteArray()) }
+            // Whatever was typed, the link from the QR code still opens the page.
+            assertEquals(200, request("/b/${started.token}/", "GET", null).first)
+        } finally {
+            typed.stop()
+        }
+    }
+
+    private fun wrong(code: String) = ((code.toInt() + 1) % 1_000_000).toString().padStart(6, '0')
+
+    // An Arabic head unit formats numbers with Arabic-Indic digits; a computer's keyboard types 0 to 9.
+    @Test
+    fun theCodeIsMadeOfTheDigitsAKeyboardTypesInEveryLocale() {
+        val before = java.util.Locale.getDefault()
+        try {
+            for (tag in listOf("ar-EG", "ar-SA", "fa-IR", "hi-IN", "th-TH-u-nu-thai")) {
+                java.util.Locale.setDefault(java.util.Locale.forLanguageTag(tag))
+                withTypedCode { _, endpoint, enter ->
+                    assertTrue("$tag gave ${endpoint.code}", endpoint.code.length == 6 && endpoint.code.all { it in '0'..'9' })
+                    assertEquals(200, enter(endpoint.code).first)
+                }
+            }
+        } finally {
+            java.util.Locale.setDefault(before)
+        }
+    }
+
+    @Test
+    fun theTypedAddressOpensThePageThatAsksForTheCode() = withTypedCode { _, endpoint, _ ->
+        val connection = URL("http://127.0.0.1:${endpoint.port}/").openConnection() as HttpURLConnection
+        assertEquals(200, connection.responseCode)
+        assertTrue(connection.inputStream.readBytes().toString(Charsets.UTF_8).contains("code-page"))
+        connection.disconnect()
+        assertEquals("192.0.2.7:${endpoint.port}", endpoint.typedAddress("192.0.2.7"))
+        assertTrue(endpoint.code.matches(Regex("[0-9]{6}")))
+    }
+
+    @Test
+    fun theRightCodeLeadsToThePage() = withTypedCode { typed, endpoint, enter ->
+        assertEquals(200 to "{\"path\":\"/b/${endpoint.token}/\"}", enter(endpoint.code))
+        typed.landing = "#report"
+        // Typed the way the head unit shows it, in two groups.
+        val spaced = endpoint.code.chunked(3).joinToString(" ")
+        assertEquals(200 to "{\"path\":\"/b/${endpoint.token}/#report\"}", enter(spaced))
+        assertTrue(typed.codeEntryOpen)
+    }
+
+    @Test
+    fun aWrongCodeSaysHowManyTriesAreLeft() = withTypedCode { typed, endpoint, enter ->
+        assertEquals(403 to "{\"left\":4}", enter(wrong(endpoint.code)))
+        assertEquals(403 to "{\"left\":3}", enter("12"))
+        assertEquals(403 to "{\"left\":2}", enter(""))
+        assertTrue(typed.codeEntryOpen)
+        // A right code after wrong ones is still accepted while tries remain.
+        assertEquals(200, enter(endpoint.code).first)
+    }
+
+    // Six digits can be guessed; five tries in a million cannot, in practice.
+    @Test
+    fun afterFiveWrongCodesNoCodeIsAcceptedNotEvenTheRightOne() = withTypedCode { typed, endpoint, enter ->
+        val closed = java.util.concurrent.atomic.AtomicInteger()
+        typed.onCodeEntryClosed = { closed.incrementAndGet() }
+        repeat(4) { assertTrue(enter(wrong(endpoint.code)).second.contains("left")) }
+        assertEquals(403 to "{\"locked\":true}", enter(wrong(endpoint.code)))
+        assertEquals(403 to "{\"locked\":true}", enter(endpoint.code))
+        assertEquals(403 to "{\"locked\":true}", enter(wrong(endpoint.code)))
+        assertEquals(1, closed.get())
+        assertTrue(!typed.codeEntryOpen)
+    }
+
+    @Test
+    fun aNewStartGivesTheCodeItsTriesBack() {
+        val typed = SettingsBackupServer(page = ByteArray(0), export = { ByteArray(0) },
+            import = { SettingsImportOutcome(0, 0, invalid = false) }, codePage = ByteArray(0))
+        typed.typedPort = 0
+        try {
+            typed.start()!!
+            assertTrue(typed.codeEntryOpen)
+            typed.stop()
+            assertNotNull(typed.start())
+            assertTrue(typed.codeEntryOpen)
+        } finally {
+            typed.stop()
+        }
+    }
+
+    private fun typedServer() = SettingsBackupServer(page = ByteArray(0), export = { ByteArray(0) },
+        import = { SettingsImportOutcome(0, 0, invalid = false) }, codePage = ByteArray(0))
+
+    private fun freePort(): Int = java.net.ServerSocket(0).use { it.localPort }
+
+    // The same address every time: a browser remembers it, and only the code has to be typed again.
+    @Test
+    fun theTypedAddressKeepsItsPortFromOneOpeningToTheNext() {
+        val wanted = freePort()
+        val typed = typedServer().apply { typedPort = wanted }
+        try {
+            assertEquals(wanted, typed.start()!!.port)
+            Socket("127.0.0.1", wanted).close()
+            typed.stop()
+            assertEquals(wanted, typed.start()!!.port)
+        } finally {
+            typed.stop()
+        }
+    }
+
+    @Test
+    fun aBusyPortDoesNotKeepThePageFromOpening() {
+        java.net.ServerSocket(0).use { taken ->
+            val typed = typedServer().apply { typedPort = taken.localPort }
+            try {
+                val started = typed.start()
+                assertNotNull(started)
+                assertTrue(started!!.port != taken.localPort)
+                val connection = URL("http://127.0.0.1:${started.port}/").openConnection() as HttpURLConnection
+                assertEquals(200, connection.responseCode)
+                connection.disconnect()
+            } finally {
+                typed.stop()
+            }
+        }
+    }
+
+    @Test
+    fun theFixedPortIsOneABrowserAndAnAppMayUse() {
+        assertTrue(SettingsBackupServer.TYPED_PORT in 1024..9999)
+    }
+
+    // Without the page there is nothing to type a code into, and the address gives nothing away.
+    @Test
+    fun aServerWithoutACodePageHasNoTypedEntry() {
+        assertEquals(404, get("/").first)
+        assertEquals(404, get("/code", method = "POST", body = "000000".toByteArray()).first)
+        assertEquals("", endpoint.code)
+        assertTrue(!server.codeEntryOpen)
+    }
+
+    // Some browsers try HTTPS first on a typed address and fall back to HTTP only when that fails.
+    @Test
+    fun aTlsHelloIsClosedAtOnce() {
+        Socket("127.0.0.1", endpoint.port).use { socket ->
+            socket.soTimeout = 5_000
+            socket.getOutputStream().apply { write(byteArrayOf(0x16, 0x03, 0x01, 0x02, 0x00, 0x01)); flush() }
+            val started = System.nanoTime()
+            val end = runCatching { socket.getInputStream().read() }
+            val millis = (System.nanoTime() - started) / 1_000_000
+            assertTrue(end.getOrNull() == -1 || end.exceptionOrNull() is java.net.SocketException)
+            assertTrue("closed after $millis ms", millis < 2_000)
+        }
+    }
+
     // Browsers open spare connections before they need them and may never use them.
     @Test
     fun aConnectionThatSendsNothingDoesNotHoldUpTheNextRequest() {

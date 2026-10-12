@@ -696,6 +696,8 @@
     <string name="backup_page_hint">Отсканируйте код камерой телефона, чтобы открыть страницу в его браузере. Экспорт сохраняет файл настроек, импорт загружает его.</string>
     <string name="backup_other_addresses">Если код не открывается, попробуйте изменить IP-адрес в браузере на %1$s.</string>
     <string name="backup_no_network">Нет доступной сети Wi-Fi. Сначала включите точку доступа автомобиля или подключите телефон к Wi-Fi автомобиля.</string>
+    <string name="backup_type_address">Нет камеры? Откройте %1$s в браузере и введите код %2$s.</string>
+    <string name="backup_code_entry_closed">Введено слишком много неверных кодов, код больше не действует. Закройте эту страницу и откройте её снова, чтобы получить новый. QR-код по-прежнему работает.</string>
     <string name="backup_summary">Импортировано настроек: %1$d, пропущено: %2$d.</string>
     <string name="backup_import_invalid">Этот файл не является резервной копией настроек DiPlay.</string>
     <string name="settings_background_update_checks">Проверять обновления в фоне</string>

@@ -760,6 +760,8 @@
     <string name="backup_page_hint">用手機相機掃碼，在瀏覽器中開啟此頁面。匯出儲存設定檔，匯入載入設定檔。</string>
     <string name="backup_other_addresses">若掃碼無法開啟，請嘗試將瀏覽器中的 IP 位址改為 %1$s。</string>
     <string name="backup_no_network">沒有可用的 Wi-Fi 網路。請先開啟車載熱點，或讓手機連線至車機 Wi-Fi。</string>
+    <string name="backup_type_address">沒有相機？在瀏覽器中開啟 %1$s，然後輸入驗證碼 %2$s。</string>
+    <string name="backup_code_entry_closed">驗證碼輸入錯誤次數過多，已停用。請離開此頁面後重新開啟，以取得新的驗證碼。掃碼仍可使用。</string>
     <string name="backup_summary">已匯入 %1$d 項設定，略過 %2$d 項。</string>
     <string name="backup_import_invalid">這不是 DiPlay 設定備份檔。</string>
     <string name="settings_background_update_checks">在背景檢查更新</string>
