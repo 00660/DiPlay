@@ -99,6 +99,77 @@ class SettingsBackupServerTest {
         assertEquals(4, imported.get()?.applied)
     }
 
+    // Browsers open spare connections before they need them and may never use them.
+    @Test
+    fun aConnectionThatSendsNothingDoesNotHoldUpTheNextRequest() {
+        Socket("127.0.0.1", endpoint.port).use {
+            Thread.sleep(200)
+            val started = System.nanoTime()
+            val (status, body) = get("/b/${endpoint.token}/")
+            val millis = (System.nanoTime() - started) / 1_000_000
+            assertEquals(200, status)
+            assertTrue(body.contains("backup-page"))
+            assertTrue("the page took $millis ms behind an idle connection", millis < 2_000)
+        }
+    }
+
+    @Test
+    fun severalIdleConnectionsDoNotHoldUpTheNextRequestEither() {
+        val idle = List(6) { Socket("127.0.0.1", endpoint.port) }
+        try {
+            Thread.sleep(200)
+            assertEquals(200, get("/b/${endpoint.token}/export").first)
+        } finally {
+            idle.forEach { it.close() }
+        }
+    }
+
+    @Test
+    fun stopAlsoClosesAConnectionThatIsStillWaiting() {
+        Socket("127.0.0.1", endpoint.port).use { waiting ->
+            Thread.sleep(200)
+            waiting.soTimeout = 3_000
+            server.stop()
+            // End of stream, or a reset: either way the head unit let go of it at once.
+            val read = runCatching { waiting.getInputStream().read() }
+            assertTrue(read.isFailure && read.exceptionOrNull() !is java.net.SocketTimeoutException || read.getOrNull() == -1)
+        }
+    }
+
+    // Connections end on their own threads while stop() walks the ones still open.
+    @Test
+    fun stopDoesNotFailWhileConnectionsAreEnding() {
+        repeat(1000) {
+            val busy = SettingsBackupServer(page = ByteArray(0), export = { ByteArray(0) },
+                import = { SettingsImportOutcome(0, 0, invalid = false) })
+            val started = busy.start()!!
+            val sockets = List(3) { Socket("127.0.0.1", started.port) }
+            sockets.forEach { it.close() }
+            busy.stop()
+        }
+    }
+
+    // Without an answer the browser shows a connection that opened and then gave nothing.
+    @Test
+    fun aFailureWhilePreparingTheAnswerIsReportedToTheBrowser() {
+        val failing = SettingsBackupServer(page = ByteArray(0), export = { error("storage unavailable") },
+            import = { SettingsImportOutcome(0, 0, invalid = false) })
+        val started = failing.start()!!
+        try {
+            val connection = URL("http://127.0.0.1:${started.port}/b/${started.token}/export").openConnection() as HttpURLConnection
+            connection.connectTimeout = 5000
+            connection.readTimeout = 5000
+            assertEquals(500, connection.responseCode)
+            connection.disconnect()
+            // The page still answers afterwards.
+            val page = URL("http://127.0.0.1:${started.port}/b/${started.token}/").openConnection() as HttpURLConnection
+            assertEquals(200, page.responseCode)
+            page.disconnect()
+        } finally {
+            failing.stop()
+        }
+    }
+
     @Test
     fun unknownRoutesAreNotFound() {
         assertEquals(404, get("/b/${endpoint.token}/settings").first)
