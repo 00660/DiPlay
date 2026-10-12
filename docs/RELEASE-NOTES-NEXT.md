@@ -13,6 +13,7 @@ Changes through DiPlay 0.2.18 are documented in [0.2.18 release notes](RELEASE-N
 
 ## Audio, calls and Siri
 
+- On a first setup, confirming the car as DiLink 3.0 or 4.0 sets the navigation audio stream to 14, and DiLink 5.0 to 15, the values the setup guide recommends for BYD head units. A driver who chose a stream keeps it, and re-running the guide never changes a stream left on automatic. [#656](https://github.com/shihabal3amri/DiPlay/pull/656)
 - Fix the playback position DiPlay reports to the iPhone for calls, Siri and navigation prompts sent in the 16 kHz audio format. DiPlay counted it at 48 kHz, three times too fast: 14.5 s ahead of the received audio after 20 s of a call in which the driver could not understand the other side, and 7 s ahead for navigation prompts ([#473](https://github.com/shihabal3amri/DiPlay/issues/473), [#536](https://github.com/shihabal3amri/DiPlay/issues/536)). The position now counts at the format's own rate. Music and 48 kHz streams are unchanged. Pending in-car acceptance. [#644](https://github.com/shihabal3amri/DiPlay/pull/644)
 
 - When the head unit's microphone fails its first read after switching to call mode, DiPlay restarts recording up to three times instead of leaving the call without a microphone. A Seal 05 DM-i (MT6765, Android 9) lost the microphone this way on two of three USB calls ([#647](https://github.com/shihabal3amri/DiPlay/issues/647)). The report logs `Microphone: recording restarted … attempt=N`. Pending in-car acceptance. [#644](https://github.com/shihabal3amri/DiPlay/pull/644)
