@@ -908,4 +908,14 @@
     <string name="settings_cluster_music_vertical">音楽カード · 上下位置</string>
     <string name="settings_cluster_music_size">音楽カード · サイズ</string>
     <string name="settings_cluster_music_unknown">不明なアーティスト</string>
+    <string name="connection_help_reset_wifi">以前のWi-Fi Direct接続が残っている可能性があります。下の「CarPlay Wi-Fiをリセット」を選び、再接続してください。</string>
+    <string name="connection_help_bluetooth_unusable">この車載端末のBluetoothはiPhoneとデータ通信できません。ワイヤレスCarPlayは利用できないため、データ通信対応のUSBケーブルで接続してください。</string>
+    <string name="connection_help_hotspot">車載端末のテザリングがオンで、名前とパスワードがDiPlayの設定と一致するか確認してください。可能なら5 GHzにして再試行してください。</string>
+    <string name="connection_help_iphone_wifi">Wi-FiとBluetoothをオンにしてください。iPhoneで車載端末のWi-Fiに接続し、「自動接続」を有効にして再試行してください。改善しない場合は診断レポートを保存してください。</string>
+    <string name="connection_help_permissions">車載端末でDiPlayにUSB、「付近のデバイス」、位置情報の権限を必要に応じて許可してから、再試行してください。</string>
+    <string name="connection_help_usb">データ通信対応のUSB端子とケーブルを使ってください。iPhoneのロックを解除し、「信頼」とCarPlayの確認を許可して再試行してください。</string>
+    <string name="connection_help_bluetooth">iPhoneのロックを解除し、BluetoothとWi-Fiをオンにして車載端末とペアリングしてください。iPhoneを近くに置いて再試行してください。</string>
+    <string name="connection_help_general">接続を再試行してください。再び失敗する場合はDiPlayに戻り、［設定］→［診断］からレポートを保存してください。</string>
+    <string name="connection_help_wifi_direct">車載端末のWi-FiとBluetoothをオンにし、iPhoneのロックを解除して近くに置いてから再試行してください。改善しない場合は、iPhoneの［設定］→［一般］→［CarPlay］でこの車の登録を削除してから再接続してください。</string>
+    <string name="connection_help_existing_wifi">車載端末とiPhoneが同じWi-Fiネットワークに接続され、その名前とパスワードがDiPlayの設定と一致しているか確認して、再試行してください。</string>
 </resources>

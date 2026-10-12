@@ -139,6 +139,8 @@ class CarPlayHostActivity : ComponentActivity() {
     )
 
     private var connectionPanel: View? = null
+    private var connectionInstructionsView: TextView? = null
+    private var connectionHelpView: TextView? = null
     private var wifiRecoveryButton: View? = null
     private var reconnectAttempts = 0
     private val siriKey = WheelSiriKey()
@@ -1605,6 +1607,7 @@ class CarPlayHostActivity : ComponentActivity() {
         refreshConfiguration(newConfig, ThemeModeDiagnostics.Source.CALLBACK)
         applyFullscreenMode()
         stageStatusView?.maxWidth = (resources.displayMetrics.widthPixels * 0.78f).toInt()
+        connectionHelpView?.maxWidth = (resources.displayMetrics.widthPixels * 0.78f).toInt()
         scrollLogsToBottom()
         videoView?.post {
             val view = videoView ?: return@post
@@ -1716,6 +1719,11 @@ class CarPlayHostActivity : ComponentActivity() {
             gravity = Gravity.CENTER
         }
         panel.addView(instructions)
+        val help = TextView(this).apply {
+            gravity = Gravity.CENTER
+            visibility = View.GONE
+        }
+        panel.addView(help)
         val recovery = DiPlayButton(this).apply {
             text = getString(R.string.reset_carplay_wi_fi)
             visibility = View.GONE
@@ -1754,6 +1762,7 @@ class CarPlayHostActivity : ComponentActivity() {
             title.setTextColor(colors.text)
             stage.setTextColor(colors.text)
             instructions.setTextColor(colors.secondary)
+            help.setTextColor(colors.secondary)
             gestureHint.setTextColor(colors.secondary)
             val buttonPalette = DiPlayPalette.of(darkMode)
             back.style(DiPlayButtonKind.PRIMARY, buttonPalette, overlay = false)
@@ -1795,6 +1804,8 @@ class CarPlayHostActivity : ComponentActivity() {
             stage.textSize = size(19f, 22f)
             instructions.textSize = size(15f, 17f)
             instructions.setPadding(0, spacing(8f, 14f), 0, spacing(12f, 24f))
+            help.textSize = size(15f, 17f)
+            help.setPadding(0, spacing(8f, 14f), 0, spacing(12f, 24f))
             for (button in listOf(back, recovery, retry)) {
                 button.textSize = size(17f, 18f)
                 button.layoutParams = button.layoutParams.apply { this.height = spacing(50f, 64f) }
@@ -1840,6 +1851,8 @@ class CarPlayHostActivity : ComponentActivity() {
         gestureOverlay = gestureLayer
         settingsGestureHint = gestureHint
         stageStatusView = stage
+        connectionInstructionsView = instructions
+        connectionHelpView = help
         connectionPanel = viewport
         updateDebugOverlays()
         return root
@@ -4789,6 +4802,7 @@ class CarPlayHostActivity : ComponentActivity() {
                     }
                     activeAirPlaySession = session
                     CarPlayBackgroundSession.active = true
+                    showConnectionHelp(null)
                     callPopupSessionReady = true
                     updateCallPopupGuard()
                     reconnectAttempts = 0
@@ -4901,6 +4915,9 @@ class CarPlayHostActivity : ComponentActivity() {
         val description = status.describe()
         val englishDescription = status.describe(englishResources)
         setConnectionStage(description, englishDescription)
+        // Keep the actionable tip readable while automatic retries are in progress.
+        // Only a working AirPlay session, or a new failure, replaces it.
+        if (status is CarPlayStatus.Failed) showConnectionHelp(status)
         when (status) {
             is CarPlayStatus.Failed -> if (status.wifiResetRequired) {
                 wifiRecoveryButton?.visibility = View.VISIBLE
@@ -5975,6 +5992,14 @@ class CarPlayHostActivity : ComponentActivity() {
 
     private fun setConnectionStage(stringId: Int) =
         setConnectionStage(getString(stringId), englishResources.getString(stringId))
+
+    private fun showConnectionHelp(failure: CarPlayStatus.Failed?) {
+        connectionInstructionsView?.visibility = if (failure == null) View.VISIBLE else View.GONE
+        connectionHelpView?.apply {
+            visibility = if (failure == null) View.GONE else View.VISIBLE
+            if (failure != null) text = getString(ConnectionFailureGuidance.message(failure, wirelessEnabled, wirelessHotspotMode))
+        }
+    }
 
     /** [englishMessage] is [message] in English, which [friendlyStage] reads for its keywords. */
     private fun setConnectionStage(message: String, englishMessage: String = message) {
