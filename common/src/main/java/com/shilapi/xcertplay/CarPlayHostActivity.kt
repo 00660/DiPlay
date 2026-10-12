@@ -1085,6 +1085,7 @@ class CarPlayHostActivity : ComponentActivity() {
 
     private fun ensureClusterPresentation() {
         if (!AirPlayPersistence.loadClusterMapEnabled(this)) {
+            clusterLaunchGate.reset()
             dismissClusterPresentation()
             return
         }
@@ -1092,11 +1093,12 @@ class CarPlayHostActivity : ComponentActivity() {
             ClusterActivityOutput.bind(this, taskId) { onClusterSurface(it) }
             ClusterActivityOutput.setStreamActive(SCREEN_TYPE_ALT in activeScreenStreamTypes)
             applyClusterTurnOverlay()
-            runCatching { ClusterActivityOutput.ensure(this) }.onFailure {
-                appendLog("Cluster activity: launch failed ${it.javaClass.simpleName}: ${it.message}")
-            }
+            if (ClusterActivityOutput.hasConfirmedRoute() ||
+                clusterLaunchGate.request(SystemClock.uptimeMillis(), hasWindowFocus())) launchClusterActivity()
+            else scheduleClusterLaunchTick()
             return
         }
+        clusterLaunchGate.reset()
         ClusterActivityOutput.stop(this)
         val theme = effectiveClusterTheme()
         if (DiLink51ClusterLayout.supported()) {
@@ -1128,6 +1130,40 @@ class CarPlayHostActivity : ComponentActivity() {
         } catch (error: RuntimeException) {
             Log.w(ClusterMapPresentation.TAG, "cluster presentation failed", error)
             appendLog("Cluster map: presentation failed ${error.javaClass.simpleName}: ${error.message}")
+        }
+    }
+
+    // DiLink 4 (#536): launched before this window's first focus, the cluster window kept the system bars on
+    // screen, and the tap that brought focus back restarted CarPlay at the larger size.
+    private val clusterLaunchGate = ClusterLaunchGate()
+    private val clusterLaunchTick = Runnable { onClusterLaunchTick() }
+    private var carPlayStartHeldForCluster = false
+
+    private fun launchClusterActivity() {
+        runCatching { ClusterActivityOutput.ensure(this) }.onFailure {
+            appendLog("Cluster activity: launch failed ${it.javaClass.simpleName}: ${it.message}")
+        }
+        scheduleClusterLaunchTick()
+    }
+
+    private fun scheduleClusterLaunchTick() {
+        mainHandler.removeCallbacks(clusterLaunchTick)
+        mainHandler.postDelayed(clusterLaunchTick, ClusterLaunchGate.TICK_MILLIS)
+    }
+
+    private fun onClusterLaunchTick() {
+        mainHandler.removeCallbacks(clusterLaunchTick)
+        if (isDestroyed) return
+        val now = SystemClock.uptimeMillis()
+        if (clusterLaunchGate.due(now, hasWindowFocus(), isActivityStarted)) {
+            appendLog("Cluster activity: launching after the main window " +
+                if (hasWindowFocus()) "took focus" else if (isActivityStarted) "waited for focus" else "left the screen")
+            launchClusterActivity()
+        } else if (clusterLaunchGate.holdsCarPlayStart(now, ClusterActivityOutput.routeSettling())) {
+            scheduleClusterLaunchTick()
+        } else if (carPlayStartHeldForCluster) {
+            carPlayStartHeldForCluster = false
+            maybeStartCarPlay()
         }
     }
 
@@ -1433,6 +1469,7 @@ class CarPlayHostActivity : ComponentActivity() {
         if (hasFocus) {
             refreshConfiguration(source = ThemeModeDiagnostics.Source.WINDOW_FOCUS)
             applyFullscreenMode()
+            onClusterLaunchTick()
         }
     }
 
@@ -1457,6 +1494,8 @@ class CarPlayHostActivity : ComponentActivity() {
         logThemeState(ThemeModeDiagnostics.Source.STOP, resources.configuration)
         mainHandler.removeCallbacks(pollConfiguration)
         super.onStop()
+        // Off screen there are no system bars to hide, so a launch waiting for focus can go now.
+        onClusterLaunchTick()
         if (!isFinishing && !isChangingConfigurations) CenterMapOverlay.scheduleShow()
     }
 
@@ -1552,6 +1591,7 @@ class CarPlayHostActivity : ComponentActivity() {
         removeVideoSurfaceProbe()
         fallbackVideoView?.holder?.removeCallback(fallbackSurfaceCallback)
         mainHandler.removeCallbacks(refreshTurnOverlay)
+        mainHandler.removeCallbacks(clusterLaunchTick)
         AirPlayPersistence.overlaySettingsListener = null
         com.shilapi.xcertplay.hud.BydNavigationOutputs.setTurnOverlayListener(null)
         com.shilapi.xcertplay.hud.BydNavigationOutputs.setClusterNaviModeListener(null)
@@ -5307,6 +5347,12 @@ class CarPlayHostActivity : ComponentActivity() {
             pendingDisplaySize != null ||
             controller != null
         ) {
+            return
+        }
+        // The first session must already carry the cluster stream; a later route reconnects CarPlay.
+        if (clusterLaunchGate.holdsCarPlayStart(SystemClock.uptimeMillis(), ClusterActivityOutput.routeSettling())) {
+            carPlayStartHeldForCluster = true
+            scheduleClusterLaunchTick()
             return
         }
         startCarPlay(size)
