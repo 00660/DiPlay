@@ -807,4 +807,12 @@
     <string name="settings_cluster_music_vertical">Tarjeta musical · posición vertical</string>
     <string name="settings_cluster_music_size">Tarjeta musical · tamaño</string>
     <string name="settings_cluster_music_unknown">Artista desconocido</string>
+    <string name="connection_help_reset_wifi">Un grupo Wi-Fi Direct anterior puede impedir la conexión. Pulsa Restablecer Wi-Fi de CarPlay abajo y vuelve a conectarte.</string>
+    <string name="connection_help_bluetooth_unusable">Esta unidad no puede enviar datos Bluetooth al iPhone. CarPlay inalámbrico no funcionará aquí. Usa un cable USB de datos.</string>
+    <string name="connection_help_hotspot">Comprueba que el punto de acceso del coche esté activo y que su nombre y contraseña coincidan con DiPlay. Si es posible, usa 5 GHz y reintenta.</string>
+    <string name="connection_help_iphone_wifi">Mantén Wi-Fi y Bluetooth activos. Conecta el iPhone al punto de acceso del coche y activa la conexión automática. Reintenta o guarda un informe de diagnóstico.</string>
+    <string name="connection_help_permissions">Concede los permisos necesarios de USB, dispositivos cercanos o ubicación en la unidad. En el iPhone, acepta las solicitudes de confianza o CarPlay y reintenta.</string>
+    <string name="connection_help_usb">Usa un puerto y cable USB con datos. Desbloquea el iPhone, acepta las solicitudes de confianza y CarPlay y reintenta.</string>
+    <string name="connection_help_bluetooth">Desbloquea el iPhone, activa Bluetooth y Wi-Fi y enlázalo con la unidad. Mantenlo cerca y reintenta.</string>
+    <string name="connection_help_general">Reintenta la conexión. Si vuelve a fallar, regresa a DiPlay y guarda un informe en Ajustes → Diagnóstico.</string>
 </resources>

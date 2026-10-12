@@ -807,4 +807,12 @@
     <string name="settings_cluster_music_vertical">Музыка · положение по вертикали</string>
     <string name="settings_cluster_music_size">Музыка · размер</string>
     <string name="settings_cluster_music_unknown">Неизвестный исполнитель</string>
+    <string name="connection_help_reset_wifi">Предыдущее соединение Wi-Fi Direct может мешать подключению. Нажмите ниже «Сбросить Wi-Fi CarPlay» и подключитесь снова.</string>
+    <string name="connection_help_bluetooth_unusable">Bluetooth этого устройства не может передавать данные на iPhone. Беспроводной CarPlay здесь не работает. Используйте USB-кабель для данных.</string>
+    <string name="connection_help_hotspot">Убедитесь, что точка доступа автомобиля включена, а имя и пароль совпадают с настройками DiPlay. Если возможно, выберите 5 ГГц и повторите попытку.</string>
+    <string name="connection_help_iphone_wifi">Включите Wi-Fi и Bluetooth. Подключите iPhone к точке доступа автомобиля и включите автоподключение. Повторите попытку; при сбое сохраните отчёт.</string>
+    <string name="connection_help_permissions">Разрешите доступ к USB, устройствам поблизости или геолокации на головном устройстве, если требуется. На iPhone подтвердите доверие или CarPlay и повторите попытку.</string>
+    <string name="connection_help_usb">Используйте USB-порт и кабель с передачей данных. Разблокируйте iPhone, подтвердите доверие и CarPlay и повторите попытку.</string>
+    <string name="connection_help_bluetooth">Разблокируйте iPhone, включите Bluetooth и Wi-Fi, выполните сопряжение с устройством. Держите iPhone рядом и повторите попытку.</string>
+    <string name="connection_help_general">Повторите подключение. Если ошибка повторится, вернитесь в DiPlay и сохраните отчёт в разделе «Настройки → Диагностика».</string>
 </resources>

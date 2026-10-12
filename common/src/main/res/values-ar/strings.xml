@@ -856,4 +856,12 @@
     <string name="wireless_startup_retries_exhausted">توقفت المحاولات التلقائية. تحقّق من الاتصال وأعد المحاولة يدويًا.</string>
     <string name="retry_carplay_connection">إعادة محاولة الاتصال</string>
     <string name="auto_grant_incomplete">لم يتحقق الإعداد من جميع الأذونات المطلوبة. راجع حالة كل إذن أدناه؛ وفعّل ADB عبر الشبكة ثم أعد المحاولة، أو استخدم الإعداد اليدوي. تُحفظ الأذونات الحالية.</string>
+    <string name="connection_help_reset_wifi">قد تمنع مجموعة Wi-Fi Direct سابقة الاتصال. اضغط على إعادة ضبط Wi-Fi الخاص بـ CarPlay أدناه ثم حاول الاتصال مجددًا.</string>
+    <string name="connection_help_bluetooth_unusable">لا يستطيع بلوتوث هذه الوحدة إرسال البيانات إلى iPhone، لذا لن يعمل CarPlay اللاسلكي هنا. استخدم كابل USB لنقل البيانات.</string>
+    <string name="connection_help_hotspot">تأكد من تشغيل نقطة اتصال السيارة وأن اسمها وكلمة مرورها يطابقان إعدادات DiPlay. استخدم تردد 5 غيغاهرتز إن توفر ثم أعد المحاولة.</string>
+    <string name="connection_help_iphone_wifi">أبقِ Wi-Fi وبلوتوث قيد التشغيل. اتصل بنقطة اتصال السيارة من iPhone وفعّل الانضمام التلقائي ثم حاول مجددًا. احفظ تقرير تشخيص إذا استمر الفشل.</string>
+    <string name="connection_help_permissions">اسمح بأذونات USB أو الأجهزة القريبة أو الموقع المطلوبة على وحدة السيارة. وافق على طلبات الثقة أو CarPlay على iPhone إن ظهرت، ثم أعد المحاولة.</string>
+    <string name="connection_help_usb">استخدم منفذ USB وكابلًا يدعمان نقل البيانات. افتح قفل iPhone ووافق على طلبات الثقة وCarPlay ثم أعد المحاولة.</string>
+    <string name="connection_help_bluetooth">افتح قفل iPhone وشغّل بلوتوث وWi-Fi واقرنه بوحدة السيارة. أبقه قريبًا ثم أعد المحاولة.</string>
+    <string name="connection_help_general">أعد محاولة الاتصال. إذا فشل مجددًا، ارجع إلى DiPlay واحفظ تقريرًا من الإعدادات ← التشخيص.</string>
 </resources>

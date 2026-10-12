@@ -867,4 +867,12 @@
     <string name="settings_cluster_music_vertical">音樂卡片 · 垂直位置</string>
     <string name="settings_cluster_music_size">音樂卡片 · 大小</string>
     <string name="settings_cluster_music_unknown">未知藝人</string>
+    <string name="connection_help_reset_wifi">先前的 Wi-Fi Direct 連線可能阻止新連線。點選下方的「重設 CarPlay Wi-Fi」，再重新連線。</string>
+    <string name="connection_help_bluetooth_unusable">此車機的藍牙無法將資料傳送到 iPhone，因此無法使用無線 CarPlay。請使用支援資料傳輸的 USB 線。</string>
+    <string name="connection_help_hotspot">請確認車機熱點已開啟，且名稱與密碼和 DiPlay 設定相同。如有支援，改用 5 GHz 後重試。</string>
+    <string name="connection_help_iphone_wifi">保持 Wi-Fi 與藍牙開啟。在 iPhone 上加入車機熱點並啟用自動加入，再重試。若仍失敗，請儲存診斷報告。</string>
+    <string name="connection_help_permissions">在車機上允許所需的 USB、附近裝置或位置資訊權限。若 iPhone 出現信任或 CarPlay 提示，也請允許，再重試。</string>
+    <string name="connection_help_usb">使用支援資料傳輸的 USB 連接埠和線材。解鎖 iPhone，允許信任及 CarPlay 提示，再重試。</string>
+    <string name="connection_help_bluetooth">解鎖 iPhone，開啟藍牙與 Wi-Fi，並與車機配對。讓 iPhone 保持在附近，再重試。</string>
+    <string name="connection_help_general">請重新連線。若仍失敗，請返回 DiPlay，在「設定 → 診斷」中儲存報告。</string>
 </resources>
