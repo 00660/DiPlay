@@ -2,6 +2,7 @@ package com.shilapi.xcertplay.network
 
 import android.content.Context
 import android.net.ConnectivityManager
+import android.os.Build
 import android.os.Bundle
 import android.os.ResultReceiver
 import android.provider.Settings
@@ -64,7 +65,8 @@ object CarHotspotTethering {
                     if (access != null && access != LocalAdb.Access.READY) log("car hotspot: ADB access=$access")
                     if (access != LocalAdb.Access.READY) false
                     else CarHotspotAdbFallback.start(deadline, isCancelled,
-                        state = { CarHotspotStatus.isEnabled(context) }, shell = adb::shell, log = log)
+                        state = { CarHotspotStatus.isEnabled(context) }, shell = adb::shell, log = log,
+                        helper = shellTetheringHelper(context))
                         .also { if (it) observedAdbState.set(true) }
                 }
             }
@@ -82,6 +84,14 @@ object CarHotspotTethering {
             log("car hotspot auto-enable: ${it.diagnostic}")
         }
     }
+
+    /** IConnectivityManager.startTethering exists on Android 7.0–10; Android 11 moved tethering out of it. */
+    private fun shellTetheringHelper(context: Context): String? =
+        if (Build.VERSION.SDK_INT in Build.VERSION_CODES.N..Build.VERSION_CODES.Q) {
+            CarHotspotStartMain.command(context.applicationInfo.sourceDir)
+        } else {
+            null
+        }
 
     internal fun describe(error: Throwable): String {
         val cause = (error as? InvocationTargetException)?.targetException ?: error

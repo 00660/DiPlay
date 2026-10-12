@@ -922,4 +922,5 @@
     <string name="connection_help_existing_wifi">車載端末とiPhoneが同じWi-Fiネットワークに接続され、その名前とパスワードがDiPlayの設定と一致しているか確認して、再試行してください。</string>
     <string name="settings_report_on_phone">スマートフォンでレポートを取得</string>
     <string name="settings_report_on_phone_hint">スマートフォンのカメラでQRコードを読み取って、ブラウザーでページを開き、「レポートをダウンロード」を選んでください。ダウンロードが終わるまでこの画面を開いたままにしてください。</string>
+    <string name="settings_mfi_target_description">USB/CH341 は、CH341 認証アダプターを車載機に接続しているときだけ選択してください。接続していない場合は「ローカル／オフライン」を選択します。次回の接続から適用されます。</string>
 </resources>
