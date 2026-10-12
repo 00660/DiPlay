@@ -6,7 +6,7 @@
 
 > 專案以比亞迪汽車為主要支援對象。其他品牌可能可以執行，但不在一般支援範圍內；特定韌體的個別整合不代表整個品牌受到支援。
 
-[下載與繁體中文網站](https://shihabal3amri.github.io/DiPlay/zh-Hant/) · [0.2.18 版本](https://github.com/shihabal3amri/DiPlay/releases/tag/v0.2.18) · [回報問題](https://github.com/shihabal3amri/DiPlay/issues/new/choose)
+[下載與繁體中文網站](https://shihabal3amri.github.io/DiPlay/zh-Hant/) · [0.2.19 版本](https://github.com/shihabal3amri/DiPlay/releases/tag/v0.2.19) · [回報問題](https://github.com/shihabal3amri/DiPlay/issues/new/choose)
 
 ![DiPlay 主畫面](site/assets/home.png)
 
@@ -30,17 +30,18 @@ Android 13 以上會與 Android 的個別應用程式語言設定同步；Androi
 
 選用的 **DiPlay Home** 啟動器與 **DiPlay map host** 範例也提供繁體中文，依各自的 Android 系統語言顯示，不共用主要 DiPlay 應用程式的語言偏好。第三方小工具與應用程式名稱由提供者決定。
 
-## 主要功能與 0.2.18 更新
+## 主要功能與 0.2.19 更新
 
 - 有線 USB 與無線 CarPlay，使用本機認證。
 - 相容韌體上的比亞迪抬頭顯示器（HUD）與儀表板導航提示。
 - 解析度、影格率、圖示與文字大小調整；依設定說明，在重新連線後套用。
-- 0.2.18 修正部分 USB 連線中斷情況、減少短暫音樂斷音，並改善連線階段及錯誤提示。
+- 0.2.19 讓有線 CarPlay 在許多車機上更快啟動，修正通話、Siri 與導航語音的播放時間，並修正 DiLink 4 儀表地圖與倒車影像後 CarPlay 重新連線或畫面縮小的問題。
+- 新增日文，繁體中文已完整；可在 **設定 → 診斷 → 在手機上取得報告** 下載診斷報告。
 - 可在 **設定 → 關於 → 在手機上備份或還原** 透過 QR 碼備份設定，更新時可選其他安裝程式。
 - 本機診斷報告匯出，只有在你選擇分享後才會傳送。
 - 實驗性選項預設關閉，請停車後依說明測試。
 
-[英文版本說明](docs/RELEASE-NOTES-0.2.18.md)與[驗證紀錄](docs/VALIDATION.md)記錄完整變更、已知限制及尚待實車測試的項目。自動化測試通過不代表所有車型、iOS、Siri 或通話情境都已驗證。
+[英文版本說明](docs/RELEASE-NOTES-0.2.19.md)與[驗證紀錄](docs/VALIDATION.md)記錄完整變更、已知限制及尚待實車測試的項目。自動化測試通過不代表所有車型、iOS、Siri 或通話情境都已驗證。
 
 ## 繁體中文文件
 
