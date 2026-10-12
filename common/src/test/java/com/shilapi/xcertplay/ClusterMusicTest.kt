@@ -67,8 +67,17 @@ class ClusterMusicTest {
         ClusterMusicSettings.savePermanent(context, true)
         val track = CarPlayNowPlaying(title = "Paused song", artist = "Artist", playing = false)
         ClusterMusicState.publish(track, null); idle()
-        shadowOf(Looper.getMainLooper()).idleFor(Duration.ofSeconds(30))
+        assertTrue(ReflectionHelpers.getField<Boolean>(view, "captionVisible"))
+        shadowOf(Looper.getMainLooper()).idleFor(Duration.ofSeconds(9))
         assertEquals(View.VISIBLE, view.visibility)
+        assertFalse(ReflectionHelpers.getField<Boolean>(view, "captionVisible"))
+        ClusterMusicState.publish(track.copy(artworkTransferId = 7), Bitmap.createBitmap(16, 16, Bitmap.Config.ARGB_8888)); idle()
+        assertFalse(ReflectionHelpers.getField<Boolean>(view, "captionVisible"))
+        ClusterMusicState.publish(track.copy(title = "New song"), null); idle()
+        assertTrue(ReflectionHelpers.getField<Boolean>(view, "captionVisible"))
+        shadowOf(Looper.getMainLooper()).idleFor(Duration.ofSeconds(9))
+        assertEquals(View.VISIBLE, view.visibility)
+        assertFalse(ReflectionHelpers.getField<Boolean>(view, "captionVisible"))
         ClusterMusicSettings.saveEnabled(context, false); idle()
         assertEquals(View.GONE, view.visibility)
         ClusterMusicSettings.saveEnabled(context, true); idle()
@@ -136,7 +145,17 @@ class ClusterMusicTest {
             View.MeasureSpec.makeMeasureSpec(480, View.MeasureSpec.EXACTLY))
         card.layout(0, 0, 1280, 480)
         write(card, "cluster-1280x480")
+        shadowOf(Looper.getMainLooper()).idleFor(Duration.ofSeconds(9))
+        assertEquals(View.VISIBLE, card.visibility)
+        assertFalse(ReflectionHelpers.getField<Boolean>(card, "captionVisible"))
+        write(card, "cluster-1280x480-cover-only")
         controller.pause().stop().destroy()
+    }
+
+    @Test fun squareMatchesDefaultSpeedometerHeightAndFitsNarrowProjection() {
+        val speed = com.shilapi.xcertplay.airplay.ClusterSpeedometerOverlay.rect(1280, 480, 82, 30, 50)
+        assertEquals(speed.height.toFloat(), ClusterMusicView.tileSide(1280, 480, 100), 0.01f)
+        assertTrue(ClusterMusicView.tileSide(60, 200, 150) <= 60f)
     }
 
     private fun write(view: View, name: String) {

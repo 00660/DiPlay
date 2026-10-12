@@ -5,11 +5,15 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.RectF
+import android.graphics.Path
+import android.graphics.LinearGradient
+import android.graphics.Shader
 import android.graphics.Typeface
 import android.os.Handler
 import android.os.Looper
 import android.os.SystemClock
 import android.text.TextUtils
+import android.text.StaticLayout
 import android.view.View
 import com.shilapi.xcertplay.host.R
 
@@ -22,6 +26,7 @@ internal class ClusterMusicView(context: Context) : View(context) {
     private var visibleUntil = 0L
     private var lastTrackRevision: Long? = null
     private val expire = Runnable { updateVisibility() }
+    private var captionVisible = false
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG or Paint.FILTER_BITMAP_FLAG)
     private val textPaint = android.text.TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
         color = Color.WHITE
@@ -53,6 +58,7 @@ internal class ClusterMusicView(context: Context) : View(context) {
         visibility = GONE
         snapshot = ClusterMusicState.Snapshot()
         lastTrackRevision = null
+        captionVisible = false
         super.onDetachedFromWindow()
     }
 
@@ -61,48 +67,81 @@ internal class ClusterMusicView(context: Context) : View(context) {
         val hasTrack = !snapshot.info.title.isNullOrBlank() || !snapshot.info.artist.isNullOrBlank()
         val permanent = ClusterMusicSettings.permanent(context)
         val remaining = visibleUntil - SystemClock.elapsedRealtime()
-        visibility = if (ClusterMusicSettings.enabled(context) && hasTrack && (permanent || remaining > 0)) VISIBLE else GONE
-        if (visibility == VISIBLE && !permanent) main.postDelayed(expire, remaining)
+        captionVisible = ClusterMusicSettings.enabled(context) && hasTrack && remaining > 0
+        visibility = if (ClusterMusicSettings.enabled(context) && hasTrack && (permanent || captionVisible)) VISIBLE else GONE
+        // The caption expires even when permanent artwork keeps the view visible.
+        if (visibility == VISIBLE && remaining > 0) main.postDelayed(expire, remaining)
         invalidate()
     }
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
         if (width <= 0 || height <= 0) return
-        val scale = ClusterMusicSettings.size(context) / 100f
-        val w = (width * .32f * scale).coerceAtMost(width * .85f)
-        val h = (height * .22f * scale).coerceAtMost(height * .5f)
-        val left = (width * ClusterMusicSettings.x(context) / 100f - w / 2).coerceIn(0f, width - w)
-        val top = (height * ClusterMusicSettings.y(context) / 100f - h / 2).coerceIn(0f, height - h)
-        val rect = RectF(left, top, left + w, top + h)
-        val gap = h * .1f
-        paint.color = Color.argb(235, 16, 23, 34)
-        canvas.drawRoundRect(rect, h * .12f, h * .12f, paint)
-        val artRect = RectF(left + gap, top + gap, left + h - gap, top + h - gap)
+        val side = tileSide(width, height, ClusterMusicSettings.size(context))
+        val left = (width * ClusterMusicSettings.x(context) / 100f - side / 2).coerceIn(0f, width - side)
+        val top = (height * ClusterMusicSettings.y(context) / 100f - side / 2).coerceIn(0f, height - side)
+        val rect = RectF(left, top, left + side, top + side)
+        // Match the speedometer's palette and corner radius relative to tile height.
+        val radius = side * .22f
+        paint.shader = null
+        paint.style = Paint.Style.FILL
+        paint.color = Color.argb(217, 12, 14, 18)
+        canvas.drawRoundRect(rect, radius, radius, paint)
+        val inset = side * .05f
+        val artRect = RectF(left + inset, top + inset, rect.right - inset, rect.bottom - inset)
+        val clipped = canvas.save()
+        canvas.clipPath(Path().apply { addRoundRect(artRect, radius - inset, radius - inset, Path.Direction.CW) })
         val art = snapshot.artwork?.takeUnless { it.isRecycled }
+        paint.color = Color.WHITE
         if (art != null) canvas.drawBitmap(art, null, artRect, paint)
         else {
-            paint.color = Color.rgb(42, 55, 73)
-            canvas.drawRoundRect(artRect, gap, gap, paint)
-            textPaint.textSize = h * .35f
-            canvas.drawText("♪", artRect.left + artRect.width() * .3f, top + h * .65f, textPaint)
+            paint.color = Color.rgb(28, 32, 40)
+            canvas.drawRect(artRect, paint)
+            textPaint.textSize = side * .40f
+            textPaint.color = Color.WHITE
+            textPaint.textAlign = Paint.Align.CENTER
+            canvas.drawText("♪", rect.centerX(), top + side * .67f, textPaint)
         }
-        val textLeft = left + h + gap
-        val available = (rect.right - gap - textLeft).coerceAtLeast(1f)
-        val saved = canvas.save()
-        canvas.clipRect(textLeft, top, rect.right - gap, rect.bottom)
-        textPaint.textSize = h * .21f
-        textPaint.color = Color.WHITE
-        canvas.drawText(TextUtils.ellipsize(snapshot.info.title.orEmpty(), textPaint, available, TextUtils.TruncateAt.END).toString(),
-            textLeft, top + h * .4f, textPaint)
-        textPaint.textSize = h * .16f
-        textPaint.color = Color.rgb(190, 201, 217)
-        val detail = snapshot.info.artist?.takeIf { it.isNotBlank() }
-            ?: snapshot.info.album?.takeIf { it.isNotBlank() } ?: context.getString(R.string.settings_cluster_music_unknown)
-        canvas.drawText(TextUtils.ellipsize(detail, textPaint, available, TextUtils.TruncateAt.END).toString(),
-            textLeft, top + h * .7f, textPaint)
-        canvas.restoreToCount(saved)
+        if (captionVisible) {
+            val pad = side * .075f
+            val textLeft = artRect.left + pad
+            val available = (artRect.width() - pad * 2).toInt().coerceAtLeast(1)
+            textPaint.textAlign = Paint.Align.LEFT
+            textPaint.color = Color.WHITE
+            textPaint.textSize = side * .125f
+            val title = snapshot.info.title.orEmpty()
+            val layout = StaticLayout.Builder.obtain(title, 0, title.length, textPaint, available)
+                .setMaxLines(2).setEllipsize(TextUtils.TruncateAt.END).setIncludePad(false).build()
+            val bandBottom = artRect.top + layout.height + side * .13f + pad * 3
+            paint.shader = LinearGradient(0f, artRect.top, 0f, bandBottom,
+                Color.argb(240, 12, 14, 18), Color.argb(160, 12, 14, 18), Shader.TileMode.CLAMP)
+            canvas.drawRect(artRect.left, artRect.top, artRect.right, bandBottom, paint)
+            paint.shader = null
+            val translated = canvas.save()
+            canvas.translate(textLeft, artRect.top + pad)
+            layout.draw(canvas)
+            canvas.restoreToCount(translated)
+            textPaint.textSize = side * .095f
+            textPaint.color = Color.rgb(220, 224, 232)
+            val detail = snapshot.info.artist?.takeIf { it.isNotBlank() }
+                ?: snapshot.info.album?.takeIf { it.isNotBlank() } ?: context.getString(R.string.settings_cluster_music_unknown)
+            canvas.drawText(TextUtils.ellipsize(detail, textPaint, available.toFloat(), TextUtils.TruncateAt.END).toString(),
+                textLeft, artRect.top + pad * 2 + layout.height + side * .095f, textPaint)
+        }
+        canvas.restoreToCount(clipped)
+        paint.style = Paint.Style.STROKE
+        paint.strokeWidth = side * .012f
+        paint.color = Color.argb(35, 255, 255, 255)
+        canvas.drawRoundRect(rect, radius, radius, paint)
+        paint.style = Paint.Style.FILL
     }
 
-    companion object { const val TEMPORARY_MILLIS = 8_000L }
+    companion object {
+        const val TEMPORARY_MILLIS = 8_000L
+        // 100% matches the default speedometer tile height on a 1280x480 panel.
+        fun tileSide(width: Int, height: Int, sizePercent: Int): Float =
+            (height * .30f * sizePercent.coerceIn(50, 150) / 100f)
+                .coerceAtLeast(minOf(80f, width.toFloat(), height.toFloat()))
+                .coerceAtMost(minOf(width.toFloat(), height.toFloat()))
+    }
 }
