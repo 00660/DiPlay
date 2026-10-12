@@ -14,6 +14,8 @@ Changes through DiPlay 0.2.18 are documented in [0.2.18 release notes](RELEASE-N
 
 - Fix the playback position DiPlay reports to the iPhone for calls, Siri and navigation prompts sent in the 16 kHz audio format. DiPlay counted it at 48 kHz, three times too fast: 14.5 s ahead of the received audio after 20 s of a call in which the driver could not understand the other side, and 7 s ahead for navigation prompts ([#473](https://github.com/shihabal3amri/DiPlay/issues/473), [#536](https://github.com/shihabal3amri/DiPlay/issues/536)). The position now counts at the format's own rate. Music and 48 kHz streams are unchanged. Pending in-car acceptance. [#644](https://github.com/shihabal3amri/DiPlay/pull/644)
 
+- When the head unit's microphone fails its first read after switching to call mode, DiPlay restarts recording up to three times instead of leaving the call without a microphone. A Seal 05 DM-i (MT6765, Android 9) lost the microphone this way on two of three USB calls ([#647](https://github.com/shihabal3amri/DiPlay/issues/647)). The report logs `Microphone: recording restarted … attempt=N`. Pending in-car acceptance. [#644](https://github.com/shihabal3amri/DiPlay/pull/644)
+
 ## Display
 
 - Dialogs have a background again on Android 9 and older. Since 0.2.15, those versions drew Settings dialogs such as the car hotspot details without one, over the page behind them ([#640](https://github.com/shihabal3amri/DiPlay/issues/640), [#617](https://github.com/shihabal3amri/DiPlay/issues/617)). [#644](https://github.com/shihabal3amri/DiPlay/pull/644)
@@ -21,4 +23,5 @@ Changes through DiPlay 0.2.18 are documented in [0.2.18 release notes](RELEASE-N
 
 ## Diagnostics
 
+- The `Microphone: stats` line records the loudest sample DiPlay sent, as `peakDbfs=…` or `silent`, so a microphone that delivers silence can be told apart from audio the iPhone discards. Playback stats for calls now reach the report: they were dropped by the filter that removes the iPhone's own log lines ([#647](https://github.com/shihabal3amri/DiPlay/issues/647)). [#644](https://github.com/shihabal3amri/DiPlay/pull/644)
 - Diagnostic reports log the iPhone's now-playing and route-guidance updates only for the first five, then once per hundred with a count. They were more than half of long reports, and reports cut off by GitHub's size limit lost the lines that mattered ([#473](https://github.com/shihabal3amri/DiPlay/issues/473), [#536](https://github.com/shihabal3amri/DiPlay/issues/536), [#606](https://github.com/shihabal3amri/DiPlay/issues/606)). The per-frame USB multiplexer line in logcat stops after 50 frames ([#634](https://github.com/shihabal3amri/DiPlay/issues/634)). [#644](https://github.com/shihabal3amri/DiPlay/pull/644)
