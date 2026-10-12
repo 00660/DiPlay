@@ -340,6 +340,26 @@ class AdaptiveSettingsUiTest {
         assertEquals("home", ReflectionHelpers.getField<String>(screen, "page"))
     }
 
+    @Test fun rebuiltSearchFieldsDoNotLeaveLayoutListenersOnTheWindow() {
+        val screen = openSettings()
+        descendants(screen.window.decorView).single {
+            it.contentDescription == screen.getString(R.string.settings_search)
+        }.performClick()
+        shadowOf(Looper.getMainLooper()).idle()
+        fun globalLayoutListeners(): Int {
+            val listeners = ReflectionHelpers.getField<Any?>(screen.window.decorView.viewTreeObserver, "mOnGlobalLayoutListeners")
+                ?: return 0
+            return ReflectionHelpers.callInstanceMethod<Int>(listeners, "size")
+        }
+        val before = globalLayoutListeners()
+        repeat(5) {
+            ReflectionHelpers.callInstanceMethod<Unit>(screen, "render")
+            shadowOf(Looper.getMainLooper()).idle()
+        }
+        assertTrue(descendants(screen.window.decorView).any { it is EditText })
+        assertEquals(before, globalLayoutListeners())
+    }
+
     @Test
     @Config(qualifiers = "en-w900dp-h600dp-land")
     fun backCollapsesAnEmptySearchAndFullLayoutKeepsItsExistingLabel() {

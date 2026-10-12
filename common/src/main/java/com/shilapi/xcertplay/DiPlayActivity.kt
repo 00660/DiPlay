@@ -1429,18 +1429,23 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
         textSize = if (compact) 16f else 18f
         setTextColor(TEXT)
         setHintTextColor(MUTED)
-        background = buttonShape(BUTTON, BORDER)
-        foreground = buttonFocusRing()
+        // The editor scrolls long text sideways and its drawing canvas scrolls with it, but Android
+        // draws the background unscrolled. The icon and focus ring live there, so they stay put
+        // without compensating for scroll or for the text's vertical centring.
+        val iconSize = headerIconSize(compact)
+        val icon = getDrawable(R.drawable.ic_dp_search)?.mutate()?.apply { setTint(MUTED) }
+        background = android.graphics.drawable.LayerDrawable(
+            listOfNotNull(buttonShape(BUTTON, BORDER), icon, buttonFocusRing()).toTypedArray(),
+        ).apply {
+            if (icon != null) {
+                setLayerGravity(1, Gravity.START or Gravity.CENTER_VERTICAL)
+                setLayerSize(1, iconSize, iconSize)
+                setLayerInsetRelative(1, dp(16), 0, 0, 0)
+            }
+        }
         gravity = Gravity.CENTER_VERTICAL or Gravity.START
         includeFontPadding = false
-        setPadding(dp(16), 0, dp(16), 0)
-        compoundDrawablePadding = dp(10)
-        val iconSize = headerIconSize(compact)
-        setCompoundDrawablesRelative(
-            getDrawable(R.drawable.ic_dp_search)?.mutate()?.apply {
-                setTint(MUTED)
-                setBounds(0, 0, iconSize, iconSize)
-            }, null, null, null)
+        setPaddingRelative(dp(16) + if (icon != null) iconSize + dp(10) else 0, 0, dp(16), 0)
         inputType = android.text.InputType.TYPE_CLASS_TEXT
         // Landscape head units would otherwise cover the results with a full-screen editor.
         imeOptions = android.view.inputmethod.EditorInfo.IME_FLAG_NO_EXTRACT_UI or
@@ -1466,11 +1471,18 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
             true
         }
         doAfterTextChanged { onSettingsSearchChanged(this) }
-        viewTreeObserver.addOnGlobalLayoutListener {
+        // The keyboard resizes the window, not this field, so follow window layouts. A listener added
+        // here would join the window's observer and outlive every rebuilt field; register it only
+        // while this field is attached.
+        val followWindow = android.view.ViewTreeObserver.OnGlobalLayoutListener {
             if (settingsSearchBox === this && settingsSearchPopup?.isShowing == true) {
                 positionSettingsSearchResults(this, settingsSearchPopup!!)
             }
         }
+        addOnAttachStateChangeListener(object : View.OnAttachStateChangeListener {
+            override fun onViewAttachedToWindow(view: View) = view.viewTreeObserver.addOnGlobalLayoutListener(followWindow)
+            override fun onViewDetachedFromWindow(view: View) = view.viewTreeObserver.removeOnGlobalLayoutListener(followWindow)
+        })
         if (settingsSearchRestoreFocus) {
             settingsSearchRestoreFocus = false
             post {
@@ -5670,51 +5682,49 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
     private fun row() = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL; layoutParams = LinearLayout.LayoutParams(-1, -2) }
     private class SettingsSearchEditText(context: android.content.Context) : EditText(context) {
         private val glyphBounds = android.graphics.Rect()
-
-        override fun onDrawForeground(canvas: android.graphics.Canvas) {
-            // View's drawing canvas follows the editor's scroll position. The focus ring
-            // belongs to the field itself, so cancel scrolling only for the foreground.
-            val checkpoint = canvas.save()
-            canvas.translate(scrollX.toFloat(), scrollY.toFloat())
-            super.onDrawForeground(canvas)
-            canvas.restoreToCount(checkpoint)
-        }
+        private var measuredHint: String? = null
+        private var measuredHintHeight = -1
+        private var measuredHintTextSize = -1f
+        private var measuredHintBaseline = 0
 
         override fun onDraw(canvas: android.graphics.Canvas) {
             val value: CharSequence = if (text.isNullOrEmpty()) hint ?: "" else text
-            // TextView.baseline describes the editable layout, even while it draws a hint.
-            // Use the hint's own line metrics in both compact and full layouts.
-            val drawingBaseline = if (text.isNullOrEmpty() && value.isNotEmpty()) {
-                // The editor scrolls horizontally rather than wrapping. Measure the whole
-                // hint on one line too, even when the visible field cannot fit its text.
-                val hintWidth = maxOf(
-                    (width - compoundPaddingLeft - compoundPaddingRight).coerceAtLeast(1),
-                    kotlin.math.ceil(android.text.Layout.getDesiredWidth(value, paint).toDouble()).toInt(),
-                )
-                val hintLayout = android.text.StaticLayout.Builder.obtain(
-                    value, 0, value.length, paint,
-                    hintWidth,
-                ).setMaxLines(1).setIncludePad(includeFontPadding).apply {
-                    if (Build.VERSION.SDK_INT >= 28) setUseLineSpacingFromFallbacks(isFallbackLineSpacing)
-                }.build()
-                extendedPaddingTop +
-                    ((height - extendedPaddingTop - extendedPaddingBottom - hintLayout.height).coerceAtLeast(0) / 2) +
-                    hintLayout.getLineBaseline(0)
-            } else baseline
+            val drawingBaseline = if (text.isNullOrEmpty() && value.isNotEmpty()) hintBaseline(value) else baseline
             val offset = if (baseline >= 0) {
                 val contentCentre = paddingTop + (height - paddingTop - paddingBottom) / 2f
                 contentCentre - alignedTextCentreY(this, value, glyphBounds, drawingBaseline)
             } else 0f
-            // Text, selection and cursor move together; keep the search icon centred in the field.
-            compoundDrawablesRelative.filterNotNull().forEach { drawable ->
-                val bounds = drawable.bounds
-                val top = -offset.roundToInt()
-                drawable.setBounds(bounds.left, top, bounds.right, top + bounds.height())
-            }
+            // Text, selection and cursor move together.
             val checkpoint = canvas.save()
             canvas.translate(0f, offset)
             super.onDraw(canvas)
             canvas.restoreToCount(checkpoint)
+        }
+
+        /**
+         * TextView.baseline describes the editable layout, even while it draws a hint, and a hint in
+         * a fallback font can sit differently. Measured once per hint, height and text size rather
+         * than on every frame of the blinking cursor.
+         */
+        private fun hintBaseline(value: CharSequence): Int {
+            if (value.toString() != measuredHint || height != measuredHintHeight || paint.textSize != measuredHintTextSize) {
+                // The editor scrolls horizontally rather than wrapping: lay the hint out on one line.
+                val hintWidth = maxOf(
+                    (width - compoundPaddingLeft - compoundPaddingRight).coerceAtLeast(1),
+                    kotlin.math.ceil(android.text.Layout.getDesiredWidth(value, paint).toDouble()).toInt(),
+                )
+                val hintLayout = android.text.StaticLayout.Builder.obtain(value, 0, value.length, paint, hintWidth)
+                    .setMaxLines(1).setIncludePad(includeFontPadding).apply {
+                        if (Build.VERSION.SDK_INT >= 28) setUseLineSpacingFromFallbacks(isFallbackLineSpacing)
+                    }.build()
+                measuredHintBaseline = extendedPaddingTop +
+                    ((height - extendedPaddingTop - extendedPaddingBottom - hintLayout.height).coerceAtLeast(0) / 2) +
+                    hintLayout.getLineBaseline(0)
+                measuredHint = value.toString()
+                measuredHintHeight = height
+                measuredHintTextSize = paint.textSize
+            }
+            return measuredHintBaseline
         }
     }
 
