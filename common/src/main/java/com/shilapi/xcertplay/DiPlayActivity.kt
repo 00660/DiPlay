@@ -1551,7 +1551,13 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
             // Tapping elsewhere closes the list and keeps the query; tapping the box reopens it.
             isOutsideTouchable = true
             inputMethodMode = PopupWindow.INPUT_METHOD_NEEDED
-            setIsLaidOutInScreen(true)
+            // The list is placed in screen coordinates. Android 10 made this call public; before it the
+            // same switch is setLayoutInScreenEnabled, and calling the new name stops the app.
+            if (Build.VERSION.SDK_INT >= 29) setIsLaidOutInScreen(true)
+            else runCatching {
+                PopupWindow::class.java.getMethod("setLayoutInScreenEnabled", Boolean::class.javaPrimitiveType)
+                    .invoke(this, true)
+            }
             positionSettingsSearchResults(box, this)
         }
     }
