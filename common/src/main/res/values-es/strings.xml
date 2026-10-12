@@ -822,4 +822,6 @@
     <string name="connection_help_existing_wifi">Comprueba que la unidad y el iPhone estén en la misma red Wi-Fi y que su nombre y contraseña coincidan con DiPlay, y reintenta.</string>
     <string name="settings_report_on_phone">Obtener el informe en un teléfono</string>
     <string name="settings_report_on_phone_hint">Escanea el código con la cámara del teléfono para abrir esta página en su navegador y elige Descargar informe. Mantén esta pantalla abierta hasta que termine la descarga.</string>
+    <string name="settings_call_speakerphone">Llamadas por el altavoz</string>
+    <string name="settings_call_speakerphone_description">Para un teléfono o una tableta Android usados como unidad principal: reproduce las llamadas de CarPlay por su altavoz en lugar del auricular y usa su micrófono manos libres. Déjalo desactivado en la unidad principal de un coche. Se aplica desde la próxima llamada.</string>
 </resources>
