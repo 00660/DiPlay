@@ -224,6 +224,19 @@ class CarPlayHostActivity : ComponentActivity() {
             updateHotspotStatusBlock()
             maybeStartCarPlay()
         }
+    private val wiredPermissions =
+        registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { grants ->
+            awaitingWiredPermissions = false
+            wiredPermissionsResolved = true
+            appendLog(
+                if (grants.values.all { it }) {
+                    "Wired startup permissions granted"
+                } else {
+                    "Local network access denied: Android 17 may drop the iPhone's AirPlay connection over USB"
+                },
+            )
+            requestStartupPrerequisites()
+        }
     private val microphonePermission =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
             microphoneAvailable = granted
@@ -463,6 +476,8 @@ class CarPlayHostActivity : ComponentActivity() {
     private var awaitingVpnConsent = false
     private var vpnAdbConsentTried = false
     private var awaitingWirelessPermissions = false
+    private var awaitingWiredPermissions = false
+    private var wiredPermissionsResolved = false
     private var awaitingLocationPermission = false
     private var vpnReady = false
     private var hotspotStatus = HotspotStatus(state = "off")
@@ -832,9 +847,25 @@ class CarPlayHostActivity : ComponentActivity() {
         }
         if (wirelessEnabled) {
             requestWirelessPermissions()
-        } else {
+        } else if (!requestWiredPermissions()) {
             requestVpnConsent()
         }
+    }
+
+    /**
+     * Asks once for the permissions a wired start needs ([WiredPermissions]); true while that request
+     * is open. A refusal is logged and the start goes on: the USB network may still pass on some ROMs.
+     */
+    private fun requestWiredPermissions(): Boolean {
+        if (wiredPermissionsResolved) return false
+        val missing = WiredPermissions.required(Build.VERSION.SDK_INT)
+            .filter { checkSelfPermission(it) != PackageManager.PERMISSION_GRANTED }
+        if (missing.isEmpty()) return false
+        if (!awaitingWiredPermissions) {
+            awaitingWiredPermissions = true
+            wiredPermissions.launch(missing.toTypedArray())
+        }
+        return true
     }
 
     private fun requestLocationPermission() {
