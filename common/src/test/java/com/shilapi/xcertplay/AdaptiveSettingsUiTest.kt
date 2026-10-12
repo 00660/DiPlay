@@ -1096,6 +1096,21 @@ class AdaptiveSettingsUiTest {
         }
     }
 
+    // The report is troubleshooting evidence: its way onto a phone starts in Diagnostics and returns there.
+    @Test fun diagnosticsOpensThePhonePageAndBackReturnsToDiagnostics() {
+        val screen = openSettings()
+        descendants(screen.window.decorView).first { candidate ->
+            candidate.contentDescription == screen.getString(R.string.settings_open_category, screen.getString(R.string.diagnostics))
+        }.performClick()
+        texts(screen).first { it.text == screen.getString(R.string.settings_report_on_phone) }.performClick()
+        // The phone page, under the name the driver tapped.
+        assertTrue(texts(screen).any { it.text == screen.getString(R.string.settings_report_on_phone) })
+        assertFalse(texts(screen).any { it.text == screen.getString(R.string.backup_title) })
+        assertFalse(texts(screen).any { it.text == screen.getString(R.string.save_diagnostic_report) })
+        screen.onBackPressedDispatcher.onBackPressed()
+        assertTrue(texts(screen).any { it.text == screen.getString(R.string.save_diagnostic_report) })
+    }
+
     private fun openSettings(): DiPlayActivity = Robolectric.buildActivity(
         DiPlayActivity::class.java,
         Intent(context, DiPlayActivity::class.java).putExtra("page", "settings"),

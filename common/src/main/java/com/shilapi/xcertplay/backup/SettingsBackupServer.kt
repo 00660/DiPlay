@@ -34,6 +34,8 @@ class SettingsBackupServer(
     private val page: ByteArray,
     private val export: () -> ByteArray,
     private val import: (ByteArray) -> SettingsImportOutcome,
+    /** The diagnostic report as text, or null when the page has none to offer. */
+    private val report: (() -> ByteArray)? = null,
 ) {
     private var server: ServerSocket? = null
     private var thread: Thread? = null
@@ -173,6 +175,15 @@ class SettingsBackupServer(
                 ),
                 export(),
             )
+            route == "report" && request.method == "GET" && report != null -> Triple(
+                200,
+                mapOf(
+                    "Content-Type" to "text/plain; charset=utf-8",
+                    "Content-Disposition" to "attachment; filename=\"$REPORT_FILE\"",
+                    "Cache-Control" to "no-store",
+                ),
+                report(),
+            )
             route == "import" && request.method == "POST" -> {
                 val outcome = import(request.body)
                 onImported?.invoke(outcome)
@@ -199,6 +210,7 @@ class SettingsBackupServer(
         const val IDLE_TIMEOUT_MILLIS = 10 * 60_000
         private const val MAX_REQUEST = 2 shl 20
         const val EXPORT_FILE = "diplay-settings.json"
+        const val REPORT_FILE = "diplay-report.txt"
 
         fun addressCandidates(preferredPrefix: String? = null): List<String> = runCatching {
             NetworkInterface.getNetworkInterfaces().toList().asSequence()
