@@ -66,6 +66,14 @@ sdk.dir=C:/Users/YOUR_NAME/AppData/Local/Android/Sdk
 
 Linux／macOS 將 `.\gradlew.bat` 換成 `./gradlew`。確認結果為 `BUILD SUCCESSFUL`。CI 另執行 `python3 scripts/check_public_tree.py`，避免認證容器或私密金鑰進入公開原始碼。
 
+USB 權限測試需要 POSIX shell。Linux／macOS 使用 `sh`；Windows 會自動使用標準安裝位置的 Git for Windows `bin/sh.exe`。若安裝在其他位置，可在執行測試前指定：
+
+```powershell
+$env:DIPLAY_TEST_SHELL = 'C:\path\to\Git\bin\sh.exe'
+```
+
+測試透過標準輸入傳送腳本，避免 Windows 命令列改寫引號。檔案替換及 FileProvider 的測試相容層會保留 Android 的行為，包含拒絕設定範圍外的檔案。
+
 ## 獨立實車測試 APK
 
 在 Git 之外準備只包含指定執行時素材的目錄：

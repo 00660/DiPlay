@@ -18,19 +18,30 @@
 | 文件連結與標題錨點 | 繁體中文文件內的本機目標與錨點可以解析 |
 | 公開原始碼與差異檢查 | `scripts/check_public_tree.py` 及 `git diff --check` 通過 |
 
-## 完整 CI 尚未通過
+## 完整 CI 已通過
 
-已執行 `AGENTS.md` 指定的九個任務，並以 `--continue` 保留其他任務的結果。完整單元測試在此 Windows 環境仍有下列失敗；這些測試及其受測實作未在本次繁體中文變更中修改：
+首次完整測試在 Windows 環境出現 10 項失敗。以三組測試建立 9 秒的重現後，確認原因是主機命令列與檔案系統語意不等同 Android，已修正測試執行器及相容層：
 
-| 測試類別 | 失敗數 | 觀察到的錯誤 |
+| 測試類別 | 初次失敗數 | 根因與修正 |
 | --- | --- | --- |
-| `HotspotJoinNormalizedTransactionTest` | 3 | 預期套用／回復結果，實際得到 `STORAGE_FAILED` |
-| `UsbPermissionSetupTest` | 3 | 使用 Git 的 sh 後，shell 指令出現引號解析／`;;` 語法錯誤；未加入 sh 時則找不到執行檔 |
-| `UpdateInstallCompatibilityTest` | 4 | FileProvider 無法找到包含 Windows 暫存 APK 路徑的已設定根目錄 |
+| `HotspotJoinNormalizedTransactionTest` | 3 | Windows 的 `File.renameTo` 無法取代既有日誌；測試只替換 AtomicFile 的 rename 步驟，保留 Android 的替換行為及真實日誌驗證 |
+| `UsbPermissionSetupTest` | 3 | Windows 改寫 `sh -c` 腳本的雙引號；改由標準輸入傳送原始腳本，並自動尋找標準 Git for Windows shell |
+| `UpdateInstallCompatibilityTest` | 4 | FileProvider 的 Android 路徑分隔語意與 Windows 主機不同；使用專案既有的 `FileProviderPathTestShadow` |
 
-完整執行的 shared 測試為 1,366 項、3 項失敗；common 為 1,166 項、7 項失敗。最後另以繁體中文相關的 24 項測試、Home 完整 6 項測試及三個應用程式的 lint／APK 建置驗證最終變更，該次 Gradle 執行為 `BUILD SUCCESSFUL`。這不等同於完整 CI 已通過。
+新增回歸檢查涵蓋每個交易階段的日誌替換及重新讀取、shell 引號與字面特殊字元，以及拒絕 FileProvider 根目錄外但具有相同名稱前綴的目錄。原有同步失敗、交易回復、完整設定內容與公開 APK 校驗測試繼續執行，正式版程式及檔案存取範圍沒有變更。
 
-本機完整執行紀錄位於 `.gradle/traditional-chinese-validation.log`；common 完整報告副本位於 `.gradle/traditional-chinese-full-tests/common/`。這些是忽略的本機產物，不提交到 Git。
+已重新執行 `AGENTS.md` 的全部九個任務，結果為 `BUILD SUCCESSFUL`（3 分 31 秒）：
+
+| 模組 | 單元測試數 | 失敗／錯誤／略過 |
+| --- | --- | --- |
+| shared | 1,367 | 0／0／0 |
+| common | 1,170 | 0／0／0 |
+| home | 6 | 0／0／0 |
+| 合計 | 2,543 | 0／0／0 |
+
+mobile、home、maphost 的 `lintDebug` 與 `assembleDebug` 也全部通過。此為本機完整 CI 指令的結果，不代表已取得 GitHub Actions 的遠端檢查結果。
+
+本機結果摘要位於 `.gradle/test-portability-summary.json`，完整測試報告位於各模組的 `build/reports/tests/testDebugUnitTest/`。首次失敗紀錄與 common 報告副本分別保留於 `.gradle/traditional-chinese-validation.log` 與 `.gradle/traditional-chinese-full-tests/common/`。這些是忽略的本機產物，不提交到 Git。
 
 ## Android 手機實機檢查
 
