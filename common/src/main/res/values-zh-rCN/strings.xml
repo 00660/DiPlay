@@ -791,6 +791,8 @@
     <string name="backup_page_hint">用手机相机扫码，在浏览器中打开此页面。导出保存设置文件，导入载入设置文件。</string>
     <string name="backup_other_addresses">若扫码无法打开，请尝试将浏览器中的 IP 地址改为 %1$s。</string>
     <string name="backup_no_network">没有可用的 Wi-Fi 网络。请先开启车载热点，或让手机连接车机 Wi-Fi。</string>
+    <string name="backup_type_address">没有相机？在浏览器中打开 %1$s，然后输入验证码 %2$s。</string>
+    <string name="backup_code_entry_closed">验证码输错次数过多，已停用。请离开此页面后重新打开，以取得新的验证码。扫码仍可使用。</string>
     <string name="backup_summary">已导入 %1$d 项设置，跳过 %2$d 项。</string>
     <string name="backup_import_invalid">这不是 DiPlay 设置备份文件。</string>
     <string name="settings_background_update_checks">在后台检查更新</string>

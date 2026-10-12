@@ -696,6 +696,8 @@
     <string name="backup_page_hint">امسح الرمز بكاميرا الهاتف لفتح هذه الصفحة في متصفحه. التصدير يحفظ ملف الإعدادات، والاستيراد يحمّله.</string>
     <string name="backup_other_addresses">إذا لم يفتح الرمز، جرّب تغيير عنوان IP في المتصفح إلى %1$s.</string>
     <string name="backup_no_network">لا توجد شبكة Wi-Fi متاحة. شغّل نقطة اتصال السيارة أو وصّل الهاتف بشبكة السيارة أولاً.</string>
+    <string name="backup_type_address">لا توجد كاميرا؟ افتح %1$s في متصفح وأدخل الرمز %2$s.</string>
+    <string name="backup_code_entry_closed">أُدخلت رموز غير صحيحة كثيرة، فلم يعد الرمز صالحًا. غادر هذه الصفحة وافتحها مجددًا للحصول على رمز جديد. رمز QR ما زال يعمل.</string>
     <string name="backup_summary">تم استيراد %1$d من الإعدادات، وتجاهل %2$d.</string>
     <string name="backup_import_invalid">هذا الملف ليس نسخة احتياطية لإعدادات DiPlay.</string>
     <string name="settings_background_update_checks">التحقق من التحديثات في الخلفية</string>

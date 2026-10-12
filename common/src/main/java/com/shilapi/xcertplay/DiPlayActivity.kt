@@ -2397,7 +2397,13 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
                 export = { SettingsBackupCodec.export(this, version()) },
                 import = { SettingsBackupCodec.import(this, it) },
                 report = { diagnosticReportText(applicationContext).toByteArray(Charsets.UTF_8) },
+                codePage = assets.open("settings-code.html").use { it.readBytes() },
             )
+            created.onCodeEntryClosed = {
+                runOnUiThread {
+                    if (!isFinishing && !isDestroyed && backupServer === created) render()
+                }
+            }
             created.onIdle = {
                 runOnUiThread {
                     if (isFinishing || isDestroyed || backupServer !== created) return@runOnUiThread
@@ -2428,6 +2434,7 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
             backupSummary = null
         }
         val active = endpoint
+        backupServer?.landing = if (forReport) "#report" else ""
         val qr = ImageView(this).apply {
             val side = dp(240)
             setImageBitmap(SettingsQrCode.encode(active.url(addresses.first()) + if (forReport) "#report" else "", side))
@@ -2442,6 +2449,15 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
             backupSummary?.let {
                 addView(label(it, 15, TEXT).apply { setPadding(0, dp(16), 0, 0) })
             }
+            // For a computer, or a phone whose camera will not read the code.
+            addView(label(
+                if (backupServer?.codeEntryOpen == true) {
+                    getString(R.string.backup_type_address, active.typedAddress(addresses.first()),
+                        active.code.chunked(3).joinToString(" "))
+                } else getString(R.string.backup_code_entry_closed),
+                16,
+                TEXT,
+            ).apply { setPadding(0, dp(16), 0, 0) })
             if (addresses.size > 1) {
                 addView(label(
                     addresses.drop(1).joinToString("\n") { getString(R.string.backup_other_addresses, it) },
