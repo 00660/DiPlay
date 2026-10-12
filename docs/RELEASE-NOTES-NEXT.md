@@ -16,6 +16,8 @@ Changes through DiPlay 0.2.18 are documented in [0.2.18 release notes](RELEASE-N
 
 - When the head unit's microphone fails its first read after switching to call mode, DiPlay restarts recording up to three times instead of leaving the call without a microphone. A Seal 05 DM-i (MT6765, Android 9) lost the microphone this way on two of three USB calls ([#647](https://github.com/shihabal3amri/DiPlay/issues/647)). The report logs `Microphone: recording restarted … attempt=N`. Pending in-car acceptance. [#644](https://github.com/shihabal3amri/DiPlay/pull/644)
 
+- Music no longer underruns every few seconds while the CarPlay screen is in the background. Since 0.2.18, an audio packet the decoder could not take yet waited up to 0.5 s, and a slowed decoder fell further behind: on a DiLink 3.0 the queue grew to 190 packets ([#649](https://github.com/shihabal3amri/DiPlay/issues/649)). Audio now waits at most 0.1 s after draining the decoder once, which still covers the music dropouts fixed in 0.2.18 ([#381](https://github.com/shihabal3amri/DiPlay/issues/381)). Pending in-car acceptance. [#644](https://github.com/shihabal3amri/DiPlay/pull/644)
+
 ## Display
 
 - Dialogs have a background again on Android 9 and older. Since 0.2.15, those versions drew Settings dialogs such as the car hotspot details without one, over the page behind them ([#640](https://github.com/shihabal3amri/DiPlay/issues/640), [#617](https://github.com/shihabal3amri/DiPlay/issues/617)). [#644](https://github.com/shihabal3amri/DiPlay/pull/644)
