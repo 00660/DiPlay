@@ -113,6 +113,23 @@ class AudioChannelPersistenceTest {
         assertEquals(15, AirPlayPersistence.loadNavigationAudioChannel(context))
     }
 
+    @Test fun onlyAFirstSetupAppliesTheGenerationDefault() {
+        val guide = context.getSharedPreferences("diplay", Context.MODE_PRIVATE)
+        guide.edit().clear().commit()
+        // Set up before the guide existed: a saved iPhone and automatic routing stay as they are.
+        assertFalse(SetupGuide.applyFirstSetupDefaults(context, DiLinkGeneration.DILINK_4, phoneChosen = true))
+        assertFalse(prefs.contains("navigation_audio_channel"))
+        // Re-running the guide after it was finished once.
+        SetupGuide.markSeen(context)
+        assertFalse(SetupGuide.applyFirstSetupDefaults(context, DiLinkGeneration.DILINK_4, phoneChosen = false))
+        assertFalse(prefs.contains("navigation_audio_channel"))
+        // A new install confirming its car.
+        guide.edit().clear().commit()
+        assertTrue(SetupGuide.applyFirstSetupDefaults(context, DiLinkGeneration.DILINK_4, phoneChosen = false))
+        assertEquals(14, AirPlayPersistence.loadNavigationAudioChannel(context))
+        guide.edit().clear().commit()
+    }
+
     @Test fun setupGuideDefaultPreservesExistingNewAndLegacySettings() {
         AirPlayPersistence.saveNavigationAudioChannel(context, 0)
         assertFalse(SetupGuide.applyGenerationDefaults(context, DiLinkGeneration.DILINK_5))

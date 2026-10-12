@@ -52,6 +52,13 @@ object SetupGuide {
             navigationAudioChannelDefault(generation),
         )
 
+    /**
+     * Applies the generation defaults when the driver confirms the car on a first setup only. A driver who
+     * re-runs the guide, or set DiPlay up before the guide existed, keeps the routing left on automatic.
+     */
+    fun applyFirstSetupDefaults(context: Context, generation: DiLinkGeneration, phoneChosen: Boolean): Boolean =
+        shouldOpenOnLaunch(seen(context), phoneChosen) && applyGenerationDefaults(context, generation)
+
     private fun prefs(context: Context) = context.getSharedPreferences("diplay", Context.MODE_PRIVATE)
 
     fun seen(context: Context): Boolean = prefs(context).getBoolean("setup_guide_seen", false)
