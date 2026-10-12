@@ -2989,6 +2989,15 @@ class CarPlayHostActivity : ComponentActivity() {
                 ViewGroup.LayoutParams.WRAP_CONTENT,
             ).apply { topMargin = dp(12) },
         )
+        // Exit ends CarPlay, so it stays at the end of the list rather than pinned beside Save, where a
+        // driver could hit it while reaching for Save.
+        content.addView(
+            exitApplicationButton,
+            LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+            ).apply { topMargin = dp(30) },
+        )
 
         val scroll = ScrollView(this).apply {
             isFillViewport = true
@@ -3041,8 +3050,6 @@ class CarPlayHostActivity : ComponentActivity() {
                 dp(SWIPE_CHROME_PADDING_DP), dp(SWIPE_CHROME_PADDING_DP))
             addView(save, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT))
-            addView(exitApplicationButton, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(SWIPE_ACTION_GAP_DP) })
         }
         panel.addView(LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL

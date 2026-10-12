@@ -124,15 +124,18 @@ class CarPlayHostSettingsTest {
             assertTrue(panel.top > 0)
             assertTrue(panel.bottom < height)
             val scroll = views(panel).filterIsInstance<ScrollView>().first()
-            for (label in listOf(R.string.save_and_reconnect, R.string.exit_application)) {
-                val action = views(panel).filterIsInstance<Button>()
-                    .first { it.text == activity.getString(label) }
-                assertFalse(views(scroll).any { it === action })
-                val bounds = android.graphics.Rect(0, 0, action.width, action.height)
-                panel.offsetDescendantRectToMyCoords(action, bounds)
-                assertTrue(bounds.top >= scroll.bottom)
-                assertTrue(bounds.bottom <= panel.height)
-            }
+            fun action(label: Int) = views(panel).filterIsInstance<Button>().first { it.text == activity.getString(label) }
+            // Save stays pinned below the list while it scrolls.
+            val save = action(R.string.save_and_reconnect)
+            assertFalse(views(scroll).any { it === save })
+            val bounds = android.graphics.Rect(0, 0, save.width, save.height)
+            panel.offsetDescendantRectToMyCoords(save, bounds)
+            assertTrue(bounds.top >= scroll.bottom)
+            assertTrue(bounds.bottom <= panel.height)
+            // Exit ends CarPlay: it is the last item of the list, never pinned next to Save.
+            val exit = action(R.string.exit_application)
+            val list = scroll.getChildAt(0) as ViewGroup
+            assertTrue(list.getChildAt(list.childCount - 1) === exit)
         }
     }
 
