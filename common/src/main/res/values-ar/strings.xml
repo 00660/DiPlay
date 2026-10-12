@@ -798,4 +798,13 @@
     <string name="bluetooth_connections_not_real">يُبلغ بلوتوث Android في وحدة القيادة هذه عن اتصال، لكن لا شيء يصل إلى iPhone: حتى الاتصال بخدمة غير موجودة ينجح. البلوتوث هنا يديره مكوّن خاص بالشركة المصنّعة لا تستطيع التطبيقات استخدامه، لذلك لا يمكن أن يعمل CarPlay اللاسلكي على وحدة القيادة هذه. جرّب اتصال USB.</string>
     <string name="settings_fce_cluster_guidance">الإرشاد في عدادات FCE (تجريبي)</string>
     <string name="settings_fce_cluster_guidance_description">يعرض أسهم CarPlay ومسافة المنعطف التالي في واجهة الملاحة بلوحة العدادات على وحدات FCE، عبر الكتابة إلى خدمة المركبة في الوحدة. جُرّب على سيارة واحدة فقط؛ أوقفه إذا تصرفت لوحة العدادات بشكل غير متوقع.</string>
+    <string name="settings_cluster_music">الموسيقى في لوحة العدادات (تجريبي)</string>
+    <string name="settings_cluster_music_description">يعرض غلاف الألبوم والأغنية فوق خريطة العدادات. يظهر الوضع المؤقت لمدة 8 ثوان عند تغيير الأغنية؛ ويبقى الوضع الدائم ظاهراً حتى عند الإيقاف المؤقت. اضبط الموضع لإبقاء العدادات واضحة. تُطبّق التغييرات فوراً. يتطلب إسقاط الشاشة وبيانات من iPhone.</string>
+    <string name="settings_cluster_music_mode">وضع بطاقة الموسيقى</string>
+    <string name="settings_cluster_music_temporary">مؤقت · 8 ثوان</string>
+    <string name="settings_cluster_music_permanent">دائم</string>
+    <string name="settings_cluster_music_horizontal">بطاقة الموسيقى · الموضع الأفقي</string>
+    <string name="settings_cluster_music_vertical">بطاقة الموسيقى · الموضع العمودي</string>
+    <string name="settings_cluster_music_size">بطاقة الموسيقى · الحجم</string>
+    <string name="settings_cluster_music_unknown">فنان غير معروف</string>
 </resources>
