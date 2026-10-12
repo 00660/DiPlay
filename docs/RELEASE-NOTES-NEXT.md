@@ -21,6 +21,7 @@ Changes through DiPlay 0.2.18 are documented in [0.2.18 release notes](RELEASE-N
 ## Display
 
 - Dialogs have a background again on Android 9 and older. Since 0.2.15, those versions drew Settings dialogs such as the car hotspot details without one, over the page behind them ([#640](https://github.com/shihabal3amri/DiPlay/issues/640), [#617](https://github.com/shihabal3amri/DiPlay/issues/617)). [#644](https://github.com/shihabal3amri/DiPlay/pull/644)
+- With the status bar kept on screen, CarPlay no longer stays scaled down after the reversing camera. On an ESSGOO head unit the camera hid the status bar, so DiPlay's window grew from 1280×660 to 1280×720 and DiPlay restarted CarPlay at that size; when the bar came back, the larger picture was fitted into the smaller window ([#643](https://github.com/shihabal3amri/DiPlay/issues/643)). While another window hides the status bar that the driver keeps, DiPlay now keeps the session at its size. The report logs `while another window hides the status bar; keeping CarPlay session`. Pending in-car acceptance.
 - The custom dashboard turn card disappears 5 s after the driver ends navigation. It stayed on the last turn for up to two minutes ([#511](https://github.com/shihabal3amri/DiPlay/issues/511)). After a wireless connection drop, the card is still kept until guidance returns. Pending in-car acceptance. [#644](https://github.com/shihabal3amri/DiPlay/pull/644)
 
 ## Diagnostics
