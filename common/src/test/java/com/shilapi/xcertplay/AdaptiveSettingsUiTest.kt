@@ -52,6 +52,33 @@ class AdaptiveSettingsUiTest {
     private val context get() = RuntimeEnvironment.getApplication()
     private var activity: DiPlayActivity? = null
 
+    @Test
+    @Config(sdk = [29], qualifiers = "ja-w320dp-h600dp")
+    fun japaneseSettingsDoNotEllipsizeVisibleTextOnNarrowScreens() {
+        val screen = openSettings()
+        assertEquals("アプリの言語", screen.getString(R.string.language_app_language))
+
+        fun verifyVisibleText() {
+            layoutRoot(screen)
+            for (view in texts(screen)) {
+                if (view.visibility != View.VISIBLE) continue
+                val lines = view.layout ?: continue
+                for (line in 0 until lines.lineCount) {
+                    assertEquals("Truncated Japanese label: ${view.text}", 0, lines.getEllipsisCount(line))
+                }
+            }
+        }
+
+        verifyVisibleText()
+        for (category in SettingsCategory.entries.filter { it != SettingsCategory.OVERVIEW }) {
+            ReflectionHelpers.callInstanceMethod<Unit>(
+                screen, "openSettingsCategory",
+                ReflectionHelpers.ClassParameter(SettingsCategory::class.java, category),
+            )
+            verifyVisibleText()
+        }
+    }
+
     @After fun tearDown() {
         activity?.finish()
         AppAppearanceRuntime.resetForTest()
