@@ -421,6 +421,7 @@
     <string name="token_optional">トークン（任意）</string>
     <string name="transport_error_reconnecting">通信エラー。再接続しています</string>
     <string name="turn_on_bluetooth">Bluetoothをオンにする</string>
+    <string name="turn_on_bluetooth_in_the_head_unit_s_settings_to_connect">接続するには車載端末の設定でBluetoothをオンにしてください。</string>
     <string name="turn_on_wi_fi_in_the_head_unit_s_settings_to_connect">接続するには車載端末の設定でWi-Fiをオンにしてください。</string>
     <string name="turn_the_car_s_wi_fi_switch_on_allow_location_nearby_devic">車載端末のWi-Fiをオンにします。求められたら位置情報や付近のデバイスへのアクセスを許可し、Androidから要求された場合は位置情報機能も有効にしてください。映像や音声が途切れる場合は、車載ホットスポットの5 GHz接続をお試しください。</string>
     <string name="usage_access_enabled">使用状況へのアクセス：有効</string>
