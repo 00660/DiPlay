@@ -824,8 +824,10 @@
     <string name="connection_help_bluetooth_unusable">Bluetooth цього пристрою не може передавати дані на iPhone. Бездротовий CarPlay тут не працюватиме. Використайте USB-кабель для даних.</string>
     <string name="connection_help_hotspot">Перевірте, чи ввімкнено точку доступу авто та чи збігаються назва й пароль із налаштуваннями DiPlay. За можливості виберіть 5 ГГц і повторіть спробу.</string>
     <string name="connection_help_iphone_wifi">Увімкніть Wi-Fi і Bluetooth. Підключіть iPhone до точки доступу авто й увімкніть автопідключення. Повторіть спробу; за помилки збережіть звіт.</string>
-    <string name="connection_help_permissions">Надайте потрібні дозволи на USB, пристрої поблизу або геолокацію на головному пристрої. На iPhone підтвердьте довіру або CarPlay та повторіть спробу.</string>
+    <string name="connection_help_permissions">Надайте DiPlay потрібні дозволи на USB, пристрої поблизу або геолокацію на головному пристрої та повторіть спробу.</string>
     <string name="connection_help_usb">Використайте USB-порт і кабель із передаванням даних. Розблокуйте iPhone, підтвердьте довіру й CarPlay і повторіть спробу.</string>
     <string name="connection_help_bluetooth">Розблокуйте iPhone, увімкніть Bluetooth і Wi-Fi та створіть пару з головним пристроєм. Тримайте iPhone поряд і повторіть спробу.</string>
     <string name="connection_help_general">Спробуйте підключитися знову. Якщо не вдається, поверніться в DiPlay і збережіть звіт у розділі «Налаштування → Діагностика».</string>
+    <string name="connection_help_wifi_direct">Тримайте Wi-Fi і Bluetooth головного пристрою ввімкненими, а iPhone розблокованим поряд, і повторіть спробу. Якщо збій повторюється, забудьте автомобіль на iPhone у розділі «Параметри → Загальні → CarPlay» і підключіться знову.</string>
+    <string name="connection_help_existing_wifi">Переконайтеся, що головний пристрій та iPhone підключені до однієї мережі Wi-Fi, а її назва й пароль збігаються з налаштуваннями DiPlay, і повторіть спробу.</string>
 </resources>

@@ -913,8 +913,10 @@
     <string name="connection_help_bluetooth_unusable">This head unit cannot send Bluetooth data to the iPhone. Wireless CarPlay cannot work here. Use a USB data cable.</string>
     <string name="connection_help_hotspot">Check that the car hotspot is on and its name and password match DiPlay settings. If available, use 5 GHz, then retry.</string>
     <string name="connection_help_iphone_wifi">Keep Wi-Fi and Bluetooth on. On the iPhone, join the car hotspot and enable Auto-Join, then retry. Save a diagnostic report if it still fails.</string>
-    <string name="connection_help_permissions">Allow the requested USB, Nearby devices or Location permissions on the head unit. On the iPhone, approve Trust or CarPlay if prompted, then retry.</string>
+    <string name="connection_help_permissions">Allow the requested USB, Nearby devices or Location permissions for DiPlay on the head unit, then retry.</string>
     <string name="connection_help_usb">Use a USB data port and a data-capable cable. Unlock the iPhone, approve Trust and CarPlay, then retry.</string>
     <string name="connection_help_bluetooth">Unlock the iPhone, enable Bluetooth and Wi-Fi, and pair it with the head unit. Keep it nearby, then retry.</string>
     <string name="connection_help_general">Retry the connection. If it fails again, return to DiPlay and save a report under Settings → Diagnostics.</string>
+    <string name="connection_help_wifi_direct">Keep the head unit\'s Wi-Fi and Bluetooth on and the iPhone unlocked nearby, then retry. If it keeps failing, forget the car on the iPhone under Settings → General → CarPlay and connect again.</string>
+    <string name="connection_help_existing_wifi">Make sure the head unit and the iPhone are on the same Wi-Fi network and its name and password match DiPlay settings, then retry.</string>
 </resources>

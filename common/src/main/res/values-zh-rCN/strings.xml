@@ -872,8 +872,10 @@
     <string name="connection_help_bluetooth_unusable">此车机的蓝牙无法向 iPhone 传输数据，因此无法使用无线 CarPlay。请使用支持数据传输的 USB 线。</string>
     <string name="connection_help_hotspot">请确认车机热点已开启，且名称和密码与 DiPlay 设置一致。若支持，使用 5 GHz 后重试。</string>
     <string name="connection_help_iphone_wifi">保持 Wi-Fi 和蓝牙开启。在 iPhone 上连接车机热点并启用自动加入，然后重试。若仍失败，请保存诊断报告。</string>
-    <string name="connection_help_permissions">在车机上允许所需的 USB、附近设备或位置信息权限。如果 iPhone 弹出信任或 CarPlay 提示，也请允许，然后重试。</string>
+    <string name="connection_help_permissions">请在车机上允许 DiPlay 所需的 USB、附近设备或位置信息权限，然后重试。</string>
     <string name="connection_help_usb">使用支持数据传输的 USB 接口和线缆。解锁 iPhone，允许信任和 CarPlay 提示，然后重试。</string>
     <string name="connection_help_bluetooth">解锁 iPhone，开启蓝牙和 Wi-Fi，并与车机配对。保持 iPhone 在附近后重试。</string>
     <string name="connection_help_general">请重试连接。如仍失败，请返回 DiPlay，在“设置 → 诊断”中保存报告。</string>
+    <string name="connection_help_wifi_direct">保持车机的 Wi-Fi 和蓝牙开启，iPhone 解锁并放在附近，然后重试。如果仍然失败，请在 iPhone 的“设置 → 通用 → CarPlay 车载”中忘记这辆车，再重新连接。</string>
+    <string name="connection_help_existing_wifi">请确认车机和 iPhone 连接的是同一个 Wi-Fi 网络，且网络名称和密码与 DiPlay 设置一致，然后重试。</string>
 </resources>

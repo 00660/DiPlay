@@ -5,7 +5,9 @@ import android.widget.TextView
 import com.shilapi.xcertplay.host.R
 import com.shilapi.xcertplay.network.WirelessStartupFailure
 import com.shilapi.xcertplay.orchestration.CarPlayStatus
+import com.shilapi.xcertplay.orchestration.WirelessHotspotMode
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -40,6 +42,31 @@ class ConnectionFailureGuidanceTest {
         assertEquals(R.string.connection_help_general, guide("Bluetooth error", wireless = false))
     }
 
+    @Test fun onlyTheCarHotspotAsksTheDriverToJoinANetworkOnTheIphone() {
+        for (mode in listOf(WirelessHotspotMode.WIFI_P2P, WirelessHotspotMode.LOCAL_ONLY_HOTSPOT)) {
+            assertEquals(R.string.connection_help_wifi_direct,
+                guide("unknown", startup = WirelessStartupFailure.FIRST_TCP_TIMEOUT, mode = mode))
+            assertEquals(R.string.connection_help_wifi_direct, guide("createGroup failed", mode = mode))
+            assertEquals(R.string.connection_help_wifi_direct, guide("AirPlay TCP timeout", mode = mode))
+        }
+        assertEquals(R.string.connection_help_existing_wifi,
+            guide("unknown", startup = WirelessStartupFailure.FIRST_TCP_TIMEOUT, mode = WirelessHotspotMode.EXISTING_WIFI))
+        assertEquals(R.string.connection_help_existing_wifi,
+            guide("unknown", startup = WirelessStartupFailure.HOTSPOT_CONFIGURATION, mode = WirelessHotspotMode.EXISTING_WIFI))
+    }
+
+    @Test fun aPermissionAndroidRefusesItselfIsNotOneTheDriverCanGrant() {
+        // #671: MIUI 13 refused RFCOMM with "lacks permission android.permission.BLUETOOTH".
+        assertEquals(R.string.connection_help_general, guide(
+            "Could not connect RFCOMM to [address] <- SecurityException: UID 10211 / PID 12347 lacks permission android.permission.BLUETOOTH"))
+        assertEquals(R.string.connection_help_permissions, guide("Hotspot control permission is missing"))
+    }
+
+    @Test fun thePermissionTipDoesNotAskForUsbTrustPrompts() {
+        val app = org.robolectric.RuntimeEnvironment.getApplication()
+        assertFalse(app.getString(R.string.connection_help_permissions).contains("Trust"))
+    }
+
     @Test fun recoveryMessageReplacesSetupTipAndClearsOnNextStage() {
         val activity = Robolectric.buildActivity(CarPlayHostActivity::class.java).get()
         try {
@@ -72,5 +99,6 @@ class ConnectionFailureGuidanceTest {
         wireless: Boolean = true,
         reset: Boolean = false,
         startup: WirelessStartupFailure? = null,
-    ): Int = ConnectionFailureGuidance.message(CarPlayStatus.Failed(message, reset, startup), wireless)
+        mode: WirelessHotspotMode = WirelessHotspotMode.MANUAL,
+    ): Int = ConnectionFailureGuidance.message(CarPlayStatus.Failed(message, reset, startup), wireless, mode)
 }
