@@ -284,6 +284,41 @@ class CarPlayHostActivity : ComponentActivity() {
     private var videoView: View? = null
     private var fallbackVideoView: SurfaceView? = null
     private var fallbackVideoBounds: CarPlaySurfaceBounds? = null
+    // The last picture of a SurfaceView video output, kept when its surface goes (DiPlay leaves the screen) and
+    // shown over the new surface until a new frame is rendered there: a still CarPlay screen sends no frame, so
+    // the new surface would otherwise stay black until the next change (a touch).
+    private var lastPicture: Bitmap? = null
+    private var pictureHold: ImageView? = null
+    private var pictureHoldBaseline = -1L
+    private var pictureHoldStartMillis = 0L
+    private var pictureCopyThreadStarted = false
+    private val pictureCopyThread by lazy {
+        pictureCopyThreadStarted = true
+        android.os.HandlerThread("diplay-picture-copy").apply { start() }
+    }
+    private val pictureHoldTick = object : Runnable {
+        override fun run() {
+            val hold = pictureHold ?: return
+            val rendered = sink?.liveVideoCounters()?.rendered ?: -1L
+            val elapsed = SystemClock.uptimeMillis() - pictureHoldStartMillis
+            if (lastPictureDone(rendered, pictureHoldBaseline, elapsed, PICTURE_HOLD_MAX_MILLIS)) {
+                appendLog("Last picture hidden after ${elapsed} ms (${if (elapsed > PICTURE_HOLD_MAX_MILLIS) "timeout" else "new frame"})")
+                hold.animate().alpha(0f).setDuration(150L).withEndAction {
+                    hold.visibility = View.GONE
+                    hold.setImageDrawable(null)
+                }.start()
+                return
+            }
+            mainHandler.postDelayed(this, 50L)
+        }
+    }
+    // Asks the iPhone for a picture again while the new surface has shown none.
+    private val pictureRetry = Runnable {
+        if (pictureHold?.visibility == View.VISIBLE) {
+            appendLog("No frame yet after returning; asking for a keyframe again")
+            sink?.refreshPicture(SCREEN_TYPE_MAIN)
+        }
+    }
     // Smooth video (a setting): SurfaceView output with frames released at the iPhone's frame time.
     private var smoothVideo = false
     // Direct video output (a setting): SurfaceView output with frames shown as soon as they are decoded.
@@ -618,9 +653,14 @@ class CarPlayHostActivity : ComponentActivity() {
             videoSurfaceOwner.replace(surface, releaseOnDetach = false)
             appendLog("SurfaceView video surface created valid=${surface.isValid}")
             attachSurface(surface)
-            // A still CarPlay screen sends no frames, so ask for one instead of showing the parked gap.
-            if (smoothVideo) sink?.refreshPicture(SCREEN_TYPE_MAIN)
             videoView?.let { updateVideoLayout(it.width, it.height) }
+            showLastPicture()
+            // A still CarPlay screen sends no frames, so ask for one instead of showing the parked gap, in every
+            // SurfaceView output (smooth video, direct output), and again while none has come.
+            sink?.refreshPicture(SCREEN_TYPE_MAIN)
+            mainHandler.removeCallbacks(pictureRetry)
+            mainHandler.postDelayed(pictureRetry, 1_000L)
+            mainHandler.postDelayed(pictureRetry, 2_000L)
         }
 
         override fun surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {
@@ -631,6 +671,7 @@ class CarPlayHostActivity : ComponentActivity() {
 
         override fun surfaceDestroyed(holder: SurfaceHolder) {
             val surface = holder.surface
+            captureLastPicture()
             // The SurfaceHolder contract: nothing may render to the surface once this returns. Every decoder
             // is asked at once, then waited for against one deadline; each confirms once it has moved,
             // parked or released its codec, and closing decoders count once their workers exit. With
@@ -1541,6 +1582,8 @@ class CarPlayHostActivity : ComponentActivity() {
     }
 
     override fun onDestroy() {
+        discardLastPicture()
+        if (pictureCopyThreadStarted) pictureCopyThread.quitSafely()
         resetSidePanel()
         releaseSidePanelEffects()
         hostAppearanceResumed = false
@@ -5390,6 +5433,7 @@ class CarPlayHostActivity : ComponentActivity() {
         oldSink?.let(retiringSinks::add)
         sink = null
         sessionDisplay = null
+        discardLastPicture()
         val diagnosticLog = sessionLog
         teardownExecutor.execute {
             val started = System.nanoTime()
@@ -5585,6 +5629,7 @@ class CarPlayHostActivity : ComponentActivity() {
         oldSink?.let(retiringSinks::add)
         sink = null
         sessionDisplay = null
+        discardLastPicture()
         Log.i(TAG, "shutdown reason=$reason terminateProcess=$terminateProcess")
         teardownExecutor.execute {
             oldController?.close()
@@ -5667,6 +5712,65 @@ class CarPlayHostActivity : ComponentActivity() {
     private fun systemDimension(name: String): Int {
         val id = resources.getIdentifier(name, "dimen", "android")
         return if (id != 0) runCatching { resources.getDimensionPixelSize(id) }.getOrDefault(0) else 0
+    }
+
+    // Copies the SurfaceView's current picture (at half size) before its surface goes, waiting briefly for it.
+    private fun captureLastPicture() {
+        val surfaceView = fallbackVideoView ?: return
+        val bounds = fallbackVideoBounds ?: return
+        if (!surfaceView.holder.surface.isValid) return
+        val picture = Bitmap.createBitmap((bounds.width / 2).coerceAtLeast(1), (bounds.height / 2).coerceAtLeast(1),
+            Bitmap.Config.ARGB_8888)
+        val done = java.util.concurrent.CountDownLatch(1)
+        val copied = java.util.concurrent.atomic.AtomicBoolean(false)
+        val requested = runCatching {
+            PixelCopy.request(surfaceView, picture, { result ->
+                copied.set(result == PixelCopy.SUCCESS)
+                done.countDown()
+            }, Handler(pictureCopyThread.looper))
+        }.isSuccess
+        if (requested) done.await(PICTURE_COPY_WAIT_MILLIS, java.util.concurrent.TimeUnit.MILLISECONDS)
+        // Not recycled by hand: the picture shown last may still be on screen when DiPlay leaves again.
+        if (copied.get()) lastPicture = picture
+        appendLog("Last picture kept=${copied.get()}")
+    }
+
+    private fun showLastPicture() {
+        if (sink == null) return
+        val picture = lastPicture ?: return
+        val surfaceView = fallbackVideoView ?: return
+        val viewport = surfaceView.parent as? FrameLayout ?: return
+        val hold = pictureHold?.takeIf { it.parent === viewport } ?: ImageView(this).apply {
+            scaleType = ImageView.ScaleType.FIT_XY
+            isClickable = false
+            isFocusable = false
+        }.also {
+            pictureHold?.let { old -> (old.parent as? ViewGroup)?.removeView(old) }
+            pictureHold = it
+            viewport.addView(it)
+        }
+        (surfaceView.layoutParams as? FrameLayout.LayoutParams)?.let { hold.layoutParams = FrameLayout.LayoutParams(it) }
+        hold.animate().cancel()
+        hold.setImageBitmap(picture)
+        hold.alpha = 1f
+        hold.visibility = View.VISIBLE
+        pictureHoldBaseline = sink?.liveVideoCounters()?.rendered ?: -1L
+        pictureHoldStartMillis = SystemClock.uptimeMillis()
+        mainHandler.removeCallbacks(pictureHoldTick)
+        mainHandler.postDelayed(pictureHoldTick, 50L)
+        appendLog("Last picture shown until a new frame")
+    }
+
+    // Forgets the last picture with its session, and stops showing or asking for one.
+    private fun discardLastPicture() {
+        mainHandler.removeCallbacks(pictureHoldTick)
+        mainHandler.removeCallbacks(pictureRetry)
+        pictureHold?.let { hold ->
+            hold.animate().cancel()
+            hold.visibility = View.GONE
+            hold.setImageDrawable(null)
+        }
+        lastPicture = null
     }
 
     private fun attachSurface(surface: Surface) {
@@ -5970,6 +6074,9 @@ class CarPlayHostActivity : ComponentActivity() {
         const val SIDE_PANEL_REFRESH_MILLIS = 5_000L
         /** CarPlay's share past which letting go of the panel edge closes the panel: halfway from two thirds to all. */
         const val SIDE_PANEL_CLOSE_SHARE = 5f / 6f
+        /** How long the last picture may stand in for the video after returning, and the wait to copy it. */
+        const val PICTURE_HOLD_MAX_MILLIS = 30_000L
+        const val PICTURE_COPY_WAIT_MILLIS = 150L
         /** How long the side panel tab's pill (and the panel's grip) shows when it appears or is tapped. */
         const val SIDE_PANEL_TAB_HINT_MILLIS = 10_000L
         const val TAG = "xcertplay-usb"
