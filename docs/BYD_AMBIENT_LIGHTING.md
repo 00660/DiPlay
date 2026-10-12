@@ -47,6 +47,20 @@ If the phone reuses the same artwork reference, source app, artist, album and du
 
 The source implementation was exercised in the contributor's BYD CarPlay fork. This new upstream port has separate local/CI checks and has not been installed in a vehicle. No vehicle identifiers, phone records, raw in-car logs, OEM artwork files or third-party APKs are included.
 
+## The car's own music rhythm
+
+**Car's own music rhythm**, a switch in the same card, leaves the lamps to the car: while CarPlay music plays, the car's own ambient-light music rhythm runs with the colours and effects set in the car's ambient-light menu, where its music rhythm must be on. DiPlay does not set the lamps itself while the switch is on.
+
+How it works, as seen on a 2024 Tang (DiLink 5, Android 12):
+
+- **Where the rhythm lives.** It is in system_server (`com.android.server.audio.visualizer`). A music app calls BYD's `IAudioService.startAudioOutput(package, token)`. system_server then starts a Visualizer on the output mix (its log shows `initVisualizer: id = 0`) and sends colours to the lamp ECU (`ColorVisualizerEffect: send color N to ECU`) until `stopAudioOutput` or until the token's process dies.
+- **Which apps it starts for.** It starts only for BYD's own music apps (its media centre, Kuwo, Kugou, NetEase, QQ Music). A call naming DiPlay creates a session, but nothing starts. DiPlay therefore names the media centre, `com.byd.mediacenter`.
+- **How DiPlay makes the call.** An app may not make it, so a helper does: `BydCarMusicRhythmTool`, run by app_process as the shell user over DiPlay's existing network ADB access. The switch never asks for ADB.
+  - Switching it on first runs the helper's `--probe`, which only checks that the audio service has the calls.
+  - While on, DiPlay keeps one helper open, sends `start` when CarPlay's media track plays and `stop` when it pauses, stops or the session ends.
+  - If DiPlay goes away, the helper's stdin closes and it stops. If the helper dies, the head unit drops its token.
+- **What else drives the lamps.** While started, everything on the output mix drives the rhythm, including navigation prompts during music.
+
 ## Evidence and verification
 
 Album-color extension validation on 2026-10-09: the full nine-task repository CI command passed locally, with 2258 tests reported, zero failures/errors and 1 existing platform skip. All three lint tasks had zero errors, and mobile/home/maphost source-only debug builds assembled. Compact 600dp / font 1.3 and full 1280dp / font 1.5 captures were rendered at a 960px physical viewport and visually checked; the dialog controls and Save/Cancel remained accessible. This does not replace vehicle acceptance of the upstream port.

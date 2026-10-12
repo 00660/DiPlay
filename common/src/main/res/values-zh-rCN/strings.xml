@@ -799,6 +799,9 @@
     <string name="settings_ambient_parked_notice">请在车辆停放时配置。本功能针对部分BYD氛围灯接口，不能保证所有车型和固件兼容。亮度0代表原车最低档，不代表断电关闭。</string>
     <string name="settings_ambient_checking">正在检查…</string>
     <string name="settings_ambient_unavailable">只读检查失败：已有ADB授权或支持的氛围灯接口不可用，灯光设置未保存。请在停车时单独配置访问权限，本功能不会启用ADB或申请授权。</string>
+    <string name="settings_ambient_car_rhythm">车辆原厂音乐律动</string>
+    <string name="settings_ambient_car_rhythm_description">播放 CarPlay 音乐时，启用车辆原厂的氛围灯音乐律动，颜色和效果使用车辆氛围灯菜单中的设置（需在其中开启音乐律动）。期间 DiPlay 不直接控制灯光。需要车机网络 ADB，开启时会检查。</string>
+    <string name="settings_ambient_car_rhythm_unavailable">车辆音乐律动不可用：DiPlay 没有网络 ADB 权限，或车机音频服务不支持所需调用。未保存任何设置。</string>
     <string name="settings_interface_size">界面大小</string>
     <string name="settings_interface_size_auto">自动</string>
     <string name="settings_interface_size_hint">DiPlay 自身界面中文字和控件的大小。自动模式会在大尺寸低密度屏幕上放大它们。不影响 CarPlay。</string>
