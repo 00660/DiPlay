@@ -1,7 +1,11 @@
 package com.shilapi.xcertplay
 
 import android.content.Context
+import com.shilapi.xcertplay.setup.DiLinkGeneration
+import com.shilapi.xcertplay.setup.SetupGuide
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -86,5 +90,37 @@ class AudioChannelPersistenceTest {
     @Test fun invalidLegacyChannelUsesAutomaticRouting() {
         AirPlayPersistence.saveNavigationStreamType(context, 21)
         assertEquals(0, AirPlayPersistence.loadNavigationAudioChannel(context))
+    }
+
+    @Test fun setupGuideDefaultIsOnlyAppliedOnce() {
+        assertTrue(SetupGuide.applyGenerationDefaults(context, DiLinkGeneration.DILINK_3))
+        assertEquals(14, AirPlayPersistence.loadNavigationAudioChannel(context))
+
+        assertFalse(SetupGuide.applyGenerationDefaults(context, DiLinkGeneration.DILINK_5))
+        assertEquals(14, AirPlayPersistence.loadNavigationAudioChannel(context))
+
+        AirPlayPersistence.saveNavigationAudioChannel(context, 20)
+        assertFalse(SetupGuide.applyGenerationDefaults(context, DiLinkGeneration.DILINK_4))
+        assertEquals(20, AirPlayPersistence.loadNavigationAudioChannel(context))
+    }
+
+    @Test fun unknownGenerationLeavesTheAutomaticDefaultUnstored() {
+        assertFalse(SetupGuide.applyGenerationDefaults(context, DiLinkGeneration.UNKNOWN))
+        assertFalse(prefs.contains("navigation_audio_channel"))
+        assertEquals(0, AirPlayPersistence.loadNavigationAudioChannel(context))
+
+        assertTrue(SetupGuide.applyGenerationDefaults(context, DiLinkGeneration.DILINK_5))
+        assertEquals(15, AirPlayPersistence.loadNavigationAudioChannel(context))
+    }
+
+    @Test fun setupGuideDefaultPreservesExistingNewAndLegacySettings() {
+        AirPlayPersistence.saveNavigationAudioChannel(context, 0)
+        assertFalse(SetupGuide.applyGenerationDefaults(context, DiLinkGeneration.DILINK_5))
+        assertEquals(0, AirPlayPersistence.loadNavigationAudioChannel(context))
+
+        prefs.edit().clear().apply()
+        AirPlayPersistence.saveNavigationStreamType(context, 15)
+        assertFalse(SetupGuide.applyGenerationDefaults(context, DiLinkGeneration.DILINK_3))
+        assertEquals(15, AirPlayPersistence.loadNavigationAudioChannel(context))
     }
 }
