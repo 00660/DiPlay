@@ -27,6 +27,7 @@ class SettingsBackupServerTest {
                 imported.set(outcome)
                 outcome
             },
+            report = { "DiPlay diagnostic report\n診斷".toByteArray(Charsets.UTF_8) },
         )
         val started = server.start()
         assertNotNull(started)
@@ -86,6 +87,81 @@ class SettingsBackupServerTest {
         val (status, body) = get("/b/${endpoint.token}/export")
         assertEquals(200, status)
         assertEquals("{\"exported\":true}", body)
+    }
+
+    @Test
+    fun reportReturnsTheTextOnlyUnderTheTokenPath() {
+        val (status, body) = get("/b/${endpoint.token}/report")
+        assertEquals(200, status)
+        assertEquals("DiPlay diagnostic report\n診斷", body)
+        assertEquals(404, get("/report").first)
+        assertEquals(404, get("/b/wrong-token/report").first)
+        assertEquals(404, get("/b/${endpoint.token}/report", method = "POST", body = ByteArray(0)).first)
+    }
+
+    @Test
+    fun reportIsADownloadableTextFile() {
+        val connection = URL("http://127.0.0.1:${endpoint.port}/b/${endpoint.token}/report").openConnection() as HttpURLConnection
+        try {
+            assertEquals(200, connection.responseCode)
+            assertEquals("text/plain; charset=utf-8", connection.getHeaderField("Content-Type"))
+            assertTrue(connection.getHeaderField("Content-Disposition").contains(SettingsBackupServer.REPORT_FILE))
+            assertEquals("no-store", connection.getHeaderField("Cache-Control"))
+        } finally {
+            connection.disconnect()
+        }
+    }
+
+    // Session logs make a report of a megabyte or more; all of it has to arrive.
+    @Test
+    fun aLargeReportArrivesWhole() {
+        val line = "12:00:00.000  wireless bring-up generation=1 starting 診斷\n".toByteArray(Charsets.UTF_8)
+        val big = ByteArray(line.size * 60_000).also { all -> repeat(60_000) { line.copyInto(all, it * line.size) } }
+        val large = SettingsBackupServer(page = ByteArray(0), export = { ByteArray(0) },
+            import = { SettingsImportOutcome(0, 0, invalid = false) }, report = { big })
+        val started = large.start()!!
+        try {
+            val connection = URL("http://127.0.0.1:${started.port}/b/${started.token}/report").openConnection() as HttpURLConnection
+            connection.connectTimeout = 5000
+            connection.readTimeout = 15000
+            assertEquals(200, connection.responseCode)
+            assertEquals(big.size.toString(), connection.getHeaderField("Content-Length"))
+            assertTrue(big.contentEquals(connection.inputStream.readBytes()))
+            connection.disconnect()
+        } finally {
+            large.stop()
+        }
+    }
+
+    @Test
+    fun aReportThatCannotBeBuiltIsAnErrorNotAnEmptyDownload() {
+        val failing = SettingsBackupServer(page = ByteArray(0), export = { ByteArray(0) },
+            import = { SettingsImportOutcome(0, 0, invalid = false) }, report = { error("logs unreadable") })
+        val started = failing.start()!!
+        try {
+            val connection = URL("http://127.0.0.1:${started.port}/b/${started.token}/report").openConnection() as HttpURLConnection
+            connection.connectTimeout = 5000
+            connection.readTimeout = 5000
+            assertEquals(500, connection.responseCode)
+            connection.disconnect()
+        } finally {
+            failing.stop()
+        }
+    }
+
+    // A page opened by a build that has no report to give does not grow a dead link's worth of route.
+    @Test
+    fun aServerWithoutAReportHasNoReportRoute() {
+        val plain = SettingsBackupServer(page = ByteArray(0), export = { ByteArray(0) },
+            import = { SettingsImportOutcome(0, 0, invalid = false) })
+        val started = plain.start()!!
+        try {
+            val connection = URL("http://127.0.0.1:${started.port}/b/${started.token}/report").openConnection() as HttpURLConnection
+            assertEquals(404, connection.responseCode)
+            connection.disconnect()
+        } finally {
+            plain.stop()
+        }
     }
 
     @Test
