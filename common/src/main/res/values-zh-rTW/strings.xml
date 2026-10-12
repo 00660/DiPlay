@@ -208,7 +208,7 @@
     <string name="frame_rate">影格率</string>
     <string name="full_screen">全螢幕顯示</string>
     <string name="adapt_pip_resolution">畫中畫與分割畫面自適應</string>
-    <string name="adapt_pip_resolution_description">切換至桌面畫中畫或分割畫面浮動小視窗時，自動斷開重連以適應視窗解析度，消除上下左右黑邊。保持關閉可實現 0 毫秒 GPU 秒級自適應且不重連。</string>
+    <string name="adapt_pip_resolution_description">重新連線 CarPlay，讓串流解析度適應多視窗或畫中畫的長寬比。保持關閉時，使用 GPU 即時縮放，不需重新連線。</string>
     <string name="fullscreen">全螢幕</string>
     <string name="getting_carplay_ready">正在準備 CarPlay…</string>
     <string name="got_it">知道了</string>
