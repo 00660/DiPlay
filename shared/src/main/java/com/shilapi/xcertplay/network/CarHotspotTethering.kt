@@ -2,7 +2,6 @@ package com.shilapi.xcertplay.network
 
 import android.content.Context
 import android.net.ConnectivityManager
-import android.os.Build
 import android.os.Bundle
 import android.os.ResultReceiver
 import android.provider.Settings
@@ -85,13 +84,8 @@ object CarHotspotTethering {
         }
     }
 
-    /** IConnectivityManager.startTethering exists on Android 7.0–10; Android 11 moved tethering out of it. */
-    private fun shellTetheringHelper(context: Context): String? =
-        if (Build.VERSION.SDK_INT in Build.VERSION_CODES.N..Build.VERSION_CODES.Q) {
-            CarHotspotStartMain.command(context.applicationInfo.sourceDir)
-        } else {
-            null
-        }
+    /** The shell's own tethering call ([CarHotspotStartMain]), for firmware without a hotspot command. */
+    private fun shellTetheringHelper(context: Context): String = CarHotspotStartMain.command(context.applicationInfo.sourceDir)
 
     internal fun describe(error: Throwable): String {
         val cause = (error as? InvocationTargetException)?.targetException ?: error

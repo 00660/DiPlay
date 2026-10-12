@@ -142,7 +142,7 @@ class CarHotspotAdbFallbackTest {
     }
 
     @Test fun withoutAFirmwareCommandTheShellStartsTheSavedHotspot() {
-        // #616: Android 10 trinket head unit; its help listed no command and the app-side call was blocked.
+        // #616: Android 10 trinket and Android 12 DiLink 5.0 head units listed no command, and the app-side call failed.
         var on = false
         val commands = mutableListOf<String>()
         val logs = mutableListOf<String>()
