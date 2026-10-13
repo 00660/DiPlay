@@ -25,9 +25,13 @@ import java.util.concurrent.Executors
  */
 object BydCarMusicRhythm {
     private const val TAG = "DiPlay-CarRhythm"
-    private val executor = Executors.newSingleThreadExecutor { Thread(it, "diplay-car-rhythm").apply { isDaemon = true } }
+    // A failed start is tried again, a little later each time, while the music still plays.
+    private const val RETRY_MILLIS = 2_000L
+    private const val MAX_RETRIES = 3
+    private val executor = Executors.newSingleThreadScheduledExecutor { Thread(it, "diplay-car-rhythm").apply { isDaemon = true } }
     @Volatile private var wanted = false
     private var playing = false
+    private var failures = 0
     private var adb: LocalAdb? = null
     private var shell: LocalAdb.InteractiveShell? = null
 
@@ -36,7 +40,10 @@ object BydCarMusicRhythm {
         if (wanted == value) return
         wanted = value
         val app = context.applicationContext
-        executor.execute { apply(app) }
+        executor.execute {
+            failures = 0
+            apply(app)
+        }
     }
 
     /** Whether DiPlay's ADB access works and this head unit's audio service has the call; nothing is started. */
@@ -59,22 +66,33 @@ object BydCarMusicRhythm {
     private fun apply(context: Context) {
         if (wanted == playing) return
         val reply = if (wanted) {
-            val open = shell ?: open(context) ?: return
+            val open = shell ?: open(context) ?: run { retry(context); return }
             BydAmbientLightWorkerProtocol.reply(open.exchangeBounded("start"))
         } else {
             // A helper already gone has stopped it: its stdin closed, and the head unit drops a dead token.
             shell?.let { BydAmbientLightWorkerProtocol.reply(it.exchangeBounded("stop")) } ?: "stopped"
         }
         when (reply) {
-            "started" -> playing = true
+            "started" -> {
+                playing = true
+                failures = 0
+            }
             "stopped" -> playing = false
             else -> {
                 Log.w(TAG, "helper replied $reply")
                 close()
                 playing = false
+                retry(context)
             }
         }
         Log.i(TAG, "car music rhythm ${if (playing) "on" else "off"}")
+    }
+
+    private fun retry(context: Context) {
+        if (!wanted || failures >= MAX_RETRIES) return
+        failures++
+        Log.i(TAG, "start again in ${RETRY_MILLIS * failures} ms (attempt $failures)")
+        executor.schedule({ apply(context) }, RETRY_MILLIS * failures, java.util.concurrent.TimeUnit.MILLISECONDS)
     }
 
     private fun open(context: Context): LocalAdb.InteractiveShell? {
