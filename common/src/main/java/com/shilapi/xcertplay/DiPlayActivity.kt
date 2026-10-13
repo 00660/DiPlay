@@ -75,6 +75,7 @@ import com.shilapi.xcertplay.network.CarHotspotSettings
 import com.shilapi.xcertplay.network.CarHotspotTethering
 import com.shilapi.xcertplay.network.WifiP2pChannels
 import com.shilapi.xcertplay.orchestration.ManualHotspotSecurity
+import com.shilapi.xcertplay.orchestration.MfiTarget
 import com.shilapi.xcertplay.orchestration.WirelessHotspotMode
 import com.shilapi.xcertplay.settings.SettingsTheme
 import com.shilapi.xcertplay.settings.SettingsWidgets
@@ -1696,6 +1697,25 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
             getString(R.string.connection_setup), R.drawable.ic_dp_connection) { card ->
             card.addView(label(getString(R.string.choose_how_to_connect_follow_the_setup_steps_and_save_your), 16, MUTED))
             card.addView(button(getString(R.string.open_connection_setup), false, ::openConnectionSetupFromSettings), matchButton(12, 60))
+            card.addView(space(12))
+            // Also here, not only in the CarPlay menu: with the CH341 removed CarPlay cannot connect,
+            // so that menu could not be reached to switch back (#696).
+            val mfiTargets = listOf(MfiTarget.LOCAL, MfiTarget.USB_CH341)
+            val storedMfiTarget = AirPlayPersistence.loadMfiTarget(this)
+            if (storedMfiTarget in mfiTargets) {
+                choice(card, getString(R.string.mfi_certificate_signing_target), listOf(
+                    getString(R.string.local_offline),
+                    getString(R.string.usb_ch341),
+                ), mfiTargets.indexOf(storedMfiTarget)) { index ->
+                    val target = mfiTargets[index]
+                    AirPlayPersistence.saveMfiTarget(this, target)
+                    setupError = runCatching { DiPlayBootstrap.ensure(this, target) }.exceptionOrNull()?.let {
+                        android.util.Log.e("DiPlaySetup", "CarPlay authentication could not be loaded", it)
+                        getString(R.string.setup_error_auth)
+                    }
+                }
+                card.addView(label(getString(R.string.settings_mfi_target_description), 14, MUTED))
+            }
         }
         filteredSection(content, SettingsSection.DIAGNOSTICS,
             getString(R.string.diagnostics), R.drawable.ic_dp_diagnostics) { card ->
