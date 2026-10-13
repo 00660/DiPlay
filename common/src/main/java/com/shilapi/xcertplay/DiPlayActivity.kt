@@ -2026,17 +2026,24 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
         // Cluster video does not require a BYD navigation broadcast receiver.
         filteredSection(content, SettingsSection.CLUSTER_MAP,
             getString(R.string.carplay_map_on_instrument_cluster_experimental), R.drawable.ic_dp_dashboard) { card ->
-            reconnectingToggle(card, getString(R.string.adb_cluster_activity_mode),
-                getString(R.string.adb_cluster_activity_description), AirPlayPersistence.loadAdbClusterEnabled(this)) {
-                AirPlayPersistence.saveAdbClusterEnabled(this, it)
-                ClusterActivityOutput.stopForSettings()
-                render()
-            }
-            reconnectingToggle(card, getString(R.string.platform21_cluster_mode),
-                getString(R.string.platform21_cluster_description), AirPlayPersistence.loadLegacyClusterEnabled(this)) {
-                AirPlayPersistence.saveLegacyClusterEnabled(this, it)
-                ClusterActivityOutput.stopForSettings()
-                render()
+            // DiLink 3 makes its own dashboard display; either DiLink 4 route stops that, so offer them only to
+            // turn off, as the setup guide does (#722).
+            val diLink3 = DiLinkGeneration.current(this) == DiLinkGeneration.DILINK_3
+            if (diLink3) {
+                if (AirPlayPersistence.loadDiLink4ClusterRouteEnabled(this)) clusterRouteConflict(card)
+            } else {
+                reconnectingToggle(card, getString(R.string.adb_cluster_activity_mode),
+                    getString(R.string.adb_cluster_activity_description), AirPlayPersistence.loadAdbClusterEnabled(this)) {
+                    AirPlayPersistence.saveAdbClusterEnabled(this, it)
+                    ClusterActivityOutput.stopForSettings()
+                    render()
+                }
+                reconnectingToggle(card, getString(R.string.platform21_cluster_mode),
+                    getString(R.string.platform21_cluster_description), AirPlayPersistence.loadLegacyClusterEnabled(this)) {
+                    AirPlayPersistence.saveLegacyClusterEnabled(this, it)
+                    ClusterActivityOutput.stopForSettings()
+                    render()
+                }
             }
             val adbCluster = AdbClusterRouter.enabled(this)
             if (adbCluster) {
@@ -3011,19 +3018,24 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
         content.addView(card, LinearLayout.LayoutParams(-1, -2).apply { bottomMargin = dp(SETTINGS_BLOCK_GAP_DP) })
     }
 
+    /** The warning and the button that turn both DiLink 4 cluster routes off (saving the ADB route clears both). */
+    private fun clusterRouteConflict(parent: LinearLayout) {
+        parent.addView(label(getString(R.string.setup_cluster_route_conflict), 16, WARNING))
+        parent.addView(button(getString(R.string.setup_cluster_route_turn_off), true) {
+            AirPlayPersistence.saveAdbClusterEnabled(this, false)
+            ClusterActivityOutput.stopForSettings()
+            markReconnectNeeded()
+            render()
+        }, matchButton(12, 56))
+    }
+
     private fun setupFeaturesStep(content: LinearLayout) {
         val generation = DiLinkGeneration.current(this)
         setupTitle(content, R.string.setup_features_title, getString(R.string.setup_features_description,
             dilinkLabel(generation)))
-        if (SetupGuide.hasConflictingClusterRoute(generation, AirPlayPersistence.loadAdbClusterEnabled(this))) {
+        if (SetupGuide.hasConflictingClusterRoute(generation, AirPlayPersistence.loadDiLink4ClusterRouteEnabled(this))) {
             val warning = card()
-            warning.addView(label(getString(R.string.setup_cluster_route_conflict), 16, WARNING))
-            warning.addView(button(getString(R.string.setup_cluster_route_turn_off), true) {
-                AirPlayPersistence.saveAdbClusterEnabled(this, false)
-                ClusterActivityOutput.stopForSettings()
-                markReconnectNeeded()
-                render()
-            }, matchButton(12, 56))
+            clusterRouteConflict(warning)
             content.addView(warning, LinearLayout.LayoutParams(-1, -2).apply { bottomMargin = dp(SETTINGS_BLOCK_GAP_DP) })
         }
         val card = card()

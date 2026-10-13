@@ -6,6 +6,9 @@ Changes through DiPlay 0.2.19 are documented in [0.2.19 release notes](RELEASE-N
 
 - **CarPlay map on dashboard (experimental)** finds the cluster on BYD firmware that names it `fission_magicsentry` (controller 13) or `sission_magicsentry` (controller 17), at the same 1920×720 size as DiLink 4's `fission_bg_xdjaVirtualSurface`. A controller-13 car listed it as a presentation display, but DiPlay looked only for the DiLink 4 name, so nothing appeared on the cluster. A build that accepted the name drew the map there ([#552](https://github.com/shihabal3amri/DiPlay/issues/552)). Pending in-car acceptance on the release build.
 
+- On DiLink 3, the settings card for the dashboard map no longer offers the two DiLink 4 cluster routes (**DiLink 4 cluster video via ADB** and **Platform 21 cluster task**). Either one stops DiLink 3 from creating its dashboard display, so the map stayed off, and only the ADB route showed a warning ([#722](https://github.com/shihabal3amri/DiPlay/issues/722)). When either is on, the card and the setup guide show the warning with a button that turns both off.
+- **CarPlay map on dashboard (experimental)** uses the same full-map and side-map layers on the Leopard 5 Ultra (system 34.1.23) as on the measured DiLink 5.1 firmware. It drew into a layer this cluster never shows ([#301](https://github.com/shihabal3amri/DiPlay/issues/301)). Pending in-car acceptance.
+
 ## Diagnostics
 
 - The phone page's server (**Get the report on a phone**, settings backup) wakes from waiting for a browser every 0.25 s instead of only after its 10-minute idle timeout, so closing it never waits on a pending accept. On the macOS JVM used for the unit tests, closing it while it waited hung the test run.
