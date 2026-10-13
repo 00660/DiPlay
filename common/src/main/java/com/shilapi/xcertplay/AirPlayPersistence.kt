@@ -779,6 +779,10 @@ object AirPlayPersistence {
         edit.apply()
     }
 
+    /** Either DiLink 4 cluster route, ADB video or the Platform 21 task; on DiLink 3 both stop the dashboard map (#722). */
+    fun loadDiLink4ClusterRouteEnabled(context: Context): Boolean =
+        loadAdbClusterEnabled(context) || loadLegacyClusterEnabled(context)
+
     fun loadLegacyClusterEnabled(context: Context): Boolean = loadClusterMapEnabled(context) &&
         context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getBoolean("platform21_cluster_enabled", false)
 
