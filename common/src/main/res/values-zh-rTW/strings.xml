@@ -81,7 +81,7 @@
     <string name="audio_saved_value">已儲存：%1$d</string>
     <string name="about_public_preview_prefix">公開預覽\u0020·\u0020%1$s</string>
     <string name="msg_car_hotspot_connect">DiPlay 透過車機熱點「%1$s」連線。請在車機設定中開啟熱點後再連線。</string>
-    <string name="edit_saved_hotspot_prefix">編輯已儲存的熱點 · </string>
+    <string name="edit_saved_hotspot_prefix">編輯已儲存的熱點 ·\u0020</string>
     <string name="cluster_adb_multi_device">如果 ADB 列出多個裝置，請使用 adb -s &lt;car-device-ID&gt; shell appops set %1$s GET_USAGE_STATS allow。使用 adb devices 查詢 ID。</string>
     <string name="status_ready_for_prefix">已準備連線：</string>
     <string name="audio_stream_unavailable">音訊串流類型 %1$d 在此無法使用（狀態=%2$s）</string>
