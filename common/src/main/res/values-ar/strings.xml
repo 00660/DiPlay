@@ -811,8 +811,8 @@
     <string name="settings_ambient_checking">جارٍ التحقق…</string>
     <string name="settings_ambient_unavailable">فشل التحقق للقراءة فقط: تفويض ADB الموجود أو واجهة الإضاءة المدعومة غير متاحة. لم تُحفظ الإعدادات. اضبط الوصول بشكل منفصل أثناء الوقوف؛ هذه الميزة لا تفعّل ADB ولا تطلب التفويض.</string>
     <string name="settings_ambient_car_rhythm">إيقاع الموسيقى الأصلي في السيارة</string>
-    <string name="settings_ambient_car_rhythm_description">أثناء تشغيل موسيقى CarPlay يعمل إيقاع الموسيقى الأصلي للإضاءة المحيطية في السيارة بالألوان والتأثيرات المضبوطة في قائمة الإضاءة في السيارة، ويجب تفعيل إيقاع الموسيقى فيها. لا يتحكم DiPlay بالمصابيح خلال ذلك. يتطلب ADB الشبكي للسيارة، ويُتحقق منه عند التفعيل.</string>
-    <string name="settings_ambient_car_rhythm_unavailable">إيقاع الموسيقى في السيارة غير متاح: لا يتوفر وصول DiPlay إلى ADB الشبكي أو استدعاء خدمة الصوت في الوحدة الرئيسية. لم يُحفظ أي شيء.</string>
+    <string name="settings_ambient_car_rhythm_description">أثناء تشغيل موسيقى CarPlay يعمل إيقاع الموسيقى الأصلي للإضاءة المحيطية في السيارة بالألوان والتأثيرات المضبوطة في قائمة الإضاءة في السيارة، ويجب تفعيل إيقاع الموسيقى فيها. لا يتحكم DiPlay بالمصابيح خلال ذلك. يُتحقق منه عند التفعيل. لا يلزم ADB الشبكي للسيارة إلا إذا كانت الوحدة الرئيسية لا تسمح لـ DiPlay بتشغيل الإيقاع بنفسه.</string>
+    <string name="settings_ambient_car_rhythm_unavailable">إيقاع الموسيقى في السيارة غير متاح: لا يستطيع DiPlay تشغيله بنفسه، ولا يتوفر وصول DiPlay إلى ADB الشبكي أو استدعاء خدمة الصوت في الوحدة الرئيسية. لم يُحفظ أي شيء.</string>
     <string name="settings_disable_media_key_audio_focus">تعطيل تركيز الصوت لمفاتيح الوسائط (تجريبي)</string>
     <string name="settings_disable_media_key_audio_focus_description">يمنع DiPlay من طلب تركيز صوت الوسائط أثناء تشغيل موسيقى CarPlay. فعّله إذا كانت وحدة السيارة توجّه أزرار مستوى الصوت الفعلية إلى DiPlay فلا تعود تضبط مستوى الصوت. قد تتوقف أزرار التشغيل والإيقاف المؤقت وتغيير المسار في عجلة القيادة على الوحدات التي تتطلب التركيز. يُطبّق عند اتصال CarPlay التالي.</string>
     <string name="settings_ambient_album">اتباع غلاف الألبوم</string>

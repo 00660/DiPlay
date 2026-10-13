@@ -842,8 +842,8 @@
     <string name="settings_ambient_checking">確認しています…</string>
     <string name="settings_ambient_unavailable">読み取り専用の確認に失敗しました。ADBアクセスが未許可か、対応するライト制御がありません。ライト設定は保存していません。停車中に別途アクセスを設定してください。この機能自体はADBを有効化せず、権限も要求しません。</string>
     <string name="settings_ambient_car_rhythm">車両純正の音楽リズム</string>
-    <string name="settings_ambient_car_rhythm_description">CarPlay の音楽再生中は、車両純正のアンビエントライト音楽リズムが動作し、色と効果は車両のアンビエントライトメニューの設定に従います（そこで音楽リズムをオンにしてください）。その間、DiPlay はライトを制御しません。車両のネットワーク ADB が必要で、オンにするときに確認します。</string>
-    <string name="settings_ambient_car_rhythm_unavailable">車両の音楽リズムは使用できません。DiPlay のネットワーク ADB アクセス、またはヘッドユニットのオーディオサービス呼び出しがありません。何も保存されていません。</string>
+    <string name="settings_ambient_car_rhythm_description">CarPlay の音楽再生中は、車両純正のアンビエントライト音楽リズムが動作し、色と効果は車両のアンビエントライトメニューの設定に従います（そこで音楽リズムをオンにしてください）。その間、DiPlay はライトを制御しません。オンにするときに確認します。車両のネットワーク ADB は、ヘッドユニットが DiPlay 自身によるリズムの開始を許可しない場合にのみ必要です。</string>
+    <string name="settings_ambient_car_rhythm_unavailable">車両の音楽リズムは使用できません。DiPlay 自身では開始できず、さらに DiPlay のネットワーク ADB アクセス、またはヘッドユニットのオーディオサービス呼び出しがありません。何も保存されていません。</string>
     <string name="settings_interface_size">画面UIのサイズ</string>
     <string name="settings_interface_size_auto">自動</string>
     <string name="settings_interface_size_hint">DiPlay自体の文字と操作部のサイズです。「自動」は画面密度が低い大画面で拡大します。CarPlayの表示には影響しません。</string>

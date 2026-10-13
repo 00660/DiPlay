@@ -5792,7 +5792,8 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
         parent.addView(result.rowView)
         return result.switch
     }
-    // The car's own music rhythm: saved on only once DiPlay's ADB access and the head unit's audio call are there.
+    // The car's own music rhythm: saved on only once the head unit's audio call is reachable, from DiPlay itself or
+    // over its ADB access.
     private fun carRhythmControl(card: LinearLayout) {
         var row: Switch? = null
         row = toggle(card, getString(R.string.settings_ambient_car_rhythm),
