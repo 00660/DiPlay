@@ -859,6 +859,7 @@
     <string name="settings_speech_without_low_rates">USB 下更清晰的導航語音（實驗性）</string>
     <string name="settings_speech_without_low_rates_description">USB 連線時，iPhone 可能以 8 kHz 電話音質傳送導航播報和 Siri 的語音回答。開啟後不再為這類聲音提供 8 和 16 kHz，讓 iPhone 選擇更高的取樣率。如果播報沒有聲音，請關閉。會重新連線 CarPlay。</string>
     <string name="bluetooth_connections_not_real">此車機的系統藍牙回報「已連線」，但實際上沒有連到 iPhone：連一個不存在的服務也回報成功。這裡的藍牙由廠商自己的模組處理，App 無法使用，所以此車機無法使用無線 CarPlay。請嘗試使用 USB 連線。</string>
+    <string name="bluetooth_cannot_open_connections">此車機的系統藍牙無法替 App 建立連線：韌體沒有提供 App 連線要用的那一部分。車機自己的藍牙通話和音樂不受影響，但此車機無法使用無線 CarPlay。請嘗試使用 USB 連線。</string>
     <string name="settings_fce_cluster_guidance">FCE 儀表導航（實驗性）</string>
     <string name="settings_fce_cluster_guidance_description">在 FCE 平台車機上，透過車機的車輛服務把 CarPlay 轉向箭頭和到下一路口的距離顯示在儀表的導航畫面。僅在一輛車上測試過；如果儀表顯示異常，請關閉。</string>
     <string name="settings_cluster_music">儀表音樂（實驗性）</string>
