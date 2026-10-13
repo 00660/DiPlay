@@ -75,6 +75,7 @@ import com.shilapi.xcertplay.network.CarHotspotSettings
 import com.shilapi.xcertplay.network.CarHotspotTethering
 import com.shilapi.xcertplay.network.WifiP2pChannels
 import com.shilapi.xcertplay.orchestration.ManualHotspotSecurity
+import com.shilapi.xcertplay.orchestration.MfiTarget
 import com.shilapi.xcertplay.orchestration.WirelessHotspotMode
 import com.shilapi.xcertplay.settings.SettingsTheme
 import com.shilapi.xcertplay.settings.SettingsWidgets
@@ -925,7 +926,10 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
             card.addView(label(hotspotResultText(startupProblem), 15, WARNING))
             if (!compact) card.addView(homeButton(getString(R.string.open_car_hotspot_settings), false) { openCarWifiSettings() }, matchButton(CONTROL_GAP_DP, 56))
         } else if (carHotspotOff()) {
-            card.addView(label(getString(R.string.msg_car_hotspot_off, AirPlayPersistence.loadManualHotspotSsid(this)), 15, WARNING).apply { setPadding(0, dp(14), 0, 0) })
+            // No name is saved before Connection setup, and the sentence that quotes it would show “”.
+            val name = AirPlayPersistence.loadManualHotspotSsid(this)
+            val off = if (name.isBlank()) getString(R.string.hotspot_details_off) else getString(R.string.msg_car_hotspot_off, name)
+            card.addView(label(off, 15, WARNING).apply { setPadding(0, dp(14), 0, 0) })
             if (!compact) card.addView(homeButton(getString(R.string.open_car_hotspot_settings), false) { openCarWifiSettings() }, matchButton(CONTROL_GAP_DP, 56))
         }
         card.addView(homeButton(getString(R.string.choose_iphone), false) { choosePhone() }, matchButton(if (compact) CONTROL_GAP_DP else 16, if (compact) 46 else 56))
@@ -1197,7 +1201,7 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
         wireless = AirPlayPersistence.loadWirelessEnabled(this),
         phoneChosen = DiPlayPreferences.phoneAddress(this) != null,
         hotspotSetupNeeded = AirPlayPersistence.loadWirelessHotspotMode(this) == WirelessHotspotMode.MANUAL &&
-            (pendingCarHotspotSetup || hotspotError(storedSsid(), storedPassword()) != null),
+            carHotspotDetailsMissing(),
     )
 
     private fun refreshReadiness() {
@@ -1551,7 +1555,13 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
             // Tapping elsewhere closes the list and keeps the query; tapping the box reopens it.
             isOutsideTouchable = true
             inputMethodMode = PopupWindow.INPUT_METHOD_NEEDED
-            setIsLaidOutInScreen(true)
+            // The list is placed in screen coordinates. Android 10 made this call public; before it the
+            // same switch is setLayoutInScreenEnabled, and calling the new name stops the app.
+            if (Build.VERSION.SDK_INT >= 29) setIsLaidOutInScreen(true)
+            else runCatching {
+                PopupWindow::class.java.getMethod("setLayoutInScreenEnabled", Boolean::class.javaPrimitiveType)
+                    .invoke(this, true)
+            }
             positionSettingsSearchResults(box, this)
         }
     }
@@ -1687,6 +1697,25 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
             getString(R.string.connection_setup), R.drawable.ic_dp_connection) { card ->
             card.addView(label(getString(R.string.choose_how_to_connect_follow_the_setup_steps_and_save_your), 16, MUTED))
             card.addView(button(getString(R.string.open_connection_setup), false, ::openConnectionSetupFromSettings), matchButton(12, 60))
+            card.addView(space(12))
+            // Also here, not only in the CarPlay menu: with the CH341 removed CarPlay cannot connect,
+            // so that menu could not be reached to switch back (#696).
+            val mfiTargets = listOf(MfiTarget.LOCAL, MfiTarget.USB_CH341)
+            val storedMfiTarget = AirPlayPersistence.loadMfiTarget(this)
+            if (storedMfiTarget in mfiTargets) {
+                choice(card, getString(R.string.mfi_certificate_signing_target), listOf(
+                    getString(R.string.local_offline),
+                    getString(R.string.usb_ch341),
+                ), mfiTargets.indexOf(storedMfiTarget)) { index ->
+                    val target = mfiTargets[index]
+                    AirPlayPersistence.saveMfiTarget(this, target)
+                    setupError = runCatching { DiPlayBootstrap.ensure(this, target) }.exceptionOrNull()?.let {
+                        android.util.Log.e("DiPlaySetup", "CarPlay authentication could not be loaded", it)
+                        getString(R.string.setup_error_auth)
+                    }
+                }
+                card.addView(label(getString(R.string.settings_mfi_target_description), 14, MUTED))
+            }
         }
         filteredSection(content, SettingsSection.DIAGNOSTICS,
             getString(R.string.diagnostics), R.drawable.ic_dp_diagnostics) { card ->
@@ -3159,14 +3188,16 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
             parent.addView(label(getString(R.string.hotspot_setup), 22, TEXT, true))
             parent.addView(label(getString(R.string.s_1_open_car_hotspot_settings_turn_the_hotspot_on_and_sele), 16, MUTED).apply { setPadding(0, dp(8), 0, dp(12)) })
             parent.addView(button(getString(R.string.open_car_hotspot_settings), false) { openCarWifiSettings() }, matchButton(0, 60))
-            parent.addView(button(if (pendingCarHotspotSetup) getString(R.string.save_hotspot_details_and_use_this_mode) else "${getString(R.string.edit_saved_hotspot_prefix)}${storedSsid()}", false) {
+            // Before anything is saved there is no hotspot to edit and no name to show after the dot.
+            val detailsMissing = carHotspotDetailsMissing()
+            parent.addView(button(if (detailsMissing) getString(R.string.save_hotspot_details_and_use_this_mode) else "${getString(R.string.edit_saved_hotspot_prefix)}${storedSsid()}", false) {
                 askHotspotCredentials { ssid, password, security ->
                     saveHotspotCredentials(ssid, password, security)
                     pendingCarHotspotSetup = false
                     applyWirelessLink(WirelessHotspotMode.MANUAL)
                 }
             }, matchButton(12, 60))
-            parent.addView(label(if (pendingCarHotspotSetup) getString(R.string.finish_setup_save_your_hotspot_details_to_use_this_mode) else if (carHotspotOff()) getString(R.string.hotspot_details_off) else getString(R.string.hotspot_details_saved), 15, if (carHotspotOff()) WARNING else MUTED).apply { setPadding(0, dp(12), 0, 0) })
+            parent.addView(label(if (detailsMissing) getString(R.string.finish_setup_save_your_hotspot_details_to_use_this_mode) else if (carHotspotOff()) getString(R.string.hotspot_details_off) else getString(R.string.hotspot_details_saved), 15, if (carHotspotOff()) WARNING else MUTED).apply { setPadding(0, dp(12), 0, 0) })
             val join = hotspotJoinControls ?: HotspotJoinControls(this,
                 { CarPlayBackgroundSession.hasSession() }, beforeAction = { startupHotspotCancelled = true },
                 labelFactory = { label(it, 15, MUTED) }, buttonFactory = { title, click -> button(title, false, click) })
@@ -3306,6 +3337,9 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
     private fun storedPassword() = AirPlayPersistence.loadManualHotspotPassphrase(this)
     private fun hotspotError(ssid: String, password: String) =
         com.shilapi.xcertplay.orchestration.ManualHotspotValidation.error(ssid, password)?.let { getString(it.messageResource()) }
+
+    /** True until a usable car hotspot name and password are saved, as on a first run. */
+    private fun carHotspotDetailsMissing() = pendingCarHotspotSetup || hotspotError(storedSsid(), storedPassword()) != null
 
     private fun saveHotspotCredentials(ssid: String, password: String, security: ManualHotspotSecurity) {
         AirPlayPersistence.saveManualHotspotSsid(this, ssid)
@@ -5410,11 +5444,15 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
         appendLine("Startup settings: openAfterBoot=${AirPlayPersistence.loadAutoStartOnBoot(appContext)} " +
             "connectWhenOpened=${DiPlayPreferences.autoConnect(appContext)}")
         appendLine(WheelKeyService.report(appContext))
+        WheelKeyLog.report(WheelKeyService.connected()).forEach { appendLine(it) }
         appendLine()
         appendLine(UpdateAvailability.report(appContext, System.currentTimeMillis()))
         appendLine()
         appendLine("--- Recent own-app process exits (Android 11+) ---")
         appendLine(ProcessExitDiagnostics.report(appContext))
+        appendLine()
+        appendLine("--- Last crash recorded by DiPlay ---")
+        appendLine(CrashRecord.report(appContext))
         appendLine()
         for (name in SessionLogFile.REPORT_NAMES) {
             val file = File(appContext.filesDir, "logs/$name")
