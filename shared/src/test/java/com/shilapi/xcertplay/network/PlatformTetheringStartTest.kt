@@ -87,4 +87,16 @@ class PlatformTetheringStartTest {
         assertFalse(PlatformTetheringStart.supported(30))
         assertFalse(PlatformTetheringStart.supported(34))
     }
+
+    @Test
+    fun hiddenApiExemptionsCoverOnlyTheTetheringCall() {
+        val exemptions = PlatformTetheringStart.HIDDEN_API_EXEMPTIONS.toList()
+        assertEquals(listOf(
+            "Landroid/net/IConnectivityManager",
+            "Landroid/net/ConnectivityManager;->mService",
+            "Landroid/os/ServiceManager;",
+        ), exemptions)
+        // A bare "L" would exempt every class in the process, including CarPlay's own code paths.
+        assertTrue(exemptions.all { it.startsWith("Landroid/") && it.length > "Landroid/".length })
+    }
 }
