@@ -371,6 +371,8 @@
     <string name="settings_navigation">Navigation</string>
     <string name="settings_vehicle">Vehicle</string>
     <string name="settings_advanced">Advanced</string>
+    <string name="settings_more">More</string>
+    <string name="settings_swipe_advanced">Advanced (experimental)</string>
     <string name="settings_advanced_subtitle">Experimental and vehicle-specific controls for experienced users</string>
     <string name="settings_advanced_caution_title">Change with care</string>
     <string name="settings_advanced_caution_description">These features can depend on vehicle firmware, ADB access, or experimental CarPlay behavior. Everyday settings are organized in the categories above.</string>
@@ -900,6 +902,7 @@
     <string name="settings_speech_without_low_rates">Clearer navigation voice over USB (experimental)</string>
     <string name="settings_speech_without_low_rates_description">Over USB the iPhone can send navigation prompts and Siri’s spoken replies as 8 kHz phone-quality audio. This stops offering 8 and 16 kHz for that audio so the iPhone picks a higher rate. If prompts go silent, turn it off. Reconnects CarPlay.</string>
     <string name="bluetooth_connections_not_real">This head unit’s Android Bluetooth reports a connection, but nothing reaches the iPhone: even a connection to a service that does not exist succeeds. Bluetooth here is handled by the maker’s own module, which apps cannot use, so wireless CarPlay cannot work on this head unit. Try a USB connection.</string>
+    <string name="bluetooth_cannot_open_connections">This head unit’s Android Bluetooth cannot open connections for apps: its firmware leaves out the part that apps connect through. Calls and music over the car’s own Bluetooth are not affected, but wireless CarPlay cannot work on this head unit. Try a USB connection.</string>
     <string name="settings_fce_cluster_guidance">Guidance in the FCE cluster (experimental)</string>
     <string name="settings_fce_cluster_guidance_description">Shows CarPlay arrows and the next-turn distance in the instrument cluster’s navigation view on FCE head units, by writing to the head unit’s vehicle service. Tested on one car only; turn it off if the cluster behaves unexpectedly.</string>
     <string name="settings_cluster_music">Music on cluster (experimental)</string>
