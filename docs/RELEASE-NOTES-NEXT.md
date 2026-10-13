@@ -2,6 +2,10 @@
 
 Changes through DiPlay 0.2.19 are documented in [0.2.19 release notes](RELEASE-NOTES-0.2.19.md). Measured checks are in [VALIDATION.md](VALIDATION.md). Device acceptance and remaining failure families are tracked in [connection reliability validation](CONNECTION_RELIABILITY.md).
 
+## Connection setup and recovery
+
+- Wired CarPlay comes back within seconds after **Save and reconnect**. DiPlay ended its session and started a new one at once, and the iPhone, still in CarPlay mode from the old session, accepted iAP2 and StartSession but opened no CarPlay connection until it reset USB 30–150 s later ([#335](https://github.com/shihabal3amri/DiPlay/issues/335)). When the iPhone is still in the mode of a session DiPlay started on the same USB connection, DiPlay now asks for CarPlay mode again first, as a fresh connection does. The report shows `previousSessionOnThisEnumeration=true action=request-transition`. Pending in-car acceptance.
+
 ## Display
 
 - **CarPlay map on dashboard (experimental)** finds the cluster on BYD firmware that names it `fission_magicsentry` (controller 13) or `sission_magicsentry` (controller 17), at the same 1920×720 size as DiLink 4's `fission_bg_xdjaVirtualSurface`. A controller-13 car listed it as a presentation display, but DiPlay looked only for the DiLink 4 name, so nothing appeared on the cluster. A build that accepted the name drew the map there ([#552](https://github.com/shihabal3amri/DiPlay/issues/552)). Pending in-car acceptance on the release build.
