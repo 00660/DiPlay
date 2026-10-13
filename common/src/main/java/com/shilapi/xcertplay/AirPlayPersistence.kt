@@ -74,6 +74,7 @@ object AirPlayPersistence {
     private const val KEY_CAR_BLUETOOTH_AUDIO = "car_bluetooth_audio"
     private const val KEY_CALL_ECHO_CANCELLATION = "call_echo_cancellation"
     private const val KEY_CALL_VOICE_FILTER = "call_voice_filter"
+    private const val KEY_CALL_SPEAKERPHONE = "call_speakerphone"
     private const val KEY_SMOOTH_VIDEO = "smooth_video"
     private const val KEY_MTK_DECODER_TUNING = "mtk_decoder_tuning"
     private const val KEY_DIRECT_VIDEO_OUTPUT = "direct_video_output"
@@ -702,6 +703,13 @@ object AirPlayPersistence {
 
     fun saveCallVoiceFilter(context: Context, enabled: Boolean) {
         context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().putBoolean(KEY_CALL_VOICE_FILTER, enabled).apply()
+    }
+
+    fun loadCallSpeakerphone(context: Context): Boolean =
+        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getBoolean(KEY_CALL_SPEAKERPHONE, false)
+
+    fun saveCallSpeakerphone(context: Context, enabled: Boolean) {
+        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().putBoolean(KEY_CALL_SPEAKERPHONE, enabled).apply()
     }
 
     fun saveFps(context: Context, fps: Int) {
