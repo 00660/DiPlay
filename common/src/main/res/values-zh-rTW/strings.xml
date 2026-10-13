@@ -408,6 +408,7 @@
     <string name="wi_fi_session">Wi-Fi 工作階段</string>
     <string name="widest_width">較寬邊</string>
     <string name="wireless_carplay">無線 CarPlay</string>
+    <string name="home_usb_carplay">USB 有線 CarPlay</string>
     <string name="wireless_carplay_2">無線 CarPlay</string>
     <string name="wireless_carplay_active">無線 CarPlay 已啟用</string>
     <string name="wireless_carplay_control_running">無線 CarPlay 控制通道執行中</string>

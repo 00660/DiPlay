@@ -397,6 +397,7 @@
     <string name="wi_fi_session">جلسة واي فاي</string>
     <string name="widest_width">أقصى عرض</string>
     <string name="wireless_carplay">CARPLAY اللاسلكي</string>
+    <string name="home_usb_carplay">CARPLAY عبر USB</string>
     <string name="wireless_carplay_2">CarPlay اللاسلكي</string>
     <string name="wireless_carplay_active">CarPlay اللاسلكي نشط</string>
     <string name="wireless_carplay_control_running">التحكم في CarPlay اللاسلكي قيد التشغيل</string>
