@@ -2751,7 +2751,7 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
                 Log.i("DiPlay-Hotspot", "BYD head unit not detected: hotspot control through system settings access")
                 systemHotspotSettings(parent)
             } else {
-                Log.i("DiPlay-Hotspot", "settings hidden: BYD head unit not detected; Android ${Build.VERSION.SDK_INT} has no app tethering call")
+                Log.i("DiPlay-Hotspot", "settings hidden: BYD head unit not detected; Android ${Build.VERSION.SDK_INT} does not let an app start tethering")
             }
             return
         }
