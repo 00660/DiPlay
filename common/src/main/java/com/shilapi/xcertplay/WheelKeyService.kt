@@ -171,7 +171,9 @@ class WheelKeyService : AccessibilityService() {
         if (BydOutputSettings.carPlayCallControls(this) &&
             CarPlayMediaButton.opensSiriWhileCarPlay(event.keyCode) && session() != null) {
             if (!down) {
-                val sent = VoiceKeyPair.shared.allowCarPlayKey(event.eventTime) && CarPlayBackgroundSession.snapshot()?.controller?.requestSiri() == true
+                val shortPressIgnored = WheelZoomSettings.siriLongPressOnly(this) && CarPlayMediaButton.isShortVoiceKey(event.keyCode)
+                val sent = !shortPressIgnored && VoiceKeyPair.shared.allowCarPlayKey(event.eventTime) &&
+                    CarPlayBackgroundSession.snapshot()?.controller?.requestSiri() == true
                 note("CarPlay voice key ${event.keyCode}: Siri sent=$sent")
             }
             return true
@@ -795,6 +797,7 @@ object WheelZoomSettings {
     private const val KEY_JOYSTICK = "joystick"
     private const val KEY_JOYSTICK_AUTO_OFF = "joystick_auto_off"
     private const val KEY_SIRI = "siri_key"
+    private const val KEY_SIRI_LONG_ONLY = "siri_long_press_only"
     private const val BYD_KEYS = "simulate-keys"
     const val TIMED_MODE_MILLIS = 5_000L
     const val JOYSTICK_IDLE_MILLIS = 15_000L
@@ -847,6 +850,13 @@ object WheelZoomSettings {
     }
 
     fun siriKey(context: Context): Boolean = prefs(context).getBoolean(KEY_SIRI, false)
+
+    /** With this on, only the wheel's long press opens Siri; a short press of the voice key does nothing. */
+    fun siriLongPressOnly(context: Context): Boolean = prefs(context).getBoolean(KEY_SIRI_LONG_ONLY, false)
+
+    fun setSiriLongPressOnly(context: Context, enabled: Boolean) {
+        prefs(context).edit().putBoolean(KEY_SIRI_LONG_ONLY, enabled).apply()
+    }
 
     fun setSiriKey(context: Context, enabled: Boolean) {
         prefs(context).edit().putBoolean(KEY_SIRI, enabled).apply()

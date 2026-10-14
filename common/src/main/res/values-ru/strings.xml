@@ -625,6 +625,8 @@
     <string name="wheel_key_in_use">Эта кнопка уже назначена для «%1$s». Выберите другую кнопку.</string>
     <string name="wheel_siri_key">Кнопка Siri на руле</string>
     <string name="wheel_siri_key_description">Открывает Siri кнопкой на руле, которую вы выберете, пока CarPlay на экране. Кнопка, которую автомобиль оставляет себе, работает только со службой кнопок руля; служба работает и когда CarPlay в фоне. Без CarPlay или во время звонка кнопка сохраняет своё действие в автомобиле.</string>
+    <string name="wheel_siri_long_press_only">Siri только по долгому нажатию</string>
+    <string name="wheel_siri_long_press_only_description">Siri открывается только долгим нажатием кнопки голосового управления на руле. Короткое нажатие в DiPlay ничего не делает.</string>
     <string name="wheel_key_role_back">назад</string>
     <string name="wheel_key_service_label">Кнопки руля DiPlay</string>
     <string name="wheel_key_service_description">Необязательная фильтрация клавиш руля для громкости голосовых подсказок навигации, масштаба карты на панели, джойстика CarPlay и управления звонками. Содержимое экрана не читается.</string>

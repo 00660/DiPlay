@@ -1534,6 +1534,7 @@ class CarPlayHostActivity : ComponentActivity() {
         }
 
         // Keep DiPlay's existing steering-wheel/voice-key Siri handling intact.
+        if (CarPlayMediaButton.isShortVoiceKey(event.keyCode) && WheelZoomSettings.siriLongPressOnly(this)) return true
         if (!CarPlayMediaButton.opensSiri(event.keyCode)) return super.dispatchKeyEvent(event)
         if (event.action == KeyEvent.ACTION_DOWN) legacySiriPresses.add(physicalKey)
         if (event.action == KeyEvent.ACTION_UP) {
