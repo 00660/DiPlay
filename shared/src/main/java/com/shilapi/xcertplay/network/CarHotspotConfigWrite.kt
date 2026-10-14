@@ -169,6 +169,9 @@ object CarHotspotConfigWrite {
         timeoutMillis: Int,
         log: (String) -> Unit,
     ): Result {
+        // The 8.0-10 start path runs as the system uid, whose WRITE_SETTINGS appop must be allowed
+        // once for the hotspot to start; the command is idempotent and harmless on every version.
+        shell("appops set android WRITE_SETTINGS allow", timeoutMillis)
         val reply = CarHotspotStartMain.parseApConfig(
             shell(CarHotspotStartMain.apConfigCommand(apk, credentials), timeoutMillis))
         return if (CarHotspotStartMain.apConfigAccepted(reply)) Result.WRITTEN
