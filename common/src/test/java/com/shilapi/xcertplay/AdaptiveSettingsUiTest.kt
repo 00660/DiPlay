@@ -511,8 +511,8 @@ class AdaptiveSettingsUiTest {
     }
 
     @Test
-    @Config(sdk = [33], shadows = [HotspotSearchProbe::class])
-    fun hotspotSwitchStaysHiddenOffBydUnitsWithoutAnAppTetheringCall() {
+    @Config(sdk = [25, 33], shadows = [HotspotSearchProbe::class])
+    fun hotspotSwitchStaysHiddenOffBydUnitsWhereAndroidLetsNoAppStartTethering() {
         AirPlayPersistence.saveWirelessHotspotMode(context, WirelessHotspotMode.MANUAL)
         HotspotSearchProbe.workers.clear()
         HotspotSearchProbe.entered = CountDownLatch(1)
