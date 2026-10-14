@@ -219,9 +219,12 @@ class CarPlayHostActivity : ComponentActivity() {
                 if (wirelessPermissionsReady) {
                     "Wireless startup permissions granted"
                 } else {
-                    "Wireless startup permissions denied"
+                    "Wireless startup permissions denied missing=" +
+                        missingWirelessPermissions().joinToString(",") { it.substringAfterLast('.') }
                 },
             )
+            wirelessPermissionsRefused = !wirelessPermissionsReady
+            showMissingWirelessPermission()
             updateHotspotStatusBlock()
             maybeStartCarPlay()
         }
@@ -483,6 +486,7 @@ class CarPlayHostActivity : ComponentActivity() {
     private var awaitingVpnConsent = false
     private var vpnAdbConsentTried = false
     private var awaitingWirelessPermissions = false
+    private var wirelessPermissionsRefused = false
     private var awaitingWiredPermissions = false
     private var wiredPermissionsResolved = false
     private var awaitingLocationPermission = false
@@ -978,6 +982,30 @@ class CarPlayHostActivity : ComponentActivity() {
             checkSelfPermission(it) == PackageManager.PERMISSION_GRANTED
         }
 
+    private fun missingWirelessPermissions(): List<String> =
+        requiredWirelessPermissions().filter { checkSelfPermission(it) != PackageManager.PERMISSION_GRANTED }
+
+    /**
+     * Once the wireless start permissions were refused, by the driver or silently by Android (#290), the
+     * screen names the access to allow instead of waiting for the iPhone. Allowing it in the app permissions
+     * brings the driver back here, where the start goes on.
+     */
+    private fun showMissingWirelessPermission() {
+        if (wirelessPermissionsReady || !wirelessEnabled) {
+            wirelessPermissionsRefused = false
+            return
+        }
+        if (!wirelessPermissionsRefused) return
+        val missing = missingWirelessPermissions()
+        setConnectionStage(
+            if (Manifest.permission.ACCESS_FINE_LOCATION in missing || Manifest.permission.ACCESS_COARSE_LOCATION in missing) {
+                R.string.allow_precise_location_for_diplay_in_the_head_unit_s_app_p
+            } else {
+                R.string.allow_nearby_devices_for_diplay_in_the_head_unit_s_app_per
+            },
+        )
+    }
+
     private fun requiredWirelessPermissions(): List<String> =
         WirelessPermissions.required(wirelessHotspotMode, Build.VERSION.SDK_INT)
 
@@ -1064,6 +1092,7 @@ class CarPlayHostActivity : ComponentActivity() {
             requestLocationPermission()
         }
         wirelessPermissionsReady = !wirelessEnabled || hasRequiredWirelessPermissions()
+        showMissingWirelessPermission()
         advancedAudioChannelMapping =
             advancedAudioChannelMappingSupported &&
                 AirPlayPersistence.loadAdvancedAudioChannelMapping(this)
