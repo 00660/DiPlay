@@ -485,7 +485,7 @@ class AdaptiveSettingsUiTest {
 
     @Test
     @Config(shadows = [HotspotSearchProbe::class])
-    fun hotspotSearchKeepsTheBydAndCarHotspotAudienceGates() {
+    fun hotspotSearchKeepsTheCarHotspotAudienceGateAndNeedsNoAdbOffBydUnits() {
         installBydSettingsPackage()
         AirPlayPersistence.saveWirelessHotspotMode(context, WirelessHotspotMode.EXISTING_WIFI)
         HotspotSearchProbe.workers.clear()
@@ -498,8 +498,21 @@ class AdaptiveSettingsUiTest {
         assertFalse(index().any { it.title == title })
         AirPlayPersistence.saveWirelessHotspotMode(context, WirelessHotspotMode.MANUAL)
         shadowOf(context.packageManager).removePackage("com.byd.carsettings")
-        assertFalse(index().any { it.title == title })
+        // Other head units up to Android 10 get the switch through "Modify system settings" access instead of ADB.
+        assertEquals(SettingsCategory.CONNECTION, index().single { it.title == title }.category)
         assertTrue(HotspotSearchProbe.workers.isEmpty())
+    }
+
+    @Test
+    @Config(sdk = [33], shadows = [HotspotSearchProbe::class])
+    fun hotspotSwitchStaysHiddenOffBydUnitsWithoutAnAppTetheringCall() {
+        AirPlayPersistence.saveWirelessHotspotMode(context, WirelessHotspotMode.MANUAL)
+        HotspotSearchProbe.workers.clear()
+        HotspotSearchProbe.entered = CountDownLatch(1)
+        val screen = openSettings()
+        val index = ReflectionHelpers.callInstanceMethod<List<DiPlayActivity.SettingsSearchResult>>(
+            screen, "buildSettingsSearchIndex")
+        assertFalse(index.any { it.title == screen.getString(R.string.auto_car_hotspot_title) })
     }
 
     @Test fun cardControlsShareOneHeightAndGap() {
@@ -691,7 +704,8 @@ class AdaptiveSettingsUiTest {
 
         assertTrue(connection.any { it.startsWith(text(R.string.settings_usb_charging)) })
         assertFalse(advanced.any { it.startsWith(text(R.string.settings_usb_charging)) })
-        assertTrue(audio.any { it.startsWith(text(R.string.music_buffer)) })
+        assertTrue(audio.any { it.startsWith(text(R.string.settings_music_buffer_wireless)) })
+        assertTrue(audio.any { it.startsWith(text(R.string.settings_music_buffer_wired)) })
         listOf(R.string.main_buffered_audio, R.string.settings_car_bluetooth_audio, R.string.efficient_video, R.string.smooth_video, R.string.settings_direct_video_output, R.string.settings_low_latency_decoder, R.string.call_echo_cancellation, R.string.call_voice_filter, R.string.settings_disable_media_key_audio_focus, R.string.contrib_audio_home_toggle_audio_focus).forEach {
             assertTrue(text(it), text(it) in advanced)
             assertFalse(text(it), text(it) in audio)

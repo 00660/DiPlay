@@ -187,6 +187,7 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
     private var disconnectButton: Button? = null
     private var lastRunning: Boolean? = null
     private var pendingWireless = false
+    private var bluetoothSettingsVisited = false
     private var initialLaunch = true
     private var notificationTransport = true
     private var exportInProgress = false
@@ -2034,11 +2035,8 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
             getString(R.string.audio_routing), R.drawable.ic_dp_audio) { card ->
             mediaChannelControl(card)
             navigationChannelControl(card)
-            val bufferPresets = com.shilapi.xcertplay.media.MediaAudioBuffer.presets
-            choice(card, getString(R.string.music_buffer), listOf(getString(R.string.s_300_ms_default), getString(R.string.s_500_ms), getString(R.string.s_1000_ms_most_stable)),
-                bufferPresets.indexOf(AirPlayPersistence.loadMediaBufferMillis(this)).coerceAtLeast(0)) {
-                AirPlayPersistence.saveMediaBufferMillis(this, bufferPresets[it])
-            }
+            musicBufferChoice(card, wireless = true)
+            musicBufferChoice(card, wireless = false)
             toggle(card, getString(R.string.settings_call_speakerphone), getString(R.string.settings_call_speakerphone_description),
                 AirPlayPersistence.loadCallSpeakerphone(this)) { AirPlayPersistence.saveCallSpeakerphone(this, it) }
         }
@@ -2719,10 +2717,42 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
             com.shilapi.xcertplay.network.CarHotspotStatus.isEnabled(this) == false &&
             !(CarHotspotSettings.enabled(this) && CarHotspotTethering.permitted(this))
 
+    /**
+     * Other head units: starting the hotspot needs only Android's "Modify system settings" access
+     * (WRITE_SETTINGS), which the driver allows on the system screen. No ADB is involved.
+     */
+    private fun systemHotspotSettings(parent: LinearLayout) {
+        section(parent, getString(R.string.settings_car_hotspot_control), R.drawable.ic_dp_permissions) { card ->
+            toggle(card, getString(R.string.auto_car_hotspot_title),
+                getString(R.string.settings_auto_car_hotspot_system_description), CarHotspotSettings.enabled(this)) { enabled ->
+                CarHotspotSettings.setEnabled(this, enabled)
+                if (!enabled) startupHotspotCancelled = true
+                else if (!CarHotspotTethering.permitted(this)) openWriteSettingsAccess()
+            }
+            val permitted = CarHotspotTethering.permitted(this)
+            card.addView(label(getString(if (permitted) R.string.settings_write_settings_granted
+                else R.string.settings_write_settings_missing), 14, if (permitted) READY else MUTED).apply {
+                setPadding(0, dp(6), 0, dp(4))
+            })
+            if (!permitted) {
+                card.addView(button(getString(R.string.settings_write_settings_allow), false) { openWriteSettingsAccess() },
+                    matchButton(8, 54))
+            }
+        }
+    }
+
+    private fun openWriteSettingsAccess() =
+        openSystem(Intent(Settings.ACTION_MANAGE_WRITE_SETTINGS, Uri.parse("package:$packageName")))
+
     private fun bydAdbSettings(parent: LinearLayout) {
         if (AirPlayPersistence.loadWirelessHotspotMode(this) != WirelessHotspotMode.MANUAL) return
         if (!CarHotspotSetup.isBydHeadUnit(this)) {
-            Log.i("DiPlay-Hotspot", "settings hidden: BYD head unit not detected")
+            if (CarHotspotTethering.appStartSupported()) {
+                Log.i("DiPlay-Hotspot", "BYD head unit not detected: hotspot control through system settings access")
+                systemHotspotSettings(parent)
+            } else {
+                Log.i("DiPlay-Hotspot", "settings hidden: BYD head unit not detected; Android ${Build.VERSION.SDK_INT} has no app tethering call")
+            }
             return
         }
         if (searchIndexSink != null) {
@@ -5210,10 +5240,23 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
             bluetoothPermission.launch(Manifest.permission.BLUETOOTH_CONNECT); return
         }
         val adapter = getSystemService(BluetoothManager::class.java)?.adapter ?: BluetoothAdapter.getDefaultAdapter()
-        if (adapter == null || !adapter.isEnabled) {
+        if (adapter == null) {
+            // Android here has no Bluetooth for apps at all, so there is no switch to send the driver to.
+            pendingWireless = false
+            appDialogBuilder().setTitle(getString(R.string.wireless_carplay_2))
+                .setMessage(getString(R.string.bluetooth_cannot_open_connections))
+                .setPositiveButton(getString(R.string.got_it), null).show(); return
+        }
+        if (!adapter.isEnabled) {
+            // Back from Bluetooth settings and still off: on some head units the switch will not stay on.
+            val message = getString(R.string.enable_the_car_s_bluetooth_and_pair_your_iphone_first) +
+                if (bluetoothSettingsVisited) "\n\n" + getString(R.string.bluetooth_will_not_stay_on_hint) else ""
             appDialogBuilder().setTitle(getString(R.string.turn_on_bluetooth))
-                .setMessage(getString(R.string.enable_the_car_s_bluetooth_and_pair_your_iphone_first))
-                .setPositiveButton(getString(R.string.open_bluetooth)) { _, _ -> openSystem(Intent(Settings.ACTION_BLUETOOTH_SETTINGS)) }
+                .setMessage(message)
+                .setPositiveButton(getString(R.string.open_bluetooth)) { _, _ ->
+                    bluetoothSettingsVisited = true
+                    openSystem(Intent(Settings.ACTION_BLUETOOTH_SETTINGS))
+                }
                 .setNegativeButton(getString(R.string.later), null).show(); return
         }
         val devices = runCatching { adapter.bondedDevices.sortedBy { it.name ?: "" } }.getOrDefault(emptyList())
@@ -5463,6 +5506,10 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
         appendLine(StartupDiagnosticSnapshot.report(appContext))
         appendLine("Startup settings: openAfterBoot=${AirPlayPersistence.loadAutoStartOnBoot(appContext)} " +
             "connectWhenOpened=${DiPlayPreferences.autoConnect(appContext)}")
+        appendLine("Car hotspot control: autoEnable=${CarHotspotSettings.enabled(appContext)} " +
+            "writeSettings=${CarHotspotTethering.permitted(appContext)} " +
+            "bydHeadUnit=${runCatching { CarHotspotSetup.isBydHeadUnit(appContext) }.getOrNull()} " +
+            "hotspotOn=${runCatching { com.shilapi.xcertplay.network.CarHotspotStatus.isEnabled(appContext) }.getOrNull()}")
         appendLine(WheelKeyService.report(appContext))
         WheelKeyLog.report(WheelKeyService.connected()).forEach { appendLine(it) }
         appendLine()
@@ -5694,57 +5741,113 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
         return getString(R.string.settings_ambient_configuration) + " · " + getString(R.string.settings_ambient_summary, getString(if (value.enabled) R.string.settings_ambient_enabled else R.string.settings_ambient_disabled), mode, speed, value.selectedColors.size, value.brightness)
     }
 
+    private fun ambientModeDescription(mode: AmbientColorMode): String = getString(when (mode) {
+        AmbientColorMode.ENERGY -> R.string.settings_ambient_mode_energy_desc
+        AmbientColorMode.BEAT -> R.string.settings_ambient_mode_beat_desc
+        AmbientColorMode.TEMPO -> R.string.settings_ambient_mode_tempo_desc
+        AmbientColorMode.BASS -> R.string.settings_ambient_mode_bass_desc
+        AmbientColorMode.SMART -> R.string.settings_ambient_mode_smart_desc
+    })
+
+    private fun ambientBrightnessText(level: Int): String =
+        if (level <= 0) getString(R.string.settings_ambient_minimum) else getString(R.string.settings_ambient_brightness_value, level)
+
     private fun showAmbientConfiguration() {
         var draft = AmbientMusicSettings.load(this)
         val body = column().apply { setPadding(dp(24), dp(12), dp(24), dp(12)) }
         body.addView(label(getString(R.string.settings_ambient_parked_notice), 14, MUTED))
+        body.addView(space(12))
+        body.addView(label(getString(R.string.settings_ambient_behavior_title), 16, ACCENT, bold = true))
+        val behavior = label("", 14, MUTED)
+        body.addView(behavior)
+        body.addView(space(12))
+        lateinit var colorGrid: AmbientSwatchGrid
+        lateinit var colorHint: TextView
+        lateinit var musicOptions: LinearLayout
+        fun refreshAmbient() {
+            behavior.text = AmbientBehaviorText.lines(this, draft).joinToString("\n") { "• $it" }
+            musicOptions.visibility = if (draft.music) View.VISIBLE else View.GONE
+            val album = draft.colorSource == AmbientColorSource.ALBUM
+            colorGrid.single = !draft.music
+            colorGrid.setInteractive(!album)
+            colorHint.text = getString(when {
+                album -> R.string.settings_ambient_colors_hint_album
+                draft.music -> R.string.settings_ambient_colors_hint_follow
+                else -> R.string.settings_ambient_colors_hint_fixed
+            })
+        }
         toggle(body, getString(R.string.settings_ambient_enable), getString(R.string.settings_ambient_enable_description), draft.enabled) {
             draft = draft.copy(enabled = it)
+            refreshAmbient()
         }
         toggle(body, getString(R.string.settings_ambient_music), getString(R.string.settings_ambient_music_description), draft.music) {
             draft = draft.copy(music = it)
+            if (!it) {
+                // Fixed mode shows a single color, the first of the selection, as the lamps do.
+                val only = draft.selectedColors.first()
+                draft = draft.copy(selectedColors = listOf(only), color = only)
+                colorGrid.setSelection(setOf(only))
+            }
+            refreshAmbient()
         }
-        toggle(body, getString(R.string.settings_ambient_album), getString(R.string.settings_ambient_album_description), draft.colorSource == AmbientColorSource.ALBUM) {
-            draft = draft.copy(colorSource = if (it) AmbientColorSource.ALBUM else AmbientColorSource.SELECTED)
-        }
-        choice(body, getString(R.string.settings_ambient_color_mode), listOf(getString(R.string.settings_ambient_energy), getString(R.string.settings_ambient_beat), getString(R.string.settings_ambient_tempo), getString(R.string.settings_ambient_bass), getString(R.string.settings_ambient_smart)), draft.colorMode.ordinal, reconnects = false) {
+        musicOptions = column()
+        val modeNote = label(ambientModeDescription(draft.colorMode), 13, MUTED)
+        choice(musicOptions, getString(R.string.settings_ambient_color_mode), listOf(getString(R.string.settings_ambient_energy), getString(R.string.settings_ambient_beat), getString(R.string.settings_ambient_tempo), getString(R.string.settings_ambient_bass), getString(R.string.settings_ambient_smart)), draft.colorMode.ordinal, reconnects = false) {
             draft = draft.copy(colorMode = AmbientColorMode.entries[it])
+            modeNote.text = ambientModeDescription(draft.colorMode)
         }
-        choice(body, getString(R.string.settings_ambient_speed), listOf(getString(R.string.settings_ambient_slow), getString(R.string.settings_ambient_standard), getString(R.string.settings_ambient_fast)), draft.speed.ordinal, reconnects = false) {
+        musicOptions.addView(modeNote)
+        musicOptions.addView(space(12))
+        choice(musicOptions, getString(R.string.settings_ambient_speed), listOf(getString(R.string.settings_ambient_slow), getString(R.string.settings_ambient_standard), getString(R.string.settings_ambient_fast)), draft.speed.ordinal, reconnects = false) {
             draft = draft.copy(speed = AmbientColorSpeed.entries[it])
         }
-        val paletteButton = button(getString(R.string.settings_ambient_palette_summary, draft.selectedColors.size), false) {}
-        paletteButton.setOnClickListener {
-            val checked = BooleanArray(31) { it + 1 in draft.selectedColors }
-            val paletteDialog = AlertDialog.Builder(this).setTitle(getString(R.string.settings_ambient_palette))
-                .setMultiChoiceItems((1..31).map { it.toString() }.toTypedArray(), checked) { _, index, selected -> checked[index] = selected }
-                .setNeutralButton(getString(R.string.settings_ambient_select_all), null)
-                .setPositiveButton(getString(R.string.save), null)
-                .setNegativeButton(getString(R.string.cancel), null).create()
-            paletteDialog.setOnShowListener {
-                paletteDialog.getButton(AlertDialog.BUTTON_NEUTRAL).setOnClickListener {
-                    checked.fill(true)
-                    for (index in checked.indices) paletteDialog.listView.setItemChecked(index, true)
-                }
-                paletteDialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
-                    val selected = checked.indices.filter { checked[it] }.map { it + 1 }
-                    if (selected.isEmpty()) toast(getString(R.string.settings_ambient_select_one))
-                    else {
-                        draft = draft.copy(selectedColors = selected, color = selected.first())
-                        paletteButton.text = getString(R.string.settings_ambient_palette_summary, selected.size)
-                        paletteDialog.dismiss()
-                    }
-                }
-            }
-            paletteDialog.show()
+        body.addView(musicOptions)
+        toggle(body, getString(R.string.settings_ambient_album), getString(R.string.settings_ambient_album_description), draft.colorSource == AmbientColorSource.ALBUM) {
+            draft = draft.copy(colorSource = if (it) AmbientColorSource.ALBUM else AmbientColorSource.SELECTED)
+            refreshAmbient()
         }
-        body.addView(paletteButton, matchButton(0, 60)); body.addView(space(12))
-        choice(body, getString(R.string.settings_ambient_brightness), (0..6).map { if (it == 0) getString(R.string.settings_ambient_minimum) else it.toString() }, draft.brightness, reconnects = false) {
-            draft = draft.copy(brightness = it)
-        }
+        body.addView(space(12))
+        body.addView(label(getString(R.string.settings_ambient_colors_title), 16, ACCENT, bold = true))
+        colorHint = label("", 13, MUTED)
+        body.addView(colorHint)
+        body.addView(space(8))
+        colorGrid = AmbientSwatchGrid(
+            this, ACCENT,
+            initial = if (draft.music) draft.selectedColors.toSet() else setOf(draft.selectedColors.first()),
+            single = !draft.music,
+            onChanged = { colors ->
+                val sorted = colors.sorted()
+                draft = draft.copy(selectedColors = sorted, color = sorted.first())
+            },
+            onLastDeselected = { toast(getString(R.string.settings_ambient_select_one)) },
+        )
+        body.addView(colorGrid)
+        body.addView(space(12))
+        body.addView(label(getString(R.string.settings_ambient_brightness), 16, ACCENT, bold = true))
+        val brightnessValue = label(ambientBrightnessText(draft.brightness), 14, MUTED)
+        body.addView(brightnessValue)
+        body.addView(SeekBar(this).apply {
+            max = 6
+            progress = draft.brightness
+            contentDescription = getString(R.string.settings_ambient_brightness)
+            progressTintList = android.content.res.ColorStateList.valueOf(ACCENT)
+            thumbTintList = android.content.res.ColorStateList.valueOf(ACCENT)
+            setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+                override fun onProgressChanged(bar: SeekBar, level: Int, fromUser: Boolean) {
+                    draft = draft.copy(brightness = level)
+                    brightnessValue.text = ambientBrightnessText(level)
+                    refreshAmbient()
+                }
+                override fun onStartTrackingTouch(bar: SeekBar) = Unit
+                override fun onStopTrackingTouch(bar: SeekBar) = Unit
+            })
+        }, LinearLayout.LayoutParams(-1, dp(48)))
+        body.addView(space(12))
         choice(body, getString(R.string.settings_ambient_area), listOf(getString(R.string.settings_ambient_front), getString(R.string.settings_ambient_rear), getString(R.string.settings_ambient_all)), draft.area - 1, reconnects = false) {
             draft = draft.copy(area = it + 1)
+            refreshAmbient()
         }
+        refreshAmbient()
         val dialog = AlertDialog.Builder(this).setTitle(getString(R.string.settings_ambient_configuration))
             .setView(ScrollView(this).apply { addView(body) })
             .setPositiveButton(getString(R.string.save), null)
@@ -5775,6 +5878,26 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
             }
         }
         dialog.show()
+    }
+
+    /** Music buffer for one transport. A change reconnects only a running session of that transport. */
+    private fun musicBufferChoice(card: LinearLayout, wireless: Boolean) {
+        val buffer = com.shilapi.xcertplay.media.MediaAudioBuffer
+        val presets = if (wireless) buffer.wirelessPresets else buffer.wiredPresets
+        val labels = presets.map { millis ->
+            when (millis) {
+                buffer.DEFAULT_MILLIS -> getString(R.string.s_300_ms_default)
+                buffer.MOST_STABLE_MILLIS -> getString(R.string.s_1000_ms_most_stable)
+                else -> getString(R.string.settings_music_buffer_ms, millis)
+            }
+        }
+        val title = getString(if (wireless) R.string.settings_music_buffer_wireless else R.string.settings_music_buffer_wired)
+        val sessionTransport = AirPlayPersistence.loadWirelessEnabled(this) == wireless
+        choice(card, title, labels,
+            presets.indexOf(AirPlayPersistence.loadMediaBufferMillis(this, wireless)).coerceAtLeast(0),
+            reconnects = sessionTransport) {
+            AirPlayPersistence.saveMediaBufferMillis(this, wireless, presets[it])
+        }
     }
 
     // [announcesReconnect] labels a choice whose [save] reconnects by itself.
