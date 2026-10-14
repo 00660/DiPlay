@@ -188,6 +188,7 @@ class AndroidMediaSink(
     private val audioFocusAutoYield: Boolean = true,
     private val mediaChannel: Int = 0,
     private val navigationChannel: Int = 0,
+    navigationAttenuationDb: Int = 0,
     context: Context? = null,
     private val navigationStreamType: Int = AudioChannelMapper.DEFAULT_NAVIGATION_STREAM_TYPE,
     onScreenStreamActiveChanged: ((Int, Boolean) -> Unit)? = null,
@@ -254,6 +255,13 @@ class AndroidMediaSink(
     internal var detachGraceNanos = 500_000_000L
     private val mediaAudioTypes = mutableSetOf<AudioStreamId>()
     private val audioRenderers = ConcurrentHashMap<AudioStreamId, AudioRenderer>()
+    @Volatile private var navigationAttenuationDb = NavigationAudioGain.clamp(navigationAttenuationDb)
+
+    /** Apply a saved Audio setting to existing navigation tracks without reconnecting CarPlay. */
+    fun setNavigationAttenuationDb(db: Int) {
+        navigationAttenuationDb = NavigationAudioGain.clamp(db)
+        audioRenderers.values.forEach { it.setNavigationAttenuationDb(navigationAttenuationDb) }
+    }
     private val microphoneUplinks = ConcurrentHashMap<AudioStreamId, MicrophoneUplink>()
     private val audioModeLock = Any()
     private var communicationModeStream: AudioStreamId? = null
@@ -693,7 +701,12 @@ class AndroidMediaSink(
                 appContext != null && BydBluetoothSuspend.isSuspendedByUs(appContext),
             echoReference = echoReference,
             voiceFilter = callVoiceFilter && format.audioType == TELEPHONY_AUDIO_TYPE,
-        ).also { audioRenderers[id] = it }
+        ).also {
+            it.setNavigationAttenuationDb(navigationAttenuationDb)
+            audioRenderers[id] = it
+            // Cover a Settings change made while this renderer was being prepared.
+            it.setNavigationAttenuationDb(navigationAttenuationDb)
+        }
     }
 
     private companion object {
@@ -1723,6 +1736,11 @@ private class AudioRenderer(
     @Volatile private var started = false
     private var codec: MediaCodec? = null
     private var track: AudioTrack? = null
+    @Volatile private var navigationAttenuationDb = 0
+    private var appliedNavigationAttenuationDb: Int? = null
+    private var lastNavigationGainAttemptDb: Int? = null
+    private var lastNavigationGainFailureNs = 0L
+    private var reportedNavigationGainFailureDb: Int? = null
     private var pcm = ByteArray(64 * 1024)
     private var playbackStarted = false
     private var prebufferBytes = 0
@@ -1813,6 +1831,9 @@ private class AudioRenderer(
             diagnosticStage = "focus"
             requestAudioFocus()
             while (running) {
+                // Apply pending Settings changes on this worker, never on the UI thread.
+                // Also handles quiet navigation tracks with no incoming PCM.
+                applyNavigationAttenuation()
                 diagnosticStage = "packet"
                 queue.poll(AUDIO_POLL_MILLIS, TimeUnit.MILLISECONDS)?.let(::handle)
                 // Output becomes ready asynchronously, including after the last packet of a burst.
@@ -1945,6 +1966,7 @@ private class AudioRenderer(
             )
         }
         track = built
+        applyNavigationAttenuation()
         if (ambientMedia) {
             ambientRendererToken = AmbientMusicController.openRenderer(ambientSinkToken, ambientEnvelope) {
                 built.playbackHeadPosition to (running && built.playState == AudioTrack.PLAYSTATE_PLAYING)
@@ -1989,6 +2011,41 @@ private class AudioRenderer(
         AudioChannel.MEDIA -> mediaChannel
         AudioChannel.NAVIGATION -> navigationChannel
         else -> 0
+    }
+
+    fun setNavigationAttenuationDb(db: Int) {
+        // The Settings callback must never wait for release(), which may be blocked in
+        // vendor MediaCodec.stop()/release() while holding the renderer monitor.
+        navigationAttenuationDb = NavigationAudioGain.clamp(db)
+    }
+
+    /** Worker-thread only: never call AudioTrack APIs from a Settings callback. */
+    private fun applyNavigationAttenuation() {
+        if (mappedChannel != AudioChannel.NAVIGATION) return
+        val playingTrack = track ?: return
+        val requestedDb = navigationAttenuationDb
+        // Leave default playback exactly as it was before this setting existed.
+        if (requestedDb == 0 && appliedNavigationAttenuationDb == null) return
+        if (appliedNavigationAttenuationDb == requestedDb) return
+        // Some head units reject setVolume for an entire stream. Avoid retrying on every
+        // 10 ms poll/PCM write and flooding diagnostics, but recover from transient failures.
+        if (lastNavigationGainAttemptDb == requestedDb && lastNavigationGainFailureNs != 0L &&
+            System.nanoTime() - lastNavigationGainFailureNs < NAVIGATION_GAIN_RETRY_NS) return
+        val gain = NavigationAudioGain.linear(requestedDb)
+        val success = runCatching { playingTrack.setVolume(gain) == AudioTrack.SUCCESS }.getOrDefault(false)
+        lastNavigationGainAttemptDb = requestedDb
+        if (success) {
+            appliedNavigationAttenuationDb = requestedDb
+            lastNavigationGainFailureNs = 0L
+            reportedNavigationGainFailureDb = null
+            runCatching { report("Audio: navigation attenuation=" + requestedDb + "dB applied=true") }
+        } else {
+            lastNavigationGainFailureNs = System.nanoTime()
+            if (reportedNavigationGainFailureDb != requestedDb) {
+                reportedNavigationGainFailureDb = requestedDb
+                runCatching { report("Audio: navigation attenuation=" + requestedDb + "dB applied=false") }
+            }
+        }
     }
 
     private fun audioAttributesFor(
@@ -2284,6 +2341,8 @@ private class AudioRenderer(
         }
         var written = 0
         while (written < length && running) {
+            // Long-running PCM writes may span several slider adjustments.
+            applyNavigationAttenuation()
             val writeLength = if (playbackStarted) {
                 length - written
             } else {
@@ -2507,6 +2566,7 @@ private class AudioRenderer(
         const val INPUT_TIMEOUT_US = 10_000L
         const val AUDIO_INPUT_WAIT_NS = 100_000_000L
         const val AUDIO_POLL_MILLIS = 10L
+        const val NAVIGATION_GAIN_RETRY_NS = 500_000_000L
         const val BUFFER_TAIL_WAIT_NS = 500_000_000L
         // Holds a burst after a Wi-Fi gap (~4 s of AAC) instead of dropping it.
         const val MAX_QUEUED_PACKETS = 192

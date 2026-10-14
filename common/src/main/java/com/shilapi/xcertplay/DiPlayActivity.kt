@@ -2035,6 +2035,26 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
             getString(R.string.audio_routing), R.drawable.ic_dp_audio) { card ->
             mediaChannelControl(card)
             navigationChannelControl(card)
+            val gainSlider = overlaySliderRow(
+                getString(R.string.settings_navigation_attenuation),
+                (com.shilapi.xcertplay.media.NavigationAudioGain.MIN_DB..
+                    com.shilapi.xcertplay.media.NavigationAudioGain.MAX_DB).toList(),
+                AirPlayPersistence.loadNavigationAudioAttenuationDb(this),
+            ) { db -> getString(R.string.settings_navigation_attenuation_value, db) }
+            val gainTitle = getString(R.string.settings_navigation_attenuation)
+            gainSlider.slider.contentDescription = gainTitle + ": " +
+                getString(R.string.settings_navigation_attenuation_value,
+                    AirPlayPersistence.loadNavigationAudioAttenuationDb(this))
+            gainSlider.onSave = { db ->
+                AirPlayPersistence.saveNavigationAudioAttenuationDb(this, db)
+                CarPlayBackgroundSession.snapshot()?.sink?.setNavigationAttenuationDb(db)
+                gainSlider.slider.contentDescription = gainTitle + ": " +
+                    getString(R.string.settings_navigation_attenuation_value, db)
+            }
+            card.addView(gainSlider)
+            card.addView(label(getString(R.string.settings_navigation_attenuation_description), 14, MUTED).apply {
+                setPadding(0, dp(SETTINGS_BLOCK_GAP_DP), 0, 0)
+            })
             musicBufferChoice(card, wireless = true)
             musicBufferChoice(card, wireless = false)
             toggle(card, getString(R.string.settings_call_speakerphone), getString(R.string.settings_call_speakerphone_description),
