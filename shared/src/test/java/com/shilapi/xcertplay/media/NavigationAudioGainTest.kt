@@ -140,6 +140,50 @@ class NavigationAudioGainTest {
         }
     }
 
+    @Test fun rejectedGainIsThrottledAndReportedOnceThenRecoversWithoutChangingOtherAudio() {
+        val reports = mutableListOf<String>()
+        val sink = AndroidMediaSink(onAudioDiagnostic = reports::add)
+        val format = AudioFormat(AudioCodecKind.LPCM, 48_000, 1, 96, "default")
+        val create = AndroidMediaSink::class.java.getDeclaredMethod("audioRenderer",
+            AudioStreamId::class.java, AudioFormat::class.java).apply { isAccessible = true }
+        val renderer = create.invoke(sink, AudioStreamId(96, "default"), format)
+        val type = renderer.javaClass
+        val track = track()
+        val flush = type.getDeclaredMethod("applyNavigationAttenuation").apply { isAccessible = true }
+        val lastFailure = type.getDeclaredField("lastNavigationGainFailureNs").apply { isAccessible = true }
+        try {
+            type.getDeclaredField("mappedChannel").apply { isAccessible = true }
+                .set(renderer, AudioChannel.NAVIGATION)
+            type.getDeclaredField("track").apply { isAccessible = true }.set(renderer, track)
+            TrackGain.result = AudioTrack.ERROR_INVALID_OPERATION
+            sink.setNavigationAttenuationDb(-6)
+            repeat(100) { flush.invoke(renderer) }
+            assertEquals(1, TrackGain.volumes[track]?.size)
+            assertEquals(1, reports.count { it.contains("attenuation=-6dB applied=false") })
+            // Once the retry interval expires, retry the track without another report flood.
+            lastFailure.setLong(renderer, System.nanoTime() - TimeUnit.SECONDS.toNanos(2))
+            flush.invoke(renderer)
+            assertEquals(2, TrackGain.volumes[track]?.size)
+            assertEquals(1, reports.count { it.contains("attenuation=-6dB applied=false") })
+
+            TrackGain.result = AudioTrack.SUCCESS
+            lastFailure.setLong(renderer, System.nanoTime() - TimeUnit.SECONDS.toNanos(2))
+            flush.invoke(renderer)
+            assertEquals(3, TrackGain.volumes[track]?.size)
+            assertEquals(1, reports.count { it.contains("attenuation=-6dB applied=true") })
+            flush.invoke(renderer)
+            assertEquals(3, TrackGain.volumes[track]?.size)
+            sink.setNavigationAttenuationDb(0)
+            flush.invoke(renderer)
+            assertEquals(1f, TrackGain.volumes.getValue(track).last(), 0.0001f)
+        } finally {
+            TrackGain.result = AudioTrack.SUCCESS
+            sink.close()
+            track.release()
+            TrackGain.volumes.clear()
+        }
+    }
+
     private fun track(): AudioTrack =
         AudioTrack.Builder().setAudioAttributes(AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_MEDIA).build())
             .setAudioFormat(AndroidAudioFormat.Builder().setSampleRate(48_000)
@@ -152,10 +196,11 @@ class NavigationAudioGainTest {
         @RealObject private lateinit var track: AudioTrack
         @Implementation fun setVolume(value: Float): Int {
             volumes.getOrPut(track) { mutableListOf() }.add(value)
-            return AudioTrack.SUCCESS
+            return result
         }
         companion object {
             val volumes = linkedMapOf<AudioTrack, MutableList<Float>>()
+            var result = AudioTrack.SUCCESS
         }
     }
 }

@@ -1738,6 +1738,9 @@ private class AudioRenderer(
     private var track: AudioTrack? = null
     @Volatile private var navigationAttenuationDb = 0
     private var appliedNavigationAttenuationDb: Int? = null
+    private var lastNavigationGainAttemptDb: Int? = null
+    private var lastNavigationGainFailureNs = 0L
+    private var reportedNavigationGainFailureDb: Int? = null
     private var pcm = ByteArray(64 * 1024)
     private var playbackStarted = false
     private var prebufferBytes = 0
@@ -1813,6 +1816,7 @@ private class AudioRenderer(
     }
 
     private fun run() {
+        runCatching { android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_AUDIO) }
         try {
             runCatching { report("Audio: starting api=${Build.VERSION.SDK_INT} " +
                 "audioType=${format.audioType} codec=${format.codec} rate=${format.sampleRate} channels=${format.channels} " +
@@ -2023,11 +2027,24 @@ private class AudioRenderer(
         // Leave default playback exactly as it was before this setting existed.
         if (requestedDb == 0 && appliedNavigationAttenuationDb == null) return
         if (appliedNavigationAttenuationDb == requestedDb) return
+        // Some head units reject setVolume for an entire stream. Avoid retrying on every
+        // 10 ms poll/PCM write and flooding diagnostics, but recover from transient failures.
+        if (lastNavigationGainAttemptDb == requestedDb && lastNavigationGainFailureNs != 0L &&
+            System.nanoTime() - lastNavigationGainFailureNs < NAVIGATION_GAIN_RETRY_NS) return
         val gain = NavigationAudioGain.linear(requestedDb)
         val success = runCatching { playingTrack.setVolume(gain) == AudioTrack.SUCCESS }.getOrDefault(false)
-        if (success) appliedNavigationAttenuationDb = requestedDb
-        runCatching {
-            report("Audio: navigation attenuation=" + requestedDb + "dB applied=" + success)
+        lastNavigationGainAttemptDb = requestedDb
+        if (success) {
+            appliedNavigationAttenuationDb = requestedDb
+            lastNavigationGainFailureNs = 0L
+            reportedNavigationGainFailureDb = null
+            runCatching { report("Audio: navigation attenuation=" + requestedDb + "dB applied=true") }
+        } else {
+            lastNavigationGainFailureNs = System.nanoTime()
+            if (reportedNavigationGainFailureDb != requestedDb) {
+                reportedNavigationGainFailureDb = requestedDb
+                runCatching { report("Audio: navigation attenuation=" + requestedDb + "dB applied=false") }
+            }
         }
     }
 
@@ -2549,6 +2566,7 @@ private class AudioRenderer(
         const val INPUT_TIMEOUT_US = 10_000L
         const val AUDIO_INPUT_WAIT_NS = 100_000_000L
         const val AUDIO_POLL_MILLIS = 10L
+        const val NAVIGATION_GAIN_RETRY_NS = 500_000_000L
         const val BUFFER_TAIL_WAIT_NS = 500_000_000L
         // Holds a burst after a Wi-Fi gap (~4 s of AAC) instead of dropping it.
         const val MAX_QUEUED_PACKETS = 192
