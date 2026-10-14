@@ -113,12 +113,11 @@ class CarHotspotConfigWriteTest {
     }
 
     @Test fun shellWriteAcceptsTheHelperOkLine() {
-        val commands = mutableListOf<String>()
+        var command: String? = null
         assertEquals(Result.WRITTEN, CarHotspotConfigWrite.writeAdb(
-            { sent, _ -> commands.add(sent); "noise\nDIPLAY_HOTSPOT_APCONFIG_V1|ok\n" },
+            { sent, _ -> command = sent; "noise\nDIPLAY_HOTSPOT_APCONFIG_V1|ok\n" },
             "/data/app/diplay.apk", credentials, 4_000, ::log))
-        assertEquals("appops set android WRITE_SETTINGS allow", commands[0])
-        commands[1].let {
+        command!!.let {
             assertTrue(it.contains("app_process /system/bin com.shilapi.xcertplay.network.CarHotspotStartMain"))
             assertTrue(it.contains(" apconfig "))
             assertTrue(it.contains(" 'DiPlay' 'password1' AUTO"))
