@@ -255,7 +255,6 @@
     <string name="mfi_authentication_ready">Аутентификация MFi готова</string>
     <string name="mfi_certificate_signing_target">Сертификат MFi и цель подписи</string>
     <string name="model">Модель</string>
-    <string name="music_buffer">Буфер музыки</string>
     <string name="resolution_native">Нативное</string>
     <string name="navigation_on_hud_and_instrument_cluster">Навигация на HUD и приборной панели</string>
     <string name="navigation_stream_type">Тип потока навигации</string>
@@ -327,7 +326,9 @@
     <string name="s_30_fps_lighter_load">30 кадров/с · меньшая нагрузка</string>
     <string name="s_3_connect">3 · Подключитесь</string>
     <string name="s_3_tap_check_and_enable_below_this_enables_the_cluster_ma">3. Нажмите «Проверить и включить» ниже. Это включит карту комбинации и автоматическое следование теме. Активный сеанс CarPlay переподключится один раз. После этого можно отключить компьютер.</string>
-    <string name="s_500_ms">500 мс</string>
+    <string name="settings_music_buffer_ms">%1$d мс</string>
+    <string name="settings_music_buffer_wireless">Буфер музыки (беспроводной CarPlay)</string>
+    <string name="settings_music_buffer_wired">Буфер музыки (USB-кабель)</string>
     <string name="s_60_fps_smoother_motion">60 кадров/с · более плавное движение</string>
     <string name="s_60_lightest_load" formatted="false">60% · минимальная нагрузка</string>
     <string name="s_80_lighter_load" formatted="false">80% · меньшая нагрузка</string>
