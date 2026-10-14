@@ -409,6 +409,7 @@
     <string name="wi_fi_session">Сеанс Wi-Fi</string>
     <string name="widest_width">Найбільша ширина</string>
     <string name="wireless_carplay">БЕЗДРОТОВИЙ CARPLAY</string>
+    <string name="home_usb_carplay">CARPLAY ЧЕРЕЗ USB</string>
     <string name="wireless_carplay_2">Бездротовий CarPlay</string>
     <string name="wireless_carplay_active">Бездротовий CarPlay активний</string>
     <string name="wireless_carplay_control_running">Керування бездротовим CarPlay працює</string>
