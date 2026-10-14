@@ -581,7 +581,7 @@
     <string name="auto_car_hotspot_title">Автоматично вмикати точку доступу авто</string>
     <string name="auto_car_hotspot_description">Вмикає збережену точку доступу під час відкриття DiPlay. Перемикач автоматично запитує потрібні дозволи через ADB; підтвердьте запит на екрані авто. Для запуску після завантаження ввімкніть відкриття DiPlay після запуску авто. Назва й пароль зберігаються, точка доступу автоматично не вимикається.</string>
     <string name="settings_car_hotspot_config_title">Безшовне підключення (експериментально)</string>
-    <string name="settings_car_hotspot_config_description">Вводити дані точки доступу вручну не потрібно: вони створюються автоматично з назвою DiPlay-XXXX, а якщо дані вже заповнено, вони синхронізуються з налаштуваннями авто. На Android 11 і новіших потрібен ADB; на Android 8–10 недоступно.</string>
+    <string name="settings_car_hotspot_config_description">Вводити дані точки доступу вручну не потрібно: вони створюються автоматично з назвою DiPlay-XXXX, а якщо дані вже заповнено, вони синхронізуються з налаштуваннями авто. На Android 11 і новіших потрібен ADB; на Android 8–10 потрібен ADB з root-доступом.</string>
     <string name="settings_car_hotspot_config_unsupported">Запис налаштувань точки доступу неможливий у цій версії Android.</string>
     <string name="settings_car_hotspot_config_written">Назва та пароль точки доступу автомобіля тепер збігаються з DiPlay.</string>
     <string name="settings_car_hotspot_config_effect">Набуде чинності під час наступного ввімкнення точки доступу авто.</string>

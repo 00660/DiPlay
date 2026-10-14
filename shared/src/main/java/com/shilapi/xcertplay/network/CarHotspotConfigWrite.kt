@@ -22,9 +22,10 @@ data class HotspotCredentials(
  * Writes the car's saved hotspot configuration before starting it. Android 7.1 writes from the app:
  * the WifiConfiguration class is public, only WifiManager.setWifiApConfiguration is hidden, and its
  * gate is CHANGE_WIFI_STATE alone. Android 11+ writes through the shell helper, because the shell
- * holds NETWORK_SETTINGS on 11-12 and OVERRIDE_WIFI_CONFIG since 13, while 8.0-10 block both the
- * app and the shell with the signature OVERRIDE_WIFI_CONFIG permission. WPA3 hotspots are never
- * downgraded.
+ * holds NETWORK_SETTINGS on 11-12 and OVERRIDE_WIFI_CONFIG since 13. On 8.0-10 both the app and
+ * the shell lack the signature OVERRIDE_WIFI_CONFIG permission; there the write only works from a
+ * root adb, whose helper demotes to the platform-signed system uid to pass the same check.
+ * WPA3 hotspots are never downgraded.
  */
 object CarHotspotConfigWrite {
     enum class Result(val diagnostic: String) {
@@ -35,8 +36,7 @@ object CarHotspotConfigWrite {
         FAILED("the car hotspot configuration write failed"),
     }
 
-    fun supported(sdk: Int = Build.VERSION.SDK_INT): Boolean =
-        sdk == Build.VERSION_CODES.N_MR1 || sdk >= Build.VERSION_CODES.R
+    fun supported(sdk: Int = Build.VERSION.SDK_INT): Boolean = sdk >= Build.VERSION_CODES.N_MR1
 
     fun write(
         context: Context,

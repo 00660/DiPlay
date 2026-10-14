@@ -18,15 +18,15 @@ class CarHotspotConfigWriteTest {
     private fun log(message: String) { logs += message }
     private val credentials = HotspotCredentials("DiPlay", "password1", ManualHotspotSecurity.WPA2)
 
-    @Test fun onlyAndroidSevenPointOneAndElevenPlusAreSupported() {
-        listOf(23, 24, 26, 27, 28, 29).forEach { assertFalse(CarHotspotConfigWrite.supported(it)) }
-        listOf(25, 30, 31, 33, 35).forEach { assertTrue(CarHotspotConfigWrite.supported(it)) }
+    @Test fun onlyAndroidSevenPointOneAndNewerAreSupported() {
+        listOf(23, 24).forEach { assertFalse(CarHotspotConfigWrite.supported(it)) }
+        listOf(25, 26, 28, 29, 30, 31, 33, 35).forEach { assertTrue(CarHotspotConfigWrite.supported(it)) }
     }
 
     @Test fun unsupportedSdkIsReportedBeforeAnythingElse() {
         assertEquals(Result.UNSUPPORTED_SDK,
-            CarHotspotConfigWrite.write(RuntimeEnvironment.getApplication(), credentials, sdk = 29, log = ::log))
-        assertTrue(logs.single().contains("unsupported Android 29"))
+            CarHotspotConfigWrite.write(RuntimeEnvironment.getApplication(), credentials, sdk = 24, log = ::log))
+        assertTrue(logs.single().contains("unsupported Android 24"))
     }
 
     @Test fun wpa3IsNeverDowngraded() {
