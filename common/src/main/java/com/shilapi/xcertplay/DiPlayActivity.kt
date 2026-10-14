@@ -1793,7 +1793,7 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
             }
             card.addView(button(getString(R.string.boot_start_repair), false) { repairBootStart() }, matchButton(6, 56))
             card.addView(label(getString(R.string.boot_start_repair_desc), 14, MUTED).apply { setPadding(0, dp(8), 0, dp(6)) })
-            card.addView(button("${getString(R.string.choose_iphone_prefix)}${DiPlayPreferences.phoneName(this)}", false) { choosePhone() }, matchButton(12, 60))
+            card.addView(button(chooseIphoneTitle(), false) { choosePhone() }, matchButton(12, 60))
         }
         filteredSection(content, SettingsSection.USB_CONNECTION,
             getString(R.string.settings_usb_connection), R.drawable.ic_dp_connection) { card ->
@@ -3068,13 +3068,18 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
         content.addView(card, LinearLayout.LayoutParams(-1, -2).apply { bottomMargin = dp(SETTINGS_BLOCK_GAP_DP) })
     }
 
+    /** "Choose iPhone · <name>" once an iPhone is chosen. Before that there is no name to show, only "Choose iPhone". */
+    private fun chooseIphoneTitle(): String =
+        if (DiPlayPreferences.phoneAddress(this) == null) getString(R.string.choose_iphone)
+        else "${getString(R.string.choose_iphone_prefix)}${DiPlayPreferences.phoneName(this)}"
+
     private fun setupIphoneStep(content: LinearLayout) {
         setupTitle(content, R.string.setup_iphone_title, getString(R.string.keep_bluetooth_and_wi_fi_on_your_iphone_pair_with_the_car))
         val card = card()
         val chosen = DiPlayPreferences.phoneAddress(this) != null
         card.addView(label(if (chosen) DiPlayPreferences.phoneName(this) else getString(R.string.setup_iphone_none), 22,
             if (chosen) READY else TEXT, true))
-        card.addView(button("${getString(R.string.choose_iphone_prefix)}${DiPlayPreferences.phoneName(this)}", !chosen) {
+        card.addView(button(chooseIphoneTitle(), !chosen) {
             choosePhone()
         }, matchButton(16, 60))
         card.addView(button(getString(R.string.review_app_permissions), false) {
@@ -3181,7 +3186,7 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
         section(content, getString(R.string.s_1_choose_your_connection)) { card -> wirelessLinkControls(card) }
         section(content, getString(R.string.s_2_pair_your_iphone)) { card ->
             card.addView(label(getString(R.string.keep_bluetooth_and_wi_fi_on_your_iphone_pair_with_the_car), 16, MUTED))
-            card.addView(button("${getString(R.string.choose_iphone_prefix)}${DiPlayPreferences.phoneName(this)}", false) { choosePhone() }, matchButton(12, 60))
+            card.addView(button(chooseIphoneTitle(), false) { choosePhone() }, matchButton(12, 60))
             card.addView(button(getString(R.string.review_app_permissions), false) {
                 openSystem(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:$packageName")))
             }, matchButton(12, 60))
