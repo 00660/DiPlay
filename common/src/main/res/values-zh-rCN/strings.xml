@@ -615,6 +615,7 @@
     <string name="settings_car_hotspot_config_description">无需手动输入热点信息，自动生成DiPlay-XXXX名称的热点信息，若已填写热点信息则同步到车机设置。Android 11 及以上需要 ADB；Android 8 到 10 不支持。</string>
     <string name="settings_car_hotspot_config_unsupported">此 Android 版本无法写入热点设置。</string>
     <string name="settings_car_hotspot_config_written">车机热点的名称和密码已与 DiPlay 一致。</string>
+    <string name="settings_car_hotspot_config_effect">将在下次热点打开时生效。</string>
     <string name="settings_car_hotspot_config_failed">DiPlay 无法写入车机热点设置，名称和密码保持不变。</string>
     <string name="settings_car_hotspot_config_wpa3">WPA3 热点保持不变。请将热点详情保存为 WPA2 后再写入车机。</string>
     <string name="hotspot_control_missing">缺少热点控制权限。请通过 ADB 授权，或在车机设置中手动开启热点。</string>

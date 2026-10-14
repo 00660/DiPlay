@@ -571,6 +571,7 @@
     <string name="settings_car_hotspot_config_description">Вводить данные точки доступа вручную не нужно: они создаются автоматически с именем DiPlay-XXXX, а если данные уже заполнены, они синхронизируются с настройками автомобиля. На Android 11 и новее нужен ADB; на Android 8–10 недоступно.</string>
     <string name="settings_car_hotspot_config_unsupported">Запись настроек точки доступа невозможна в этой версии Android.</string>
     <string name="settings_car_hotspot_config_written">Имя и пароль точки доступа автомобиля теперь совпадают с DiPlay.</string>
+    <string name="settings_car_hotspot_config_effect">Вступит в силу при следующем включении точки доступа автомобиля.</string>
     <string name="settings_car_hotspot_config_failed">DiPlay не удалось записать настройки точки доступа автомобиля. Имя и пароль остались без изменений.</string>
     <string name="settings_car_hotspot_config_wpa3">Точка доступа WPA3 остаётся без изменений. Сохраните данные точки доступа с WPA2, чтобы записать их в автомобиль.</string>
     <string name="hotspot_control_missing">Нет разрешения управления точкой доступа. Выдайте его через ADB или включите точку доступа в настройках автомобиля.</string>

@@ -571,6 +571,7 @@
     <string name="settings_car_hotspot_config_description">لا حاجة لإدخال تفاصيل نقطة الاتصال يدويًا: تُنشأ تفاصيل نقطة اتصال باسم DiPlay-XXXX تلقائيًا، وإذا كانت التفاصيل قد عُبئت فتُزامن مع إعدادات السيارة. يحتاج ADB على أندرويد 11 وأحدث؛ وغير متاح على أندرويد 8 إلى 10.</string>
     <string name="settings_car_hotspot_config_unsupported">كتابة إعدادات نقطة الاتصال غير ممكنة في إصدار أندرويد هذا.</string>
     <string name="settings_car_hotspot_config_written">اسم نقطة اتصال السيارة وكلمة المرور يطابقان DiPlay الآن.</string>
+    <string name="settings_car_hotspot_config_effect">يُطبَّق في المرة القادمة التي تبدأ فيها نقطة اتصال السيارة.</string>
     <string name="settings_car_hotspot_config_failed">لم يتمكن DiPlay من كتابة إعدادات نقطة اتصال السيارة. بقي الاسم وكلمة المرور دون تغيير.</string>
     <string name="settings_car_hotspot_config_wpa3">تبقى نقطة الاتصال بنمط WPA3 دون تغيير. احفظ تفاصيل نقطة الاتصال بنمط WPA2 لكتابتها في السيارة.</string>
     <string name="hotspot_control_missing">إذن التحكم بنقطة الاتصال غير متاح. امنحه عبر ADB أو شغّل نقطة الاتصال من إعدادات السيارة.</string>

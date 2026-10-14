@@ -654,6 +654,7 @@
     <string name="settings_car_hotspot_config_description">Nothing to type: DiPlay generates hotspot details named DiPlay-XXXX automatically. Details you already filled in are synced to the car settings. Needs ADB on Android 11 and newer; not available on Android 8 to 10.</string>
     <string name="settings_car_hotspot_config_unsupported">Writing the hotspot settings is not possible on this Android version.</string>
     <string name="settings_car_hotspot_config_written">The car hotspot name and password now match DiPlay.</string>
+    <string name="settings_car_hotspot_config_effect">Applied the next time the car hotspot starts</string>
     <string name="settings_car_hotspot_config_failed">DiPlay could not write the car hotspot settings. The name and password stay unchanged.</string>
     <string name="settings_car_hotspot_config_wpa3">A WPA3 hotspot is kept unchanged. Save the hotspot details with WPA2 to write them to the car.</string>
     <string name="hotspot_control_missing">Hotspot control permission is missing. Set it up through ADB or open the hotspot in car settings.</string>

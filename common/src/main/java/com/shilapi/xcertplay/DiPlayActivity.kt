@@ -2964,7 +2964,10 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
             Log.i("DiPlay-Hotspot", "car hotspot config write: $result")
             runOnUiThread {
                 carHotspotConfigStatus = when (result) {
-                    CarHotspotConfigWrite.Result.WRITTEN -> R.string.settings_car_hotspot_config_written
+                    CarHotspotConfigWrite.Result.WRITTEN -> {
+                        toast(getString(R.string.settings_car_hotspot_config_effect))
+                        R.string.settings_car_hotspot_config_written
+                    }
                     CarHotspotConfigWrite.Result.SKIPPED -> R.string.settings_car_hotspot_config_wpa3
                     CarHotspotConfigWrite.Result.ADB_UNAVAILABLE -> when (access) {
                         LocalAdb.Access.NOT_APPROVED -> R.string.adb_not_approved

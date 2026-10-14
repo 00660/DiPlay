@@ -652,6 +652,7 @@
     <string name="settings_car_hotspot_config_description">ホットスポット情報を手入力する必要はありません。DiPlay-XXXX という名前のホットスポット情報を自動生成し、入力済みの場合は車載設定に同期します。Android 11 以降ではADBが必要で、Android 8〜10では利用できません。</string>
     <string name="settings_car_hotspot_config_unsupported">このAndroidバージョンではホットスポット設定を書き込めません。</string>
     <string name="settings_car_hotspot_config_written">車のホットスポット名とパスワードが DiPlay と一致しました。</string>
+    <string name="settings_car_hotspot_config_effect">次に車載ホットスポットが起動したときに反映されます。</string>
     <string name="settings_car_hotspot_config_failed">DiPlay は車のホットスポット設定を書き込めませんでした。名前とパスワードは変更されていません。</string>
     <string name="settings_car_hotspot_config_wpa3">WPA3 のホットスポットは変更しません。WPA2 で詳細を保存すると書き込めます。</string>
     <string name="hotspot_control_missing">ホットスポット操作の権限がありません。ADBで設定するか、車の設定からホットスポットを開いてください。</string>
