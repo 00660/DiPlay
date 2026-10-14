@@ -16,6 +16,9 @@ import org.robolectric.annotation.Config
 import org.robolectric.annotation.Implementation
 import org.robolectric.annotation.Implements
 import org.robolectric.annotation.RealObject
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
 
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [25, 28, 33], manifest = Config.NONE, shadows = [NavigationAudioGainTest.TrackGain::class])
@@ -42,9 +45,15 @@ class NavigationAudioGainTest {
             type.getDeclaredField("track").apply { isAccessible = true }.set(renderer, track)
             val apply = type.getDeclaredMethod("setNavigationAttenuationDb", Int::class.javaPrimitiveType)
                 .apply { isAccessible = true }
+            val flush = type.getDeclaredMethod("applyNavigationAttenuation").apply { isAccessible = true }
             apply.invoke(renderer, -12)
+            // UI only publishes the setting; AudioTrack updates happen on the audio worker.
+            assertTrue(TrackGain.volumes[track].isNullOrEmpty())
+            flush.invoke(renderer)
             assertEquals(listOf(NavigationAudioGain.linear(-12)), TrackGain.volumes[track])
             sink.setNavigationAttenuationDb(0)
+            assertEquals(listOf(NavigationAudioGain.linear(-12)), TrackGain.volumes[track])
+            flush.invoke(renderer)
             assertEquals(listOf(NavigationAudioGain.linear(-12), 1f), TrackGain.volumes[track])
         } finally {
             sink.close()
@@ -73,9 +82,14 @@ class NavigationAudioGainTest {
                 type.getDeclaredField("track").apply { isAccessible = true }.set(renderer, track)
                 type.getDeclaredMethod("setNavigationAttenuationDb", Int::class.javaPrimitiveType)
                     .apply { isAccessible = true }.invoke(renderer, 0)
+                type.getDeclaredMethod("applyNavigationAttenuation")
+                    .apply { isAccessible = true }.invoke(renderer)
                 assertTrue(TrackGain.volumes[track].isNullOrEmpty())
                 type.getDeclaredMethod("setNavigationAttenuationDb", Int::class.javaPrimitiveType)
                     .apply { isAccessible = true }.invoke(renderer, -20)
+                assertTrue(TrackGain.volumes[track].isNullOrEmpty())
+                type.getDeclaredMethod("applyNavigationAttenuation")
+                    .apply { isAccessible = true }.invoke(renderer)
                 if (channel == AudioChannel.NAVIGATION) {
                     assertEquals(listOf(0.1f), TrackGain.volumes[track])
                 } else {
@@ -87,6 +101,42 @@ class NavigationAudioGainTest {
             sink.close()
             tracks.forEach(AudioTrack::release)
             TrackGain.volumes.clear()
+        }
+    }
+
+    @Test fun sliderCallbackNeverBlocksOnDecoderReleaseMonitor() {
+        val sink = AndroidMediaSink()
+        val format = AudioFormat(AudioCodecKind.LPCM, 48_000, 1, 96, "default")
+        val id = AudioStreamId(96, "default")
+        val create = AndroidMediaSink::class.java.getDeclaredMethod("audioRenderer",
+            AudioStreamId::class.java, AudioFormat::class.java).apply { isAccessible = true }
+        val renderer = create.invoke(sink, id, format)
+        val monitorTaken = CountDownLatch(1)
+        val releaseMonitor = CountDownLatch(1)
+        val codecThread = Thread({
+            synchronized(renderer) {
+                monitorTaken.countDown()
+                releaseMonitor.await(5, TimeUnit.SECONDS)
+            }
+        }, "simulated-slow-codec-release")
+        val ui = Executors.newSingleThreadExecutor()
+        try {
+            codecThread.start()
+            assertTrue("Decoder release did not take the monitor", monitorTaken.await(2, TimeUnit.SECONDS))
+            val updated = ui.submit {
+                sink.setNavigationAttenuationDb(-8)
+                sink.setNavigationAttenuationDb(-15)
+            }
+            // A synchronized setter would wait for the held monitor and fail here.
+            updated.get(1, TimeUnit.SECONDS)
+            val gain = renderer.javaClass.getDeclaredField("navigationAttenuationDb")
+                .apply { isAccessible = true }.getInt(renderer)
+            assertEquals(-15, gain)
+        } finally {
+            releaseMonitor.countDown()
+            codecThread.join(2_000)
+            ui.shutdownNow()
+            sink.close()
         }
     }
 

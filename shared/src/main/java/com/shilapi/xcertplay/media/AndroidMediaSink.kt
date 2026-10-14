@@ -1736,7 +1736,7 @@ private class AudioRenderer(
     @Volatile private var started = false
     private var codec: MediaCodec? = null
     private var track: AudioTrack? = null
-    private var navigationAttenuationDb = 0
+    @Volatile private var navigationAttenuationDb = 0
     private var appliedNavigationAttenuationDb: Int? = null
     private var pcm = ByteArray(64 * 1024)
     private var playbackStarted = false
@@ -1827,6 +1827,9 @@ private class AudioRenderer(
             diagnosticStage = "focus"
             requestAudioFocus()
             while (running) {
+                // Apply pending Settings changes on this worker, never on the UI thread.
+                // Also handles quiet navigation tracks with no incoming PCM.
+                applyNavigationAttenuation()
                 diagnosticStage = "packet"
                 queue.poll(AUDIO_POLL_MILLIS, TimeUnit.MILLISECONDS)?.let(::handle)
                 // Output becomes ready asynchronously, including after the last packet of a burst.
@@ -2006,25 +2009,25 @@ private class AudioRenderer(
         else -> 0
     }
 
-    @Synchronized
     fun setNavigationAttenuationDb(db: Int) {
+        // The Settings callback must never wait for release(), which may be blocked in
+        // vendor MediaCodec.stop()/release() while holding the renderer monitor.
         navigationAttenuationDb = NavigationAudioGain.clamp(db)
-        applyNavigationAttenuation()
     }
 
-    /** Changes only navigation AudioTrack gain, not music, Siri, calls, or Android stream volume. */
-    @Synchronized
+    /** Worker-thread only: never call AudioTrack APIs from a Settings callback. */
     private fun applyNavigationAttenuation() {
         if (mappedChannel != AudioChannel.NAVIGATION) return
         val playingTrack = track ?: return
+        val requestedDb = navigationAttenuationDb
         // Leave default playback exactly as it was before this setting existed.
-        if (navigationAttenuationDb == 0 && appliedNavigationAttenuationDb == null) return
-        if (appliedNavigationAttenuationDb == navigationAttenuationDb) return
-        val gain = NavigationAudioGain.linear(navigationAttenuationDb)
+        if (requestedDb == 0 && appliedNavigationAttenuationDb == null) return
+        if (appliedNavigationAttenuationDb == requestedDb) return
+        val gain = NavigationAudioGain.linear(requestedDb)
         val success = runCatching { playingTrack.setVolume(gain) == AudioTrack.SUCCESS }.getOrDefault(false)
-        if (success) appliedNavigationAttenuationDb = navigationAttenuationDb
+        if (success) appliedNavigationAttenuationDb = requestedDb
         runCatching {
-            report("Audio: navigation attenuation=" + navigationAttenuationDb + "dB applied=" + success)
+            report("Audio: navigation attenuation=" + requestedDb + "dB applied=" + success)
         }
     }
 
@@ -2321,6 +2324,8 @@ private class AudioRenderer(
         }
         var written = 0
         while (written < length && running) {
+            // Long-running PCM writes may span several slider adjustments.
+            applyNavigationAttenuation()
             val writeLength = if (playbackStarted) {
                 length - written
             } else {
