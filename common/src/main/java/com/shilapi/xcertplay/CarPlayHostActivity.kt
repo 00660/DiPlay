@@ -1543,7 +1543,7 @@ class CarPlayHostActivity : ComponentActivity() {
     }
 
     private fun requestLegacySiri(keyCode: Int) {
-        val sent = controller?.requestSiri() == true
+        val sent = VoiceKeyPair.shared.allowGenericKey(android.os.SystemClock.uptimeMillis()) && controller?.requestSiri() == true
         appendLog("Siri: voice key $keyCode sent=$sent")
     }
 
