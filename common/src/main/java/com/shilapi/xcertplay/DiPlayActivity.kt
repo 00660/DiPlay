@@ -2929,11 +2929,9 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
     private fun startCarHotspotOnLaunch() {
         if (!startupHotspotEligible()) return
         val app = applicationContext
-        val credentials = launchHotspotCredentials()
         Thread({
             val result = CarHotspotTethering.enable(app,
                 isCancelled = { startupHotspotCancelled || !startupHotspotEligible() },
-                credentials = credentials,
                 log = { Log.i("DiPlay-Hotspot", it) },
             )
             runOnUiThread {
@@ -2949,7 +2947,6 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
     // Copies the car's saved hotspot details into our settings without touching the car; only when
     // the car's configuration cannot be read does the write path run, after a warning.
     private fun importCarHotspotConfig() {
-        val fallback = launchHotspotCredentials()
         Thread({
             val read = CarHotspotConfigRead.read(applicationContext, log = { Log.i("DiPlay-Hotspot", it) })
             Log.i("DiPlay-Hotspot", "car hotspot config read: credentials=${read.credentials != null} reason=${read.reason}")
@@ -2975,11 +2972,7 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
                         }
                         render()
                     }
-                    fallback == null -> {
-                        carHotspotConfigStatus = R.string.finish_setup_save_your_hotspot_details_to_use_this_mode
-                        render()
-                    }
-                    else -> AlertDialog.Builder(this)
+                    hasSavedHotspotDetails() -> AlertDialog.Builder(this)
                         .setTitle(getString(R.string.settings_car_hotspot_config_dialog_title))
                         .setMessage(getString(R.string.settings_car_hotspot_config_dialog_message))
                         .setPositiveButton(getString(R.string.settings_car_hotspot_config_dialog_confirm)) { _, _ -> writeCarHotspotConfigNow() }
@@ -2987,10 +2980,26 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
                             CarHotspotSettings.setConfigWrite(this, false)
                             render()
                         }
+                        .setOnCancelListener {
+                            CarHotspotSettings.setConfigWrite(this, false)
+                            render()
+                        }
                         .show()
+                    else -> {
+                        CarHotspotSettings.setConfigWrite(this, false)
+                        carHotspotConfigStatus = R.string.finish_setup_save_your_hotspot_details_to_use_this_mode
+                        render()
+                    }
                 }
             }
         }, "diplay-hotspot-config-read").start()
+    }
+
+    /** True when valid manual hotspot details are already saved, without generating any. */
+    private fun hasSavedHotspotDetails(): Boolean {
+        val ssid = AirPlayPersistence.loadManualHotspotSsid(this)
+        val passphrase = AirPlayPersistence.loadManualHotspotPassphrase(this)
+        return ssid.isNotBlank() && ManualHotspotValidation.error(ssid, passphrase) == null
     }
 
     // One-shot write of the saved manual hotspot details; the toggle only stores the opt-in.

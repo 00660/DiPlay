@@ -21,7 +21,8 @@ import kotlin.system.exitProcess
  * longer start tethering itself ("No field mService" on Android 10, "NoSuchMethodException … startTethering" on 12,
  * #616), while the shell may, and holds the tethering permission it checks. Starts Wi-Fi tethering with the car's
  * saved hotspot configuration, never a new one; the opted-in "apconfig" subcommand is the one
- * exception, writing the manual hotspot credentials on Android 11+ (see CarHotspotConfigWrite), and
+ * exception, keeping the car's saved configuration and rewriting only DiPlay's passphrase (and a
+ * 5 GHz request) on Android 11+ (see CarHotspotConfigWrite), and
  * prints only the protocol line. Android 7.0–10 call
  * IConnectivityManager; Android 11 moved tethering to TetheringManager.
  */
@@ -65,26 +66,45 @@ object CarHotspotStartMain {
     private fun service(name: String): IBinder? = Class.forName("android.os.ServiceManager")
         .getMethod("getService", String::class.java).invoke(null, name) as? IBinder
 
-    /** DiPlay already validated the credentials; the shell writes the saved AP configuration (11+). */
+    /**
+     * The shell rewrites only what the car's saved configuration lacks: DiPlay's passphrase (and a 5 GHz request), on top
+     * of [Builder(current)]; the passphrase arrives on stdin so it never appears in the process list.
+     */
     private fun apConfig(args: Array<String>): String {
         val configuration = Class.forName("android.net.wifi.SoftApConfiguration")
-        val (ssid, passphrase, band) = args
+        if (args.size < 2) return "usage"
+        val (ssid, band) = args
+        val passphrase = readPassphrase() ?: return "usage"
         val wifi = Class.forName("android.net.wifi.IWifiManager\$Stub")
             .getMethod("asInterface", IBinder::class.java)
             .invoke(null, service("wifi") ?: return "unsupported") ?: return "unsupported"
-        val effective = currentApSsid(wifi) ?: ssid
-        val builder = Class.forName("android.net.wifi.SoftApConfiguration\$Builder")
-            .getDeclaredConstructor().newInstance()
+        val current = currentSoftAp(wifi)
+        val builderClass = Class.forName("android.net.wifi.SoftApConfiguration\$Builder")
+        val builder = if (current != null) {
+            builderClass.getDeclaredConstructor(configuration).newInstance(current)
+        } else {
+            builderClass.getDeclaredConstructor().newInstance()
+        }
         val builderType = builder.javaClass
+        val saved = current?.javaClass?.methods?.firstOrNull { it.name == "getSsid" }?.invoke(current) as? String
+        val effective = saved?.takeIf { it.isNotEmpty() } ?: ssid
         builderType.getMethod("setSsid", String::class.java).invoke(builder, effective)
+        val security = current?.javaClass?.methods?.firstOrNull { it.name == "getSecurityType" }?.invoke(current) as? Int
         if (passphrase.isNotEmpty()) {
             builderType.getMethod("setPassphrase", String::class.java, Int::class.javaPrimitiveType)
-                .invoke(builder, passphrase, staticInt(configuration, "SECURITY_TYPE_WPA2_PSK"))
+                .invoke(builder, passphrase, security?.takeIf { it != staticInt(configuration, "SECURITY_TYPE_OPEN") }
+                    ?: staticInt(configuration, "SECURITY_TYPE_WPA2_PSK"))
+        } else {
+            builderType.getMethod("setPassphrase", String::class.java, Int::class.javaPrimitiveType)
+                .invoke(builder, null, staticInt(configuration, "SECURITY_TYPE_OPEN"))
         }
         if (band == ManualHotspotBand.GHZ_5.name) {
-            // The builder default is 2.4 GHz; only a 5 GHz request is written.
-            builderType.getMethod("setBand", Int::class.javaPrimitiveType)
-                .invoke(builder, staticInt(configuration, "BAND_5GHZ"))
+            val currentBand = current?.javaClass?.methods?.firstOrNull { it.name == "getBand" }?.invoke(current) as? Int
+            // A saved 5 GHz band keeps its channel; anything else moves to 5 GHz with driver channel selection.
+            if (currentBand == null || currentBand != staticInt(configuration, "BAND_5GHZ")) {
+                builderType.getMethod("setBand", Int::class.javaPrimitiveType)
+                    .invoke(builder, staticInt(configuration, "BAND_5GHZ"))
+            }
         }
         val config = builderType.getMethod("build").invoke(builder)
         val method = wifi.javaClass.methods.firstOrNull {
@@ -94,14 +114,42 @@ object CarHotspotStartMain {
         return if (method.invoke(wifi, config, SHELL_PACKAGE) as? Boolean == true) "ok|${b64(effective)}" else "error rejected"
     }
 
+    /** "<byte length>\n<bytes>" from stdin; the writer sends the length line first so no EOF is needed. */
+    private fun readPassphrase(): String? = try {
+        val input = System.`in`
+        val length = readAsciiLine(input).trim().toIntOrNull()
+        if (length == null || length < 0 || length > 256) {
+            null
+        } else {
+            val bytes = ByteArray(length)
+            var offset = 0
+            while (offset < length) {
+                val read = input.read(bytes, offset, length - offset)
+                if (read < 0) break
+                offset += read
+            }
+            String(bytes, 0, offset, Charsets.UTF_8)
+        }
+    } catch (error: Throwable) {
+        null
+    }
+
+    private fun readAsciiLine(input: java.io.InputStream): String {
+        val line = StringBuilder()
+        while (true) {
+            val character = input.read()
+            if (character < 0 || character == '\n'.code) break
+            if (character != '\r'.code) line.append(character.toChar())
+        }
+        return line.toString()
+    }
+
     /** The shell reads the car's saved AP configuration verbatim (11+); nothing is written. */
     private fun apConfigRead(): String {
         val wifi = Class.forName("android.net.wifi.IWifiManager\$Stub")
             .getMethod("asInterface", IBinder::class.java)
             .invoke(null, service("wifi") ?: return "unsupported") ?: return "unsupported"
-        val config = wifi.javaClass.methods.firstOrNull {
-            it.name == "getSoftApConfiguration" && it.parameterTypes.isEmpty()
-        }?.invoke(wifi) ?: return "unsupported"
+        val config = currentSoftAp(wifi) ?: return "unsupported"
         val type = config.javaClass
         val ssid = type.methods.firstOrNull { it.name == "getSsid" }?.invoke(config) as? String
             ?: return "unsupported"
@@ -111,17 +159,15 @@ object CarHotspotStartMain {
         return "ok|${b64(ssid)}|${b64(passphrase)}|$security"
     }
 
-    private fun b64(value: String): String = Base64.encodeToString(value.toByteArray(), Base64.NO_WRAP)
-
-    private fun currentApSsid(wifi: Any): String? = try {
-        val config = wifi.javaClass.methods.firstOrNull {
+    private fun currentSoftAp(wifi: Any): Any? = try {
+        wifi.javaClass.methods.firstOrNull {
             it.name == "getSoftApConfiguration" && it.parameterTypes.isEmpty()
-        }?.invoke(wifi) ?: return null
-        (config.javaClass.methods.firstOrNull { it.name == "getSsid" }?.invoke(config) as? String)
-            ?.takeIf { it.isNotEmpty() }
+        }?.invoke(wifi)
     } catch (error: Throwable) {
         null
     }
+
+    private fun b64(value: String): String = Base64.encodeToString(value.toByteArray(), Base64.NO_WRAP)
 
     private fun staticInt(type: Class<*>, field: String): Int =
         type.getDeclaredField(field).get(null) as Int
@@ -206,7 +252,7 @@ object CarHotspotStartMain {
 
     fun apConfigCommand(apk: String, credentials: HotspotCredentials): String {
         fun quoted(value: String) = "'" + value.replace("'", "'\"'\"'") + "'"
-        return "${command(apk)} $APCONFIG_COMMAND ${quoted(credentials.ssid)} ${quoted(credentials.passphrase)} ${credentials.band.name}"
+        return "${command(apk)} $APCONFIG_COMMAND ${quoted(credentials.ssid)} ${credentials.band.name}"
     }
 
     fun apConfigReadCommand(apk: String): String = "${command(apk)} $APCONFIG_READ_COMMAND"

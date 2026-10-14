@@ -2332,19 +2332,9 @@ class CarPlayController(
         type.equals("disableBluetooth", ignoreCase = true) ||
             type.equals("disable-bluetooth", ignoreCase = true)
 
-    private fun hotspotCredentials(): com.shilapi.xcertplay.network.HotspotCredentials? {
-        if (!com.shilapi.xcertplay.network.CarHotspotSettings.configWrite(appContext)) return null
-        val ssid = config.manualHotspotSsid ?: return null
-        val passphrase = config.manualHotspotPassphrase ?: ""
-        if (ManualHotspotValidation.error(ssid, passphrase) != null) return null
-        return com.shilapi.xcertplay.network.HotspotCredentials(
-            ssid, passphrase, config.manualHotspotSecurity, config.manualHotspotBand)
-    }
-
     private fun startWirelessHotspot(generation: Int): WirelessHotspotInfo {
         val readyDeadline = System.nanoTime() + WirelessStartupPolicy.HOTSPOT_READY_MILLIS * 1_000_000
         val hotspotMode = config.wirelessHotspotMode
-        val writtenSsid = AtomicReference<String?>()
         if (com.shilapi.xcertplay.network.CarHotspotSettings.shouldEnable(
                 appContext, config.transport == CarPlayTransport.WIRELESS, hotspotMode,
             )
@@ -2353,8 +2343,6 @@ class CarPlayController(
                 appContext,
                 isCancelled = { isStaleWirelessRun(generation) ||
                     !com.shilapi.xcertplay.network.CarHotspotSettings.enabled(appContext) },
-                credentials = hotspotCredentials(),
-                onWrittenSsid = { writtenSsid.set(it) },
                 timeoutMillis = ((readyDeadline - System.nanoTime()) / 1_000_000).coerceAtLeast(1),
                 log = { debugLog("generation=$generation atNs=${System.nanoTime()} $it; awaiting hotspot interface") },
             )
@@ -2393,8 +2381,7 @@ class CarPlayController(
             )
             WirelessHotspotMode.MANUAL -> ManualHotspotManager(
                 context = appContext,
-                ssid = writtenSsid.get()
-                    ?: config.manualHotspotSsid
+                ssid = config.manualHotspotSsid
                     ?: throw WirelessStartupException(WirelessStartupFailure.HOTSPOT_CONFIGURATION, "Manual hotspot SSID is not configured"),
                 passphrase = config.manualHotspotPassphrase.orEmpty(),
                 band = config.manualHotspotBand,

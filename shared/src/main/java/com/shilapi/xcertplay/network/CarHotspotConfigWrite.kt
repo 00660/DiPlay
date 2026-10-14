@@ -75,7 +75,21 @@ object CarHotspotConfigWrite {
     ): WriteOutcome = try {
         val current = readBack()
         val effective = if (current?.SSID?.isNotBlank() == true) credentials.copy(ssid = current.SSID) else credentials
-        val config = newConfig().apply { applyTo(this, effective) }
+        val config = newConfig().apply {
+            applyTo(this, effective)
+            if (current != null) {
+                // The car keeps everything else about its saved configuration: hidden SSID and band/channel
+                // unless a 5 GHz move was asked for.
+                hiddenSSID = current.hiddenSSID
+                val type = WifiConfiguration::class.java
+                val currentBand = current.javaClass.getField("apBand").getInt(current)
+                val fiveGhz = type.getField("AP_BAND_5GHZ").getInt(null)
+                if (credentials.band != ManualHotspotBand.GHZ_5 || currentBand == fiveGhz) {
+                    javaClass.getField("apBand").setInt(this, currentBand)
+                    javaClass.getField("apChannel").setInt(this, current.javaClass.getField("apChannel").getInt(current))
+                }
+            }
+        }
         if (write(config) == false) {
             log("car hotspot config: the framework rejected the configuration")
             WriteOutcome(Result.FAILED)
@@ -159,7 +173,8 @@ object CarHotspotConfigWrite {
                     false
                 } else {
                     val timeout = ((deadline - System.nanoTime()) / 1_000_000L).coerceIn(1_000, 30_000).toInt()
-                    outcome.set(writeAdb(adb::shell, context.applicationInfo.sourceDir, credentials, timeout, log))
+                    outcome.set(writeAdb({ command, millis, input -> adb.shell(command, millis, input) },
+                        context.applicationInfo.sourceDir, credentials, timeout, log))
                     outcome.get()?.result == Result.WRITTEN
                 }
             }
@@ -168,14 +183,16 @@ object CarHotspotConfigWrite {
     }
 
     internal fun writeAdb(
-        shell: (String, Int) -> String?,
+        shell: (String, Int, ByteArray?) -> String?,
         apk: String,
         credentials: HotspotCredentials,
         timeoutMillis: Int,
         log: (String) -> Unit,
     ): WriteOutcome {
+        val passphrase = credentials.passphrase.toByteArray(Charsets.UTF_8)
+        val stdin = "${passphrase.size}\n".toByteArray(Charsets.UTF_8) + passphrase
         val reply = CarHotspotStartMain.parseApConfig(
-            shell(CarHotspotStartMain.apConfigCommand(apk, credentials), timeoutMillis))
+            shell(CarHotspotStartMain.apConfigCommand(apk, credentials), timeoutMillis, stdin))
         return when {
             reply != null && CarHotspotStartMain.apConfigAccepted(reply) ->
                 WriteOutcome(Result.WRITTEN, CarHotspotStartMain.apConfigSsid(reply))

@@ -226,24 +226,6 @@ class CarHotspotTetheringTest {
         assertEquals(1, calls.get())
     }
 
-    @Test fun optedInWriteRunsAfterThePermissionGateAndBeforeTheStart() {
-        val order = mutableListOf<String>()
-        var enabled = false
-        val result = CarHotspotTethering.enable(5_000, { false }, { true }, { enabled }, null,
-            start = { order += "start"; enabled = true },
-            writeConfig = { order += "write" })
-        assertEquals(Result.READY, result)
-        assertEquals(listOf("write", "start"), order)
-    }
-
-    @Test fun aFailedWriteDoesNotBlockTheStart() {
-        var enabled = false
-        val result = CarHotspotTethering.enable(5_000, { false }, { true }, { enabled }, null,
-            start = { enabled = true },
-            writeConfig = { throw IllegalStateException("write boom") })
-        assertEquals(Result.READY, result)
-    }
-
     private fun enable(
         canWrite: Boolean = true,
         state: () -> Boolean? = { false },

@@ -12,8 +12,8 @@ import java.util.concurrent.atomic.AtomicReference
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.locks.ReentrantLock
 
-/** Uses the car's saved hotspot configuration. This never stops a running hotspot, and only rewrites the saved
- *  configuration when the driver opted in ([HotspotCredentials] passed, see [CarHotspotConfigWrite]). */
+/** Uses the car's saved hotspot configuration. This never stops a running hotspot and never writes
+ *  the saved configuration; writes happen once from the settings screen, after the driver confirms. */
 object CarHotspotTethering {
     private val startupLock = ReentrantLock()
     enum class Result(val diagnostic: String) {
@@ -34,20 +34,11 @@ object CarHotspotTethering {
     fun enable(
         context: Context,
         isCancelled: () -> Boolean,
-        credentials: HotspotCredentials? = null,
-        onWrittenSsid: (String?) -> Unit = {},
         timeoutMillis: Long = WirelessStartupPolicy.HOTSPOT_READY_MILLIS,
         log: (String) -> Unit,
     ): Result {
         val deadline = System.nanoTime() + timeoutMillis * 1_000_000L
         val observedAdbState = AtomicReference<Boolean?>()
-        val writeConfig: (() -> Unit)? = credentials?.let { wanted ->
-            {
-                val outcome = CarHotspotConfigWrite.write(context, wanted, deadline, isCancelled, log = log)
-                onWrittenSsid(outcome.ssid)
-                log("car hotspot config: ${outcome.result.diagnostic}")
-            }
-        }
         val startReflection: (ResultReceiver) -> Unit = { receiver ->
             try {
                 PlatformTetheringStart.start(context, receiver, log)
@@ -80,7 +71,6 @@ object CarHotspotTethering {
             isCancelled,
             { permitted(context) },
             stateWithAdbObservation({ CarHotspotStatus.isEnabled(context) }, observedAdbState),
-            writeConfig = writeConfig,
             startFallback = startAdb,
             start = startReflection,
         ).also {
@@ -120,25 +110,14 @@ object CarHotspotTethering {
         isEnabled: () -> Boolean?,
         startFallback: (() -> Boolean)?,
         start: (ResultReceiver) -> Unit,
-    ): Result = enable(timeoutMillis, isCancelled, canWrite, isEnabled, startFallback, start, null)
-
-    internal fun enable(
-        timeoutMillis: Long,
-        isCancelled: () -> Boolean,
-        canWrite: () -> Boolean,
-        isEnabled: () -> Boolean?,
-        startFallback: (() -> Boolean)?,
-        start: (ResultReceiver) -> Unit,
-        writeConfig: (() -> Unit)?,
     ): Result = enableUntil(System.nanoTime() + timeoutMillis * 1_000_000L,
-        isCancelled, canWrite, isEnabled, writeConfig, startFallback, start)
+        isCancelled, canWrite, isEnabled, startFallback, start)
 
     private fun enableUntil(
         deadline: Long,
         isCancelled: () -> Boolean,
         canWrite: () -> Boolean,
         isEnabled: () -> Boolean?,
-        writeConfig: (() -> Unit)?,
         startFallback: (() -> Boolean)?,
         start: (ResultReceiver) -> Unit,
     ): Result {
@@ -166,12 +145,6 @@ object CarHotspotTethering {
             val permission = canWrite()
             stopped()?.let { return it }
             if (!permission) return Result.PERMISSION_REQUIRED
-            // An opted-in write precedes every start path; it must not block the start itself.
-            try {
-                writeConfig?.invoke()
-            } catch (_: Exception) {
-            }
-            stopped()?.let { return it }
             fun fallback(): Boolean {
                 stopped()?.let { return false }
                 return try { startFallback?.invoke() == true } catch (error: Exception) {

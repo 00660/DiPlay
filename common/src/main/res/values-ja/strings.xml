@@ -648,7 +648,7 @@
     <string name="settings_gesture_fingers_hint">車載端末がほかの操作に使わない指の本数を選んでください。BYDでは3本指の下スワイプでエアコンパネルが開きます。</string>
     <string name="auto_car_hotspot_title">車載ホットスポットを自動でオン</string>
     <string name="auto_car_hotspot_description">DiPlayの起動時に保存済みの車載ホットスポットを開始します。有効にするとADB経由で必要な権限を自動要求するため、車載画面の確認を許可してください。車両の起動と同時に開始するには「車の起動後に開く」を有効にしてください。ホットスポット名とパスワードは維持され、ホットスポットを自動でオフにすることはありません。</string>
-    <string name="settings_car_hotspot_config_title">シームレス接続（実験的機能）</string>
+    <string name="settings_car_hotspot_config_title">車のホットスポット情報を取り込み（実験的機能）</string>
     <string name="settings_car_hotspot_config_description">ホットスポット情報を手入力する必要はありません。車のホットスポット情報を取り込みます。取り込みに失敗した場合は、確認のうえで上書きされ、このホットスポットを使用しているデバイスは再接続が必要になることがあります。Android 11 以降ではADBが必要で、Android 8〜10では利用できません。</string>
     <string name="settings_car_hotspot_config_unsupported">このAndroidバージョンではホットスポット設定を書き込めません。</string>
     <string name="settings_car_hotspot_config_written">車のホットスポットは DiPlay のパスワードを使用するようになりました。</string>
