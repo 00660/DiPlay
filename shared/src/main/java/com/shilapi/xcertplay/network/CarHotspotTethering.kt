@@ -35,13 +35,18 @@ object CarHotspotTethering {
         context: Context,
         isCancelled: () -> Boolean,
         credentials: HotspotCredentials? = null,
+        onWrittenSsid: (String?) -> Unit = {},
         timeoutMillis: Long = WirelessStartupPolicy.HOTSPOT_READY_MILLIS,
         log: (String) -> Unit,
     ): Result {
         val deadline = System.nanoTime() + timeoutMillis * 1_000_000L
         val observedAdbState = AtomicReference<Boolean?>()
         val writeConfig: (() -> Unit)? = credentials?.let { wanted ->
-            { log("car hotspot config: ${CarHotspotConfigWrite.write(context, wanted, deadline, isCancelled, log = log).diagnostic}") }
+            {
+                val outcome = CarHotspotConfigWrite.write(context, wanted, deadline, isCancelled, log = log)
+                onWrittenSsid(outcome.ssid)
+                log("car hotspot config: ${outcome.result.diagnostic}")
+            }
         }
         val startReflection: (ResultReceiver) -> Unit = { receiver ->
             try {

@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.os.IBinder
 import android.os.ResultReceiver
 import com.shilapi.xcertplay.orchestration.ManualHotspotBand
+import android.util.Base64
 import java.lang.reflect.Proxy
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executor
@@ -27,7 +28,9 @@ import kotlin.system.exitProcess
 object CarHotspotStartMain {
     internal const val HEADER = "DIPLAY_HOTSPOT_START_V1"
     internal const val APCONFIG_HEADER = "DIPLAY_HOTSPOT_APCONFIG_V1"
+    internal const val APCONFIG_READ_HEADER = "DIPLAY_HOTSPOT_APCONFIG_READ_V1"
     private const val APCONFIG_COMMAND = "apconfig"
+    private const val APCONFIG_READ_COMMAND = "apconfig-read"
     private const val DEADLINE_MS = 10_000L
     private const val RESULT_WAIT_MS = 5_000L
     private const val TETHERING_WIFI = 0
@@ -36,19 +39,26 @@ object CarHotspotStartMain {
 
     @JvmStatic fun main(args: Array<String>) {
         val apConfig = args.firstOrNull() == APCONFIG_COMMAND
+        val apConfigRead = args.firstOrNull() == APCONFIG_READ_COMMAND
         // A stuck Binder call must not leave a privileged helper running.
         Thread({ Thread.sleep(DEADLINE_MS); exitProcess(2) }, "hotspot-start-helper-deadline")
             .apply { isDaemon = true; start() }
         val result = try {
             when {
                 apConfig -> apConfig(args.drop(1).toTypedArray())
+                apConfigRead -> apConfigRead()
                 Build.VERSION.SDK_INT >= Build.VERSION_CODES.R -> startWithTetheringManager()
                 else -> startWithConnectivity()
             }
         } catch (error: Throwable) {
             "error ${CarHotspotTethering.describe(error)}"
         }
-        println("${if (apConfig) APCONFIG_HEADER else HEADER}|$result")
+        val header = when {
+            apConfigRead -> APCONFIG_READ_HEADER
+            apConfig -> APCONFIG_HEADER
+            else -> HEADER
+        }
+        println("$header|$result")
         exitProcess(0)
     }
 
@@ -62,10 +72,11 @@ object CarHotspotStartMain {
         val wifi = Class.forName("android.net.wifi.IWifiManager\$Stub")
             .getMethod("asInterface", IBinder::class.java)
             .invoke(null, service("wifi") ?: return "unsupported") ?: return "unsupported"
+        val effective = currentApSsid(wifi) ?: ssid
         val builder = Class.forName("android.net.wifi.SoftApConfiguration\$Builder")
             .getDeclaredConstructor().newInstance()
         val builderType = builder.javaClass
-        builderType.getMethod("setSsid", String::class.java).invoke(builder, ssid)
+        builderType.getMethod("setSsid", String::class.java).invoke(builder, effective)
         if (passphrase.isNotEmpty()) {
             builderType.getMethod("setPassphrase", String::class.java, Int::class.javaPrimitiveType)
                 .invoke(builder, passphrase, staticInt(configuration, "SECURITY_TYPE_WPA2_PSK"))
@@ -80,7 +91,36 @@ object CarHotspotStartMain {
             it.name == "setSoftApConfiguration" &&
                 it.parameterTypes.contentEquals(arrayOf(config.javaClass, String::class.java))
         } ?: return "unsupported"
-        return if (method.invoke(wifi, config, SHELL_PACKAGE) as? Boolean == true) "ok" else "error rejected"
+        return if (method.invoke(wifi, config, SHELL_PACKAGE) as? Boolean == true) "ok|${b64(effective)}" else "error rejected"
+    }
+
+    /** The shell reads the car's saved AP configuration verbatim (11+); nothing is written. */
+    private fun apConfigRead(): String {
+        val wifi = Class.forName("android.net.wifi.IWifiManager\$Stub")
+            .getMethod("asInterface", IBinder::class.java)
+            .invoke(null, service("wifi") ?: return "unsupported") ?: return "unsupported"
+        val config = wifi.javaClass.methods.firstOrNull {
+            it.name == "getSoftApConfiguration" && it.parameterTypes.isEmpty()
+        }?.invoke(wifi) ?: return "unsupported"
+        val type = config.javaClass
+        val ssid = type.methods.firstOrNull { it.name == "getSsid" }?.invoke(config) as? String
+            ?: return "unsupported"
+        val passphrase = type.methods.firstOrNull { it.name == "getPassphrase" }?.invoke(config) as? String ?: ""
+        val security = type.methods.firstOrNull { it.name == "getSecurityType" }?.invoke(config) as? Int
+            ?: return "unsupported"
+        return "ok|${b64(ssid)}|${b64(passphrase)}|$security"
+    }
+
+    private fun b64(value: String): String = Base64.encodeToString(value.toByteArray(), Base64.NO_WRAP)
+
+    private fun currentApSsid(wifi: Any): String? = try {
+        val config = wifi.javaClass.methods.firstOrNull {
+            it.name == "getSoftApConfiguration" && it.parameterTypes.isEmpty()
+        }?.invoke(wifi) ?: return null
+        (config.javaClass.methods.firstOrNull { it.name == "getSsid" }?.invoke(config) as? String)
+            ?.takeIf { it.isNotEmpty() }
+    } catch (error: Throwable) {
+        null
     }
 
     private fun staticInt(type: Class<*>, field: String): Int =
@@ -169,11 +209,40 @@ object CarHotspotStartMain {
         return "${command(apk)} $APCONFIG_COMMAND ${quoted(credentials.ssid)} ${quoted(credentials.passphrase)} ${credentials.band.name}"
     }
 
+    fun apConfigReadCommand(apk: String): String = "${command(apk)} $APCONFIG_READ_COMMAND"
+
     /** The apconfig helper's reply, or null when its protocol line is missing. */
     fun parseApConfig(output: String?): String? {
         val prefix = "$APCONFIG_HEADER|"
         return output?.lineSequence()?.map(String::trim)?.lastOrNull { it.startsWith(prefix) }?.removePrefix(prefix)
     }
 
-    fun apConfigAccepted(reply: String?): Boolean = reply == "ok"
+    /** The apconfig-read helper's reply, or null when its protocol line is missing. */
+    fun parseApConfigRead(output: String?): String? {
+        val prefix = "$APCONFIG_READ_HEADER|"
+        return output?.lineSequence()?.map(String::trim)?.lastOrNull { it.startsWith(prefix) }?.removePrefix(prefix)
+    }
+
+    fun apConfigAccepted(reply: String?): Boolean = reply?.startsWith("ok") == true
+
+    /** The hotspot name the helper actually saved or read, reported as a Base64 field of "ok|<ssid>". */
+    fun apConfigSsid(reply: String?): String? = apConfigField(reply, 1)
+
+    /** The passphrase the helper read, "" for an open hotspot. */
+    fun apConfigPassphrase(reply: String?): String = apConfigField(reply, 2) ?: ""
+
+    /** The SoftApConfiguration security type the helper read (0 open, 1 WPA2, 2 transition, 3 SAE). */
+    fun apConfigSecurity(reply: String?): Int? =
+        reply?.takeIf { it.startsWith("ok|") }?.split('|')?.getOrNull(3)?.toIntOrNull()
+
+    private fun apConfigField(reply: String?, index: Int): String? =
+        reply?.takeIf { it.startsWith("ok|") }?.split('|')?.getOrNull(index)
+            ?.takeIf { it.isNotEmpty() }
+            ?.let { field ->
+                runCatching {
+                    val decoded = Base64.decode(field, Base64.NO_WRAP)
+                    String(decoded).takeIf { Base64.encodeToString(decoded, Base64.NO_WRAP) == field }
+                }.getOrNull()
+            }
+            ?.takeIf { it.isNotEmpty() }
 }

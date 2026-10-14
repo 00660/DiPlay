@@ -2344,6 +2344,7 @@ class CarPlayController(
     private fun startWirelessHotspot(generation: Int): WirelessHotspotInfo {
         val readyDeadline = System.nanoTime() + WirelessStartupPolicy.HOTSPOT_READY_MILLIS * 1_000_000
         val hotspotMode = config.wirelessHotspotMode
+        val writtenSsid = AtomicReference<String?>()
         if (com.shilapi.xcertplay.network.CarHotspotSettings.shouldEnable(
                 appContext, config.transport == CarPlayTransport.WIRELESS, hotspotMode,
             )
@@ -2353,6 +2354,7 @@ class CarPlayController(
                 isCancelled = { isStaleWirelessRun(generation) ||
                     !com.shilapi.xcertplay.network.CarHotspotSettings.enabled(appContext) },
                 credentials = hotspotCredentials(),
+                onWrittenSsid = { writtenSsid.set(it) },
                 timeoutMillis = ((readyDeadline - System.nanoTime()) / 1_000_000).coerceAtLeast(1),
                 log = { debugLog("generation=$generation atNs=${System.nanoTime()} $it; awaiting hotspot interface") },
             )
@@ -2391,7 +2393,8 @@ class CarPlayController(
             )
             WirelessHotspotMode.MANUAL -> ManualHotspotManager(
                 context = appContext,
-                ssid = config.manualHotspotSsid
+                ssid = writtenSsid.get()
+                    ?: config.manualHotspotSsid
                     ?: throw WirelessStartupException(WirelessStartupFailure.HOTSPOT_CONFIGURATION, "Manual hotspot SSID is not configured"),
                 passphrase = config.manualHotspotPassphrase.orEmpty(),
                 band = config.manualHotspotBand,

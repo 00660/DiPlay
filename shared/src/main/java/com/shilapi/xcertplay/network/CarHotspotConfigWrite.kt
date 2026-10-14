@@ -35,6 +35,9 @@ object CarHotspotConfigWrite {
         FAILED("the car hotspot configuration write failed"),
     }
 
+    /** The result of a write plus the SSID that is actually saved, which the car may have kept. */
+    data class WriteOutcome(val result: Result, val ssid: String? = null)
+
     fun supported(sdk: Int = Build.VERSION.SDK_INT): Boolean =
         sdk == Build.VERSION_CODES.N_MR1 || sdk >= Build.VERSION_CODES.R
 
@@ -45,18 +48,18 @@ object CarHotspotConfigWrite {
         isCancelled: () -> Boolean = { false },
         sdk: Int = Build.VERSION.SDK_INT,
         log: (String) -> Unit,
-    ): Result {
+    ): WriteOutcome {
         if (!supported(sdk)) {
             log("car hotspot config: unsupported Android $sdk")
-            return Result.UNSUPPORTED_SDK
+            return WriteOutcome(Result.UNSUPPORTED_SDK)
         }
         if (credentials.security != ManualHotspotSecurity.OPEN && credentials.security != ManualHotspotSecurity.WPA2) {
             log("car hotspot config: a ${credentials.security} hotspot is not rewritten")
-            return Result.SKIPPED
+            return WriteOutcome(Result.SKIPPED)
         }
         if (listOf(credentials.ssid, credentials.passphrase).any { it.contains('\n') || it.contains('\r') }) {
             log("car hotspot config: credentials contain a line break")
-            return Result.SKIPPED
+            return WriteOutcome(Result.SKIPPED)
         }
         return if (sdk <= Build.VERSION_CODES.N_MR1) writeWithApp(context, credentials, log)
         else writeWithAdb(context, credentials, deadline, isCancelled, log)
@@ -69,33 +72,35 @@ object CarHotspotConfigWrite {
         write: (WifiConfiguration) -> Boolean?,
         readBack: () -> WifiConfiguration?,
         log: (String) -> Unit,
-    ): Result = try {
-        val config = newConfig().apply { applyTo(this, credentials) }
+    ): WriteOutcome = try {
+        val current = readBack()
+        val effective = if (current?.SSID?.isNotBlank() == true) credentials.copy(ssid = current.SSID) else credentials
+        val config = newConfig().apply { applyTo(this, effective) }
         if (write(config) == false) {
             log("car hotspot config: the framework rejected the configuration")
-            Result.FAILED
+            WriteOutcome(Result.FAILED)
         } else {
             val saved = readBack()
             when {
                 saved == null -> {
                     log("car hotspot config: no configuration to read back")
-                    Result.FAILED
+                    WriteOutcome(Result.FAILED)
                 }
-                matches(saved, credentials) -> Result.WRITTEN
+                matches(saved, effective) -> WriteOutcome(Result.WRITTEN, effective.ssid)
                 else -> {
                     log("car hotspot config: readback does not match the written credentials")
-                    Result.FAILED
+                    WriteOutcome(Result.FAILED)
                 }
             }
         }
     } catch (error: Exception) {
         log("car hotspot config: app write failed ${CarHotspotTethering.describe(error)}")
-        Result.FAILED
+        WriteOutcome(Result.FAILED)
     }
 
-    private fun writeWithApp(context: Context, credentials: HotspotCredentials, log: (String) -> Unit): Result {
+    private fun writeWithApp(context: Context, credentials: HotspotCredentials, log: (String) -> Unit): WriteOutcome {
         val wifi = context.applicationContext.getSystemService(WifiManager::class.java)
-            ?: return Result.FAILED.also { log("car hotspot config: no Wi-Fi manager") }
+            ?: return WriteOutcome(Result.FAILED).also { log("car hotspot config: no Wi-Fi manager") }
         val managerType = WifiManager::class.java
         return writeApp(credentials,
             newConfig = { WifiConfiguration() },
@@ -138,9 +143,9 @@ object CarHotspotConfigWrite {
         deadline: Long,
         isCancelled: () -> Boolean,
         log: (String) -> Unit,
-    ): Result {
+    ): WriteOutcome {
         val client = AtomicReference<LocalAdb?>()
-        val outcome = AtomicReference<Result?>()
+        val outcome = AtomicReference<WriteOutcome?>()
         CarHotspotAdbFallback.bounded(deadline, isCancelled,
             abort = { client.get()?.cancelPendingOperations() }) {
             val adb = LocalAdb(AdbKeys.load(context))
@@ -150,16 +155,16 @@ object CarHotspotConfigWrite {
                     else adb.connect(mayAsk = false)
                 if (access != null && access != LocalAdb.Access.READY) log("car hotspot config: ADB access=$access")
                 if (access != LocalAdb.Access.READY) {
-                    outcome.set(Result.ADB_UNAVAILABLE)
+                    outcome.set(WriteOutcome(Result.ADB_UNAVAILABLE))
                     false
                 } else {
                     val timeout = ((deadline - System.nanoTime()) / 1_000_000L).coerceIn(1_000, 30_000).toInt()
                     outcome.set(writeAdb(adb::shell, context.applicationInfo.sourceDir, credentials, timeout, log))
-                    outcome.get() == Result.WRITTEN
+                    outcome.get()?.result == Result.WRITTEN
                 }
             }
         }
-        return outcome.get() ?: Result.FAILED.also { log("car hotspot config: ADB write did not finish") }
+        return outcome.get() ?: WriteOutcome(Result.FAILED).also { log("car hotspot config: ADB write did not finish") }
     }
 
     internal fun writeAdb(
@@ -168,10 +173,14 @@ object CarHotspotConfigWrite {
         credentials: HotspotCredentials,
         timeoutMillis: Int,
         log: (String) -> Unit,
-    ): Result {
+    ): WriteOutcome {
         val reply = CarHotspotStartMain.parseApConfig(
             shell(CarHotspotStartMain.apConfigCommand(apk, credentials), timeoutMillis))
-        return if (CarHotspotStartMain.apConfigAccepted(reply)) Result.WRITTEN
-        else Result.FAILED.also { log("car hotspot config: shell write failed: ${reply ?: "no reply"}") }
+        return when {
+            reply != null && CarHotspotStartMain.apConfigAccepted(reply) ->
+                WriteOutcome(Result.WRITTEN, CarHotspotStartMain.apConfigSsid(reply))
+            else -> WriteOutcome(Result.FAILED)
+                .also { log("car hotspot config: shell write failed: ${reply ?: "no reply"}") }
+        }
     }
 }

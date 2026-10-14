@@ -73,6 +73,7 @@ import com.shilapi.xcertplay.media.AmbientMusicController
 import com.shilapi.xcertplay.media.AmbientColorSource
 import com.shilapi.xcertplay.media.AmbientMusicSettings
 import com.shilapi.xcertplay.media.MtkDecoderTuning
+import com.shilapi.xcertplay.network.CarHotspotConfigRead
 import com.shilapi.xcertplay.network.CarHotspotConfigWrite
 import com.shilapi.xcertplay.network.CarHotspotSettings
 import com.shilapi.xcertplay.network.CarHotspotTethering
@@ -2945,6 +2946,53 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
 
     private var carHotspotConfigStatus: Int? = null
 
+    // Copies the car's saved hotspot details into our settings without touching the car; only when
+    // the car's configuration cannot be read does the write path run, after a warning.
+    private fun importCarHotspotConfig() {
+        val fallback = launchHotspotCredentials()
+        Thread({
+            val read = CarHotspotConfigRead.read(applicationContext, log = { Log.i("DiPlay-Hotspot", it) })
+            Log.i("DiPlay-Hotspot", "car hotspot config read: credentials=${read.credentials != null} reason=${read.reason}")
+            val saved = read.credentials
+            if (saved != null) {
+                AirPlayPersistence.saveManualHotspotSsid(applicationContext, saved.ssid)
+                AirPlayPersistence.saveManualHotspotPassphrase(applicationContext, saved.passphrase)
+                AirPlayPersistence.saveManualHotspotSecurity(applicationContext, saved.security)
+                runOnUiThread {
+                    carHotspotConfigStatus = null
+                    toast(getString(R.string.settings_car_hotspot_config_imported))
+                    render()
+                }
+                return@Thread
+            }
+            runOnUiThread {
+                when {
+                    read.reason == CarHotspotConfigRead.Reason.ADB_UNAVAILABLE -> {
+                        carHotspotConfigStatus = when (read.access) {
+                            LocalAdb.Access.NOT_APPROVED -> R.string.adb_not_approved
+                            LocalAdb.Access.UNSUPPORTED -> R.string.adb_pairing_only
+                            else -> R.string.adb_off
+                        }
+                        render()
+                    }
+                    fallback == null -> {
+                        carHotspotConfigStatus = R.string.finish_setup_save_your_hotspot_details_to_use_this_mode
+                        render()
+                    }
+                    else -> AlertDialog.Builder(this)
+                        .setTitle(getString(R.string.settings_car_hotspot_config_dialog_title))
+                        .setMessage(getString(R.string.settings_car_hotspot_config_dialog_message))
+                        .setPositiveButton(getString(R.string.settings_car_hotspot_config_dialog_confirm)) { _, _ -> writeCarHotspotConfigNow() }
+                        .setNegativeButton(getString(R.string.cancel)) { _, _ ->
+                            CarHotspotSettings.setConfigWrite(this, false)
+                            render()
+                        }
+                        .show()
+                }
+            }
+        }, "diplay-hotspot-config-read").start()
+    }
+
     // One-shot write of the saved manual hotspot details; the toggle only stores the opt-in.
     private fun writeCarHotspotConfigNow() {
         val credentials = launchHotspotCredentials()
@@ -2959,11 +3007,11 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
                 access = runCatching { CarHotspotSetup.grant(applicationContext, emptyList()) }
                     .getOrDefault(LocalAdb.Access.UNREACHABLE)
             }
-            val result = if (access != LocalAdb.Access.READY) CarHotspotConfigWrite.Result.ADB_UNAVAILABLE
+            val outcome = if (access != LocalAdb.Access.READY) CarHotspotConfigWrite.WriteOutcome(CarHotspotConfigWrite.Result.ADB_UNAVAILABLE)
             else CarHotspotConfigWrite.write(applicationContext, credentials, log = { Log.i("DiPlay-Hotspot", it) })
-            Log.i("DiPlay-Hotspot", "car hotspot config write: $result")
+            Log.i("DiPlay-Hotspot", "car hotspot config write: ${outcome.result}")
             runOnUiThread {
-                carHotspotConfigStatus = when (result) {
+                carHotspotConfigStatus = when (outcome.result) {
                     CarHotspotConfigWrite.Result.WRITTEN -> {
                         toast(getString(R.string.settings_car_hotspot_config_effect))
                         R.string.settings_car_hotspot_config_written
@@ -3425,7 +3473,7 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
                             return@createSwitchRow
                         }
                         CarHotspotSettings.setConfigWrite(this@DiPlayActivity, true)
-                        writeCarHotspotConfigNow()
+                        importCarHotspotConfig()
                     }).rowView)
                 carHotspotConfigStatus?.let { status ->
                     parent.addView(label(getString(status), 15, MUTED).apply { setPadding(0, dp(10), 0, 0) })

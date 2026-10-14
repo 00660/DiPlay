@@ -595,9 +595,13 @@
     <string name="auto_car_hotspot_title">自動開啟熱點</string>
     <string name="auto_car_hotspot_description">DiPlay 啟動時開啟車機熱點。開啟開關會自動透過 ADB 申請所需權限，請允許車機上的授權提示。配合“車輛啟動後開啟”可隨開機啟動。保留熱點名稱和密碼，不會自動關閉熱點。</string>
     <string name="settings_car_hotspot_config_title">無感連接（實驗性）</string>
-    <string name="settings_car_hotspot_config_description">無需手動輸入熱點資訊，自動產生DiPlay-XXXX名稱的熱點資訊，若已填寫熱點資訊則同步到車機設定。Android 11 及以上需要 ADB；Android 8 到 10 不支援。</string>
+    <string name="settings_car_hotspot_config_description">無需手動輸入熱點資訊，嘗試匯入車機熱點資訊；匯入失敗時在使用者確認後覆蓋熱點資訊，使用此車載熱點的裝置可能需要重新連線。Android 11 及以上需要 ADB；Android 8 到 10 不支援。</string>
     <string name="settings_car_hotspot_config_unsupported">此 Android 版本無法寫入熱點設置。</string>
-    <string name="settings_car_hotspot_config_written">車機熱點的名稱和密碼已與 DiPlay 一致。</string>
+    <string name="settings_car_hotspot_config_written">車機熱點已使用 DiPlay 的密碼。</string>
+    <string name="settings_car_hotspot_config_imported">已匯入車機熱點設定。</string>
+    <string name="settings_car_hotspot_config_dialog_title">覆寫車機熱點設定？</string>
+    <string name="settings_car_hotspot_config_dialog_message">無法讀取車機已儲存的熱點設定。繼續將以 DiPlay 的熱點詳情覆寫車機設定：熱點名稱可能改變，密碼會被取代，其他已連線的裝置需要重新輸入密碼。</string>
+    <string name="settings_car_hotspot_config_dialog_confirm">覆寫並繼續</string>
     <string name="settings_car_hotspot_config_effect">將在下次熱點開啟時生效。</string>
     <string name="settings_car_hotspot_config_failed">DiPlay 無法寫入車機熱點設定，名稱和密碼保持不變。</string>
     <string name="settings_car_hotspot_config_wpa3">WPA3 熱點保持不變。請將熱點詳細資訊儲存為 WPA2 後再寫入車機。</string>
