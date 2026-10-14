@@ -580,6 +580,12 @@
     <string name="settings_gesture_fingers_hint">Виберіть кількість пальців, яку не використовує головний пристрій. BYD резервує свайп трьома пальцями вниз під панель кондиціонера.</string>
     <string name="auto_car_hotspot_title">Автоматично вмикати точку доступу авто</string>
     <string name="auto_car_hotspot_description">Вмикає збережену точку доступу під час відкриття DiPlay. Перемикач автоматично запитує потрібні дозволи через ADB; підтвердьте запит на екрані авто. Для запуску після завантаження ввімкніть відкриття DiPlay після запуску авто. Назва й пароль зберігаються, точка доступу автоматично не вимикається.</string>
+    <string name="settings_car_hotspot_config_title">Безшовне підключення (експериментально)</string>
+    <string name="settings_car_hotspot_config_description">Вводити дані точки доступу вручну не потрібно: вони створюються автоматично з назвою DiPlay-XXXX, а якщо дані вже заповнено, вони синхронізуються з налаштуваннями авто. На Android 11 і новіших потрібен ADB; на Android 8–10 недоступно.</string>
+    <string name="settings_car_hotspot_config_unsupported">Запис налаштувань точки доступу неможливий у цій версії Android.</string>
+    <string name="settings_car_hotspot_config_written">Назва та пароль точки доступу автомобіля тепер збігаються з DiPlay.</string>
+    <string name="settings_car_hotspot_config_failed">DiPlay не вдалося записати налаштування точки доступу автомобіля. Назва та пароль залишилися без змін.</string>
+    <string name="settings_car_hotspot_config_wpa3">Точку доступу WPA3 не змінено. Збережіть дані точки доступу з WPA2, щоб записати їх в автомобіль.</string>
     <string name="hotspot_control_missing">Немає дозволу керування точкою доступу. Надайте його через ADB або ввімкніть точку доступу в налаштуваннях авто.</string>
     <string name="hotspot_permission_granted">Дозвіл надано.</string>
     <string name="hotspot_permission_failed">Запитаний дозвіл не надано. Перевірте налаштування авто та спробуйте ще раз.</string>

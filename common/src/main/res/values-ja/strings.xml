@@ -648,6 +648,12 @@
     <string name="settings_gesture_fingers_hint">車載端末がほかの操作に使わない指の本数を選んでください。BYDでは3本指の下スワイプでエアコンパネルが開きます。</string>
     <string name="auto_car_hotspot_title">車載ホットスポットを自動でオン</string>
     <string name="auto_car_hotspot_description">DiPlayの起動時に保存済みの車載ホットスポットを開始します。有効にするとADB経由で必要な権限を自動要求するため、車載画面の確認を許可してください。車両の起動と同時に開始するには「車の起動後に開く」を有効にしてください。ホットスポット名とパスワードは維持され、ホットスポットを自動でオフにすることはありません。</string>
+    <string name="settings_car_hotspot_config_title">シームレス接続（実験的機能）</string>
+    <string name="settings_car_hotspot_config_description">ホットスポット情報を手入力する必要はありません。DiPlay-XXXX という名前のホットスポット情報を自動生成し、入力済みの場合は車載設定に同期します。Android 11 以降ではADBが必要で、Android 8〜10では利用できません。</string>
+    <string name="settings_car_hotspot_config_unsupported">このAndroidバージョンではホットスポット設定を書き込めません。</string>
+    <string name="settings_car_hotspot_config_written">車のホットスポット名とパスワードが DiPlay と一致しました。</string>
+    <string name="settings_car_hotspot_config_failed">DiPlay は車のホットスポット設定を書き込めませんでした。名前とパスワードは変更されていません。</string>
+    <string name="settings_car_hotspot_config_wpa3">WPA3 のホットスポットは変更しません。WPA2 で詳細を保存すると書き込めます。</string>
     <string name="hotspot_control_missing">ホットスポット操作の権限がありません。ADBで設定するか、車の設定からホットスポットを開いてください。</string>
     <string name="hotspot_permission_granted">権限を許可しました。</string>
     <string name="hotspot_permission_failed">要求した権限が許可されませんでした。車の設定を確認して再試行してください。</string>

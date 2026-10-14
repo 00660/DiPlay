@@ -2332,6 +2332,15 @@ class CarPlayController(
         type.equals("disableBluetooth", ignoreCase = true) ||
             type.equals("disable-bluetooth", ignoreCase = true)
 
+    private fun hotspotCredentials(): com.shilapi.xcertplay.network.HotspotCredentials? {
+        if (!com.shilapi.xcertplay.network.CarHotspotSettings.configWrite(appContext)) return null
+        val ssid = config.manualHotspotSsid ?: return null
+        val passphrase = config.manualHotspotPassphrase ?: ""
+        if (ManualHotspotValidation.error(ssid, passphrase) != null) return null
+        return com.shilapi.xcertplay.network.HotspotCredentials(
+            ssid, passphrase, config.manualHotspotSecurity, config.manualHotspotBand)
+    }
+
     private fun startWirelessHotspot(generation: Int): WirelessHotspotInfo {
         val readyDeadline = System.nanoTime() + WirelessStartupPolicy.HOTSPOT_READY_MILLIS * 1_000_000
         val hotspotMode = config.wirelessHotspotMode
@@ -2343,6 +2352,7 @@ class CarPlayController(
                 appContext,
                 isCancelled = { isStaleWirelessRun(generation) ||
                     !com.shilapi.xcertplay.network.CarHotspotSettings.enabled(appContext) },
+                credentials = hotspotCredentials(),
                 timeoutMillis = ((readyDeadline - System.nanoTime()) / 1_000_000).coerceAtLeast(1),
                 log = { debugLog("generation=$generation atNs=${System.nanoTime()} $it; awaiting hotspot interface") },
             )

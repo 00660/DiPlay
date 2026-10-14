@@ -567,6 +567,12 @@
     <string name="settings_gesture_fingers_hint">Выберите число пальцев, не занятое головным устройством. BYD использует свайп тремя пальцами вниз для панели кондиционера.</string>
     <string name="auto_car_hotspot_title">Автоматически включать точку доступа автомобиля</string>
     <string name="auto_car_hotspot_description">Включает сохранённую точку доступа при открытии DiPlay. Переключатель автоматически запрашивает необходимые разрешения через ADB; подтвердите запрос на экране автомобиля. Для запуска после загрузки включите открытие DiPlay после запуска автомобиля. Имя и пароль сохраняются, точка доступа автоматически не выключается.</string>
+    <string name="settings_car_hotspot_config_title">Бесшовное подключение (экспериментально)</string>
+    <string name="settings_car_hotspot_config_description">Вводить данные точки доступа вручную не нужно: они создаются автоматически с именем DiPlay-XXXX, а если данные уже заполнены, они синхронизируются с настройками автомобиля. На Android 11 и новее нужен ADB; на Android 8–10 недоступно.</string>
+    <string name="settings_car_hotspot_config_unsupported">Запись настроек точки доступа невозможна в этой версии Android.</string>
+    <string name="settings_car_hotspot_config_written">Имя и пароль точки доступа автомобиля теперь совпадают с DiPlay.</string>
+    <string name="settings_car_hotspot_config_failed">DiPlay не удалось записать настройки точки доступа автомобиля. Имя и пароль остались без изменений.</string>
+    <string name="settings_car_hotspot_config_wpa3">Точка доступа WPA3 остаётся без изменений. Сохраните данные точки доступа с WPA2, чтобы записать их в автомобиль.</string>
     <string name="hotspot_control_missing">Нет разрешения управления точкой доступа. Выдайте его через ADB или включите точку доступа в настройках автомобиля.</string>
     <string name="hotspot_permission_granted">Разрешение предоставлено.</string>
     <string name="hotspot_permission_failed">Запрошенное разрешение не выдано. Проверьте настройки автомобиля и повторите попытку.</string>

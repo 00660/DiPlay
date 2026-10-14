@@ -567,6 +567,12 @@
     <string name="settings_gesture_fingers_hint">Elige un número de dedos que tu unidad no use ya. BYD reserva el deslizamiento con tres dedos para el panel del aire acondicionado.</string>
     <string name="auto_car_hotspot_title">Activar automáticamente el punto de acceso del coche</string>
     <string name="auto_car_hotspot_description">Activa el punto de acceso guardado al abrir DiPlay. El interruptor solicita automáticamente los permisos necesarios mediante ADB; acepta el aviso en la pantalla del coche. Activa la apertura de DiPlay al arrancar para iniciarlo tras el encendido. Conserva el nombre y la contraseña y nunca apaga el punto de acceso.</string>
+    <string name="settings_car_hotspot_config_title">Conexión sin interrupciones (experimental)</string>
+    <string name="settings_car_hotspot_config_description">No hace falta escribir los datos del punto de acceso: se generan automáticamente con el nombre DiPlay-XXXX, y si ya los has rellenado se sincronizan con los ajustes del coche. Requiere ADB en Android 11 o posterior; no disponible en Android 8 a 10.</string>
+    <string name="settings_car_hotspot_config_unsupported">No es posible escribir los ajustes del punto de acceso en esta versión de Android.</string>
+    <string name="settings_car_hotspot_config_written">El nombre y la contraseña del punto de acceso del coche coinciden con DiPlay.</string>
+    <string name="settings_car_hotspot_config_failed">DiPlay no pudo escribir los ajustes del punto de acceso del coche. El nombre y la contraseña no cambiaron.</string>
+    <string name="settings_car_hotspot_config_wpa3">Un punto de acceso WPA3 se mantiene sin cambios. Guarda los detalles con WPA2 para escribirlos en el coche.</string>
     <string name="hotspot_control_missing">Falta el permiso de control del punto de acceso. Concédelo mediante ADB o actívalo en los ajustes del coche.</string>
     <string name="hotspot_permission_granted">Permiso concedido.</string>
     <string name="hotspot_permission_failed">No se ha concedido el permiso solicitado. Revisa los ajustes del coche e inténtalo de nuevo.</string>
