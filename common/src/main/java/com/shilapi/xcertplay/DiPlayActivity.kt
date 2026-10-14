@@ -67,6 +67,7 @@ import com.shilapi.xcertplay.hud.BydVehicleProbeOutcome
 import com.shilapi.xcertplay.host.R
 import com.shilapi.xcertplay.media.AmbientColorMode
 import com.shilapi.xcertplay.media.AmbientColorSpeed
+import com.shilapi.xcertplay.media.AmbientIdleBehavior
 import com.shilapi.xcertplay.media.AmbientMusicController
 import com.shilapi.xcertplay.media.AmbientColorSource
 import com.shilapi.xcertplay.media.AmbientMusicSettings
@@ -5802,6 +5803,10 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
             draft = draft.copy(speed = AmbientColorSpeed.entries[it])
         }
         body.addView(musicOptions)
+        choice(body, getString(R.string.settings_ambient_idle), listOf(getString(R.string.settings_ambient_idle_steady), getString(R.string.settings_ambient_idle_car), getString(R.string.settings_ambient_idle_off)), draft.idle.ordinal, reconnects = false) {
+            draft = draft.copy(idle = AmbientIdleBehavior.entries[it])
+            refreshAmbient()
+        }
         toggle(body, getString(R.string.settings_ambient_album), getString(R.string.settings_ambient_album_description), draft.colorSource == AmbientColorSource.ALBUM) {
             draft = draft.copy(colorSource = if (it) AmbientColorSource.ALBUM else AmbientColorSource.SELECTED)
             refreshAmbient()
