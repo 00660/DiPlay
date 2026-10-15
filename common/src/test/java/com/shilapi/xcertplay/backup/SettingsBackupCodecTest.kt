@@ -22,6 +22,7 @@ class SettingsBackupCodecTest {
     fun exportOmitsSensitiveAndNavigationKeys() {
         prefs("xcertplay_airplay").edit()
             .putInt("display_fps", 60)
+            .putInt("black_corner_radius_dp", 24)
             .putString("identity_private", "secret")
             .putString("manual_hotspot_passphrase", "wifi-pass")
             .putStringSet("pairing_ids", setOf("pair-1"))
@@ -41,6 +42,7 @@ class SettingsBackupCodecTest {
         assertEquals(SettingsBackupCodec.VERSION, document.getInt("version"))
         val airplay = document.getJSONObject("settings").getJSONObject("xcertplay_airplay")
         assertEquals(60, airplay.getInt("display_fps"))
+        assertEquals(24, airplay.getInt("black_corner_radius_dp"))
         assertTrue(airplay.getBoolean("cluster_map_enabled"))
         assertFalse(airplay.has("manual_hotspot_ssid"))
         assertFalse(airplay.has("pairing.0F7A"))

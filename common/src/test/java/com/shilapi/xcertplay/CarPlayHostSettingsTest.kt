@@ -768,6 +768,31 @@ class CarPlayHostSettingsTest {
         assertEquals(edited, AirPlayPersistence.loadSafeAreaRect(activity, 1920, 942))
     }
 
+    @Test fun localBlackCornerSettingPreviewsWithoutChangingVideoSessionAndCanBeCancelled() {
+        assertEquals(0, AirPlayPersistence.loadBlackCornerRadiusDp(activity))
+        val maskLayer = field("blackCornerOverlay") as CarPlayBlackCornerOverlay
+        val root = maskLayer.parent as ViewGroup
+        assertTrue(root.indexOfChild(field("videoView") as View) < root.indexOfChild(maskLayer))
+        assertTrue(root.indexOfChild(maskLayer) < root.indexOfChild(field("gestureOverlay") as View))
+        invoke("openSettingsMenu")
+        val mask = field("blackCornerOverlay") as CarPlayBlackCornerOverlay
+        assertEquals(0, mask.radiusDp)
+        setField("blackCornerRadiusDp", 36)
+        mask.radiusDp = 36
+        assertEquals(36, mask.radiusDp)
+        invoke("cancelSettingsEdits")
+        assertEquals(0, mask.radiusDp)
+        assertEquals(0, AirPlayPersistence.loadBlackCornerRadiusDp(activity))
+        // The local overlay is saved with the other menu settings and survives a settings reload.
+        invoke("openSettingsMenu")
+        setField("blackCornerRadiusDp", 24)
+        invoke("persistMenuSettings")
+        invoke("loadPersistedSettings")
+        assertEquals(24, mask.radiusDp)
+        assertEquals(24, AirPlayPersistence.loadBlackCornerRadiusDp(activity))
+        invoke("cancelSettingsEdits")
+    }
+
     private fun resizeWindow(width: Int, height: Int) {
         val sizeClass = Class.forName("com.shilapi.xcertplay.CarPlayHostActivity\$DisplaySize")
         val size = sizeClass.getDeclaredConstructor(Int::class.javaPrimitiveType, Int::class.javaPrimitiveType)

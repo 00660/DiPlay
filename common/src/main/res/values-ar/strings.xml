@@ -919,4 +919,9 @@
     <string name="wheel_media_play_pause_description">عيّن زرًا متاحًا على المقود أو لوحة المفاتيح لتبديل تشغيل موسيقى CarPlay. يعمل أثناء الاتصال، وفي الخلفية عند تفعيل خدمة أزرار المقود. أثناء المكالمات أو عدم الاتصال، يحتفظ الزر بوظيفته الأصلية. قد يمنع نظام السيارة وصول بعض الأزرار.</string>
     <string name="wheel_key_role_media_play_pause">تشغيل/إيقاف مؤقت</string>
     <string name="wheel_media_navigation_reserved">أزرار التنقل والصفحة الرئيسية والصوت والمساعد الصوتي والوسائط محجوزة لوظائفها الأصلية. اختر زرًا آخر.</string>
+    <string name="black_corner_overlay">زوايا مستديرة سوداء</string>
+    <string name="black_corner_overlay_description">تغطية زوايا CarPlay بالأسود. اختر إيقافًا أو نصف قطر يدويًا أو قناع iPhone (تجريبي). يحتاج وضع iPhone إلى إعادة اتصال، ويعود إلى تقريب 24 dp إن تعذر الحصول على القناع. تظهر التعديلات اليدوية فورًا، ويحفظ زر الحفظ الاختيار.</string>
+    <string name="black_corner_overlay_off">إيقاف</string>
+    <string name="black_corner_overlay_value">%1$d dp</string>
+    <string name="iphone_corner_mask_mode">قناع iPhone (تجريبي)</string>
 </resources>

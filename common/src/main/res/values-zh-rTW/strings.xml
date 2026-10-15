@@ -930,4 +930,9 @@
     <string name="wheel_media_play_pause_description">將可用的方向盤或鍵盤按鍵映射為 CarPlay 音樂播放／暫停。CarPlay 連線時可用；背景執行需要啟用方向盤按鍵服務。通話或中斷連線時保留車輛原有功能。車機可能攔截部分按鍵。</string>
     <string name="wheel_key_role_media_play_pause">播放／暫停</string>
     <string name="wheel_media_navigation_reserved">遙控器的導覽、首頁、音量、語音助理及既有媒體按鍵保留原有功能。請選擇其他可用按鍵。</string>
+    <string name="black_corner_overlay">黑色圓角遮罩</string>
+    <string name="black_corner_overlay_description">將 CarPlay 畫面四角遮成黑色。可選擇關閉、手動圓角半徑或 iPhone 遮罩（實驗性）。iPhone 模式需要重新連線；若未收到有效遮罩，則使用 24 dp 近似值。手動調整可立即預覽，儲存後保留設定。</string>
+    <string name="black_corner_overlay_off">關閉</string>
+    <string name="black_corner_overlay_value">%1$d dp</string>
+    <string name="iphone_corner_mask_mode">iPhone 遮罩（實驗性）</string>
 </resources>

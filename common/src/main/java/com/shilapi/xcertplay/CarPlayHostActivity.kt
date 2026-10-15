@@ -304,6 +304,38 @@ class CarPlayHostActivity : ComponentActivity() {
 
     // The full-window viewport stays independent of the letterboxed SurfaceView dimensions.
     private var videoView: View? = null
+    private var blackCornerOverlay: CarPlayBlackCornerOverlay? = null
+    private var pendingIphoneCornerMask: Pair<AirPlaySession, Pair<ByteArray, Int>>? = null
+    private var iphoneCornerMaskDecodeGeneration = 0
+
+    private fun localCornerRadius(): Int =
+        if (blackCornerRadiusDp == CarPlayBlackCornerOverlay.IPHONE_MASK) 24 else blackCornerRadiusDp
+
+    private fun clearIphoneCornerMask() {
+        ++iphoneCornerMaskDecodeGeneration
+        pendingIphoneCornerMask = null
+        blackCornerOverlay?.setIphoneMask(null)
+    }
+
+    /** The UI owns session identity; Android decodes the streamed PNG off the control and UI threads. */
+    private fun installIphoneCornerMask(session: AirPlaySession, png: ByteArray, displayWidth: Int) {
+        val revision = ++iphoneCornerMaskDecodeGeneration
+        Thread({
+            val decoded = runCatching { IphoneCornerMask.decode(png, displayWidth) }.getOrNull()
+            runOnUiThread {
+                if (revision == iphoneCornerMaskDecodeGeneration && activeAirPlaySession === session &&
+                    !shuttingDown.get() && blackCornerRadiusDp == CarPlayBlackCornerOverlay.IPHONE_MASK) {
+                    if (decoded != null) {
+                        blackCornerOverlay?.setIphoneMask(decoded)
+                        appendLog("iPhone corner mask applied: ${decoded.size}px for width $displayWidth")
+                    } else {
+                        blackCornerOverlay?.setIphoneMask(null)
+                        appendLog("iPhone corner mask rejected; using local radius fallback")
+                    }
+                } else decoded?.blackPixels?.recycle()
+            }
+        }, "diplay-iphone-corner-mask").start()
+    }
     private var fallbackVideoView: SurfaceView? = null
     private var fallbackVideoBounds: CarPlaySurfaceBounds? = null
     // The last picture of a SurfaceView video output, kept when its surface goes (DiPlay leaves the screen) and
@@ -472,6 +504,7 @@ class CarPlayHostActivity : ComponentActivity() {
     private var harmanFullscreenApplied = false
     private var safeAreaDrawOutside = true
     private var mainDisplayDisableSafeArea = false
+    private var blackCornerRadiusDp = 0
     private var locationReportingEnabled = false
     private var locationPermissionAvailable = false
     private var microphoneAvailable = false
@@ -830,6 +863,9 @@ class CarPlayHostActivity : ComponentActivity() {
         harmanFullscreenEnabled = AirPlayPersistence.loadHarmanFullscreen(this)
         safeAreaDrawOutside = AirPlayPersistence.loadSafeAreaDrawOutside(this)
         mainDisplayDisableSafeArea = AirPlayPersistence.loadMainDisplayDisableSafeArea(this)
+        blackCornerRadiusDp = AirPlayPersistence.loadBlackCornerRadiusDp(this)
+        blackCornerOverlay?.radiusDp = localCornerRadius()
+        if (blackCornerRadiusDp != CarPlayBlackCornerOverlay.IPHONE_MASK) clearIphoneCornerMask()
         locationPermissionAvailable = hasFineLocationPermission()
         loadConnectionSettings()
         wirelessPermissionsReady = !wirelessEnabled || hasRequiredWirelessPermissions()
@@ -1772,6 +1808,10 @@ class CarPlayHostActivity : ComponentActivity() {
             setOnTouchListener { view, event -> onHostTouch(view, event) }
         }
         root.addView(video, FrameLayout.LayoutParams(-1, -1))
+        blackCornerOverlay = CarPlayBlackCornerOverlay(this).also { overlay ->
+            overlay.radiusDp = localCornerRadius()
+            root.addView(overlay, FrameLayout.LayoutParams(-1, -1))
+        }
         root.addView(gestureLayer, FrameLayout.LayoutParams(-1, -1))
         // Measure the preparation content naturally, then fit it inside the safe viewport.
         val viewport = object : FrameLayout(this) {
@@ -3292,6 +3332,7 @@ class CarPlayHostActivity : ComponentActivity() {
         AirPlayPersistence.saveTemporarySystemBars(this, temporarySystemBarsEnabled)
         AirPlayPersistence.saveSafeAreaDrawOutside(this, safeAreaDrawOutside)
         AirPlayPersistence.saveMainDisplayDisableSafeArea(this, mainDisplayDisableSafeArea)
+        AirPlayPersistence.saveBlackCornerRadiusDp(this, blackCornerRadiusDp)
     }
 
     /** Mirrors [persistMenuSettings]: a field staged there belongs here too. */
@@ -3303,7 +3344,7 @@ class CarPlayHostActivity : ComponentActivity() {
         displayScalePercent, fps, widthPhysicalMm, physicalSizeBasis, hevcEnabled,
         hevcSoftwareDecoderEnabled, manufacturer, model, oemLabel, debugLogsEnabled, rightHandDrive,
         carPlayDock, hideTopBar, hideBottomBar, temporarySystemBarsEnabled,
-        safeAreaDrawOutside, mainDisplayDisableSafeArea,
+        safeAreaDrawOutside, mainDisplayDisableSafeArea, blackCornerRadiusDp,
     ).joinToString("|").hashCode()
 
     private fun captureSettingsBaseline(): SettingsBaseline {
@@ -3357,6 +3398,8 @@ class CarPlayHostActivity : ComponentActivity() {
         updateManualHotspotFields()
         updateAirPlayIconPreview()
         updateSafeAreaSummary()
+        blackCornerOverlay?.radiusDp = localCornerRadius()
+        if (blackCornerRadiusDp != CarPlayBlackCornerOverlay.IPHONE_MASK) clearIphoneCornerMask()
         updateHotspotStatusBlock()
         updateResolutionMenu()
         updateDebugOverlays()
@@ -4012,6 +4055,30 @@ class CarPlayHostActivity : ComponentActivity() {
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT,
             ).apply { topMargin = dp(12) },
+        )
+        section.addView(
+            menuText(getString(R.string.black_corner_overlay_description), 15f, MENU_SECONDARY),
+            LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
+                .apply { topMargin = dp(12) },
+        )
+        section.addView(
+            buildStepSliderSection(
+                getString(R.string.black_corner_overlay),
+                CarPlayBlackCornerOverlay.RADII_DP,
+                blackCornerRadiusDp,
+                { value ->
+                    if (value == CarPlayBlackCornerOverlay.IPHONE_MASK) getString(R.string.iphone_corner_mask_mode)
+                    else if (value == 0) getString(R.string.black_corner_overlay_off)
+                    else getString(R.string.black_corner_overlay_value, value)
+                },
+            ) { value ->
+                blackCornerRadiusDp = value
+                blackCornerOverlay?.radiusDp = localCornerRadius()
+                clearIphoneCornerMask()
+                appendLog("Local black corner radius preview=$value dp")
+            },
+            LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
+                .apply { topMargin = dp(8) },
         )
         safeAreaSummaryView = summary
         updateSafeAreaSummary()
@@ -4671,17 +4738,20 @@ class CarPlayHostActivity : ComponentActivity() {
             }
         }
         appendLog("CarPlay size=${CarPlayUiScale.label(uiScalePercent)} canvas=${scaledDisplay.widthPixels}x${scaledDisplay.heightPixels}")
+        val nativeMasks = blackCornerRadiusDp == CarPlayBlackCornerOverlay.IPHONE_MASK
+        val disableSafeArea = mainDisplayDisableSafeArea || nativeMasks
         val display = scaledDisplay.copy(
-            safeArea = if (mainDisplayDisableSafeArea) null else AirPlaySafeArea.toInsets(
+            safeArea = if (disableSafeArea) null else AirPlaySafeArea.toInsets(
                 mapping = AirPlayPersistence.loadSafeAreaRect(this, size.width, size.height),
                 activityWidthPixels = size.width,
                 activityHeightPixels = size.height,
                 displayWidthPixels = scaledDisplay.widthPixels,
                 displayHeightPixels = scaledDisplay.heightPixels,
             ),
-            safeAreaDrawOutside = safeAreaDrawOutside,
-            mainDisplayCornerMasks = if (mainDisplayDisableSafeArea) true else null,
-            mainDisplayDisableSafeArea = mainDisplayDisableSafeArea,
+            safeAreaDrawOutside = if (nativeMasks) false else safeAreaDrawOutside,
+            mainDisplayCornerMasks = if (disableSafeArea) true else null,
+            mainDisplayDisableSafeArea = disableSafeArea,
+            useIphoneCornerMask = nativeMasks,
         )
         // A fixed dock, split-screen support or a turning screen declares several areas the car switches
         // between live. A session that starts in split screen sizes its canvas to that window, so it keeps
@@ -5018,12 +5088,27 @@ class CarPlayHostActivity : ComponentActivity() {
         object : AirPlaySessionListener {
             private val diagnosticLog = sessionLog
 
+            override fun onCornerMask(session: AirPlaySession, png: ByteArray, displayWidth: Int) {
+                runOnUiThread {
+                    if (controllerGeneration != restartGeneration || shuttingDown.get() ||
+                        blackCornerRadiusDp != CarPlayBlackCornerOverlay.IPHONE_MASK) return@runOnUiThread
+                    val active = activeAirPlaySession
+                    if (active != null && active !== session) return@runOnUiThread
+                    pendingIphoneCornerMask = session to (png to displayWidth)
+                    if (active === session) installIphoneCornerMask(session, png, displayWidth)
+                }
+            }
+
             override fun onSessionActive(session: AirPlaySession) {
                 runOnUiThread {
                     if (controllerGeneration != restartGeneration) {
                         return@runOnUiThread
                     }
                     activeAirPlaySession = session
+                    val pending = pendingIphoneCornerMask
+                    if (pending?.first === session) {
+                        installIphoneCornerMask(session, pending.second.first, pending.second.second)
+                    } else clearIphoneCornerMask()
                     CarPlayBackgroundSession.active = true
                     showConnectionHelp(null)
                     callPopupSessionReady = true
@@ -5067,6 +5152,7 @@ class CarPlayHostActivity : ComponentActivity() {
                     if (controllerGeneration != restartGeneration || startupRetryStopped) return@runOnUiThread
                     startupRetryBudget.disconnected()
                     activeAirPlaySession = null
+                    clearIphoneCornerMask()
                     CarPlayBackgroundSession.active = false
                     callPopupSessionReady = false
                     updateCallPopupGuard()
@@ -5215,6 +5301,14 @@ class CarPlayHostActivity : ComponentActivity() {
             createSessionListener(generation),
             createStatusReporter(generation),
         )
+        // A new Activity adopts the running stream without another AirPlay SETUP or session-active
+        // callback. Restore iOS's captured mask when the controller still owns that live session.
+        if (blackCornerRadiusDp == CarPlayBlackCornerOverlay.IPHONE_MASK) {
+            snapshot.controller.activeIphoneCornerMask()?.let { (session, png, width) ->
+                activeAirPlaySession = session
+                installIphoneCornerMask(session, png, width)
+            }
+        }
         snapshot.sink.setScreenStreamActiveChangedListener { type, active ->
             onScreenStreamStateChanged(restartGeneration, type, active)
         }
@@ -5585,6 +5679,8 @@ class CarPlayHostActivity : ComponentActivity() {
         val view = videoView ?: return
         if (viewWidth <= 0 || viewHeight <= 0) return
         val content = contentRect(viewWidth, viewHeight)
+        blackCornerOverlay?.setContentBounds(RectF(content.left, content.top,
+            content.left + content.width, content.top + content.height))
         val fallback = fallbackVideoView
         if (fallback != null) {
             val bounds = CarPlaySurfaceBounds.from(content)
@@ -5739,6 +5835,7 @@ class CarPlayHostActivity : ComponentActivity() {
         oldSink?.let(retiringSinks::add)
         sink = null
         sessionDisplay = null
+        clearIphoneCornerMask()
         discardLastPicture()
         val diagnosticLog = sessionLog
         teardownExecutor.execute {
@@ -6202,6 +6299,7 @@ class CarPlayHostActivity : ComponentActivity() {
     private fun onScreenStreamStateChanged(generation: Int, type: Int, active: Boolean) {
         runOnUiThread {
             if (shuttingDown.get() || generation != restartGeneration) return@runOnUiThread
+            if (type == SCREEN_TYPE_MAIN && !active) clearIphoneCornerMask()
             if (active) {
                 activeScreenStreamTypes.add(type)
             } else {

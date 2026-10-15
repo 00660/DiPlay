@@ -313,8 +313,25 @@ class CarPlayController(
         }
     }
 
+    private data class SessionCornerMask(val session: AirPlaySession, val png: ByteArray, val width: Int)
+    @Volatile private var currentCornerMask: SessionCornerMask? = null
+
+    /** The video session can outlive its Activity; the new host must be able to replay the mask. */
+    fun activeIphoneCornerMask(): Triple<AirPlaySession, ByteArray, Int>? {
+        val current = currentCornerMask ?: return null
+        if (closed || activeSession !== current.session || current.session.isClosed) return null
+        return Triple(current.session, current.png.copyOf(), current.width)
+    }
+
     private val sessionListener = object : AirPlaySessionListener {
+        override fun onCornerMask(session: AirPlaySession, png: ByteArray, displayWidth: Int) {
+            if (closed || session.isClosed) return
+            if (activeSession != null && activeSession !== session) return
+            currentCornerMask = SessionCornerMask(session, png.copyOf(), displayWidth)
+            uiListener?.onCornerMask(session, png, displayWidth)
+        }
         override fun onSessionActive(session: AirPlaySession) {
+            if (currentCornerMask?.session !== session) currentCornerMask = null
             val replacement = activeSession !== session
             if (replacement) {
                 BydNavigationOutputs.start(appContext)
@@ -345,6 +362,7 @@ class CarPlayController(
         }
 
         override fun onSessionEnded(session: AirPlaySession) {
+            if (currentCornerMask?.session === session) currentCornerMask = null
             if (activeSession === session) {
                 activeSession = null
                 synchronized(albumReplayLock) { initialArtworkReplay = null }

@@ -870,4 +870,9 @@
     <string name="wheel_media_play_pause_description">Назначьте свободную кнопку руля или клавиатуры для переключения воспроизведения CarPlay. В фоновом режиме нужна служба кнопок руля. Во время звонка или без подключения кнопка сохраняет своё действие. Прошивка может перехватывать некоторые кнопки.</string>
     <string name="wheel_key_role_media_play_pause">Воспроизведение/пауза</string>
     <string name="wheel_media_navigation_reserved">Кнопки навигации, «Домой», громкости, голосового помощника и медиа сохраняют свои функции. Выберите другую кнопку.</string>
+    <string name="black_corner_overlay">Чёрные закруглённые углы</string>
+    <string name="black_corner_overlay_description">Закрывает углы CarPlay чёрным. Выберите Выкл., ручной радиус или маску iPhone (экспериментально). Для режима iPhone требуется переподключение; без действительной маски используется приближение 24 dp. Ручные изменения отображаются сразу, выбор сохраняется кнопкой сохранения.</string>
+    <string name="black_corner_overlay_off">Выкл.</string>
+    <string name="black_corner_overlay_value">%1$d dp</string>
+    <string name="iphone_corner_mask_mode">Маска iPhone (экспериментально)</string>
 </resources>

@@ -882,4 +882,9 @@
     <string name="wheel_media_play_pause_description">Призначте вільну кнопку керма або клавіатури для перемикання відтворення CarPlay. У тлі потрібна служба кнопок керма. Під час дзвінка або без підключення кнопка зберігає свою дію. Прошивка може перехоплювати деякі кнопки.</string>
     <string name="wheel_key_role_media_play_pause">Відтворення/пауза</string>
     <string name="wheel_media_navigation_reserved">Кнопки навігації, «Додому», гучності, голосового помічника та медіа зберігають свої функції. Оберіть іншу кнопку.</string>
+    <string name="black_corner_overlay">Чорні заокруглені кути</string>
+    <string name="black_corner_overlay_description">Закриває кути CarPlay чорним. Оберіть Вимк., ручний радіус або маску iPhone (експериментально). Режим iPhone потребує перепідключення; без дійсної маски використовується наближення 24 dp. Ручні зміни видно відразу, вибір зберігається кнопкою збереження.</string>
+    <string name="black_corner_overlay_off">Вимк.</string>
+    <string name="black_corner_overlay_value">%1$d dp</string>
+    <string name="iphone_corner_mask_mode">Маска iPhone (експериментально)</string>
 </resources>

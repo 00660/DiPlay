@@ -870,4 +870,9 @@
     <string name="wheel_media_play_pause_description">Asigna una tecla disponible del volante o teclado para alternar reproducción y pausa en CarPlay. Funciona con CarPlay conectado, también en segundo plano con el servicio de teclas activo. Durante llamadas o sin conexión, conserva su función original. El vehículo puede reservar ciertas teclas.</string>
     <string name="wheel_key_role_media_play_pause">Reproducir/pausar</string>
     <string name="wheel_media_navigation_reserved">Las teclas de navegación, Inicio, volumen, asistente de voz y multimedia conservan sus funciones originales. Elige otra tecla.</string>
+    <string name="black_corner_overlay">Esquinas redondeadas negras</string>
+    <string name="black_corner_overlay_description">Cubre de negro las esquinas de CarPlay. Elige Desactivado, un radio manual o la máscara del iPhone (experimental). El modo iPhone necesita reconexión y vuelve a 24 dp si no llega una máscara válida. Los cambios manuales se previsualizan al instante; guarda para conservarlos.</string>
+    <string name="black_corner_overlay_off">Desactivado</string>
+    <string name="black_corner_overlay_value">%1$d dp</string>
+    <string name="iphone_corner_mask_mode">Máscara del iPhone (experimental)</string>
 </resources>
