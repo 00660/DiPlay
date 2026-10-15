@@ -137,6 +137,7 @@ class SettingsBackupCodecTest {
     fun exportImportRoundTripRestoresValues() {
         prefs("xcertplay_airplay").edit()
             .putInt("display_fps", 60)
+            .putBoolean("temporary_system_bars", true)
             .putBoolean("hevc_enabled", true)
             .putString("manual_hotspot_ssid", "car-ap")
             .putFloat("ui_scale_percent", 100f)
@@ -145,6 +146,7 @@ class SettingsBackupCodecTest {
         val document = SettingsBackupCodec.export(context, "0.2.17")
         prefs("xcertplay_airplay").edit()
             .putInt("display_fps", 30)
+            .putBoolean("temporary_system_bars", false)
             .putBoolean("hevc_enabled", false)
             .putString("manual_hotspot_ssid", "changed")
             .putFloat("ui_scale_percent", 120f)
@@ -154,6 +156,7 @@ class SettingsBackupCodecTest {
         assertEquals(false, outcome.invalid)
         val airplay = prefs("xcertplay_airplay")
         assertEquals(60, airplay.getInt("display_fps", 0))
+        assertTrue(airplay.getBoolean("temporary_system_bars", false))
         assertEquals(true, airplay.getBoolean("hevc_enabled", false))
         // The car's hotspot name is not part of a backup.
         assertEquals("changed", airplay.getString("manual_hotspot_ssid", ""))
