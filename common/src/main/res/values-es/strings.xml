@@ -568,12 +568,13 @@
     <string name="auto_car_hotspot_title">Activar automáticamente el punto de acceso del coche</string>
     <string name="auto_car_hotspot_description">Activa el punto de acceso guardado al abrir DiPlay. El interruptor solicita automáticamente los permisos necesarios mediante ADB; acepta el aviso en la pantalla del coche. Activa la apertura de DiPlay al arrancar para iniciarlo tras el encendido. Conserva el nombre y la contraseña y nunca apaga el punto de acceso.</string>
     <string name="settings_car_hotspot_config_title">Importar los datos del punto de acceso del coche (experimental)</string>
-    <string name="settings_car_hotspot_config_description">No hace falta escribir los datos del punto de acceso: se intentan importar los del coche. Si la importación falla, se sobrescriben tras tu confirmación, y los dispositivos que usan este punto de acceso pueden tener que reconectarse. Requiere ADB en Android 11 o posterior; no disponible en Android 8 a 10.</string>
+    <string name="settings_car_hotspot_config_description">No hace falta escribir los datos del punto de acceso: se intentan importar los del coche. Si el coche no tiene, tras tu confirmación DiPlay escribe allí sus propios datos, y los dispositivos que usan este punto de acceso pueden tener que reconectarse. Requiere ADB en Android 11 o posterior; no disponible en Android 8 a 10.</string>
     <string name="settings_car_hotspot_config_unsupported">La importación de los datos del punto de acceso del coche no es compatible con esta versión de Android.</string>
     <string name="settings_car_hotspot_config_written">El punto de acceso del coche ahora usa la contraseña de DiPlay.</string>
     <string name="settings_car_hotspot_config_imported">Ajustes del punto de acceso del coche importados.</string>
     <string name="settings_car_hotspot_config_dialog_title">¿Sobrescribir los ajustes del punto de acceso del coche?</string>
     <string name="settings_car_hotspot_config_dialog_message">No se pudo leer la configuración del punto de acceso guardada en el coche. Si continúas, se sobrescribirá con los datos del punto de acceso de DiPlay: el nombre puede cambiar, la contraseña se sustituye y los demás dispositivos conectados tendrán que volver a introducirla.</string>
+    <string name="settings_car_hotspot_config_dialog_generate_message">No se pudo leer nada del coche y DiPlay aún no tiene datos del punto de acceso. Si continúas, se creará un nombre y una contraseña nuevos en el coche; los demás dispositivos tendrán que introducir la nueva contraseña.</string>
     <string name="settings_car_hotspot_config_dialog_confirm">Sobrescribir y continuar</string>
     <string name="settings_car_hotspot_config_effect">Se aplicará la próxima vez que se active el punto de acceso del coche.</string>
     <string name="settings_car_hotspot_config_failed">DiPlay no pudo escribir los ajustes del punto de acceso del coche. El nombre y la contraseña no cambiaron.</string>

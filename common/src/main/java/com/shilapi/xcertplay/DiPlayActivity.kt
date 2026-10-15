@@ -2944,8 +2944,9 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
 
     private var carHotspotConfigStatus: Int? = null
 
-    // Copies the car's saved hotspot details into our settings without touching the car; only when
-    // the car's configuration cannot be read does the write path run, after a warning.
+    // Copies the car's saved hotspot details into our settings without touching the car. When the
+    // car's configuration cannot be read the write path runs instead, after a warning: it keeps the
+    // car's name and password, or creates new details when nothing is saved on either side.
     private fun importCarHotspotConfig() {
         Thread({
             val read = CarHotspotConfigRead.read(applicationContext, log = { Log.i("DiPlay-Hotspot", it) })
@@ -2972,9 +2973,14 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
                         }
                         render()
                     }
-                    hasSavedHotspotDetails() -> AlertDialog.Builder(this)
+                    else -> AlertDialog.Builder(this)
                         .setTitle(getString(R.string.settings_car_hotspot_config_dialog_title))
-                        .setMessage(getString(R.string.settings_car_hotspot_config_dialog_message))
+                        .setMessage(getString(
+                            // With nothing saved yet the write creates the details, so the warning
+                            // must say that instead of only announcing an overwrite.
+                            if (hasSavedHotspotDetails()) R.string.settings_car_hotspot_config_dialog_message
+                            else R.string.settings_car_hotspot_config_dialog_generate_message,
+                        ))
                         .setPositiveButton(getString(R.string.settings_car_hotspot_config_dialog_confirm)) { _, _ -> writeCarHotspotConfigNow() }
                         .setNegativeButton(getString(R.string.cancel)) { _, _ ->
                             CarHotspotSettings.setConfigWrite(this, false)
@@ -2985,11 +2991,6 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
                             render()
                         }
                         .show()
-                    else -> {
-                        CarHotspotSettings.setConfigWrite(this, false)
-                        carHotspotConfigStatus = R.string.finish_setup_save_your_hotspot_details_to_use_this_mode
-                        render()
-                    }
                 }
             }
         }, "diplay-hotspot-config-read").start()
