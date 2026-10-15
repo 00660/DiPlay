@@ -208,6 +208,41 @@ class WheelSiriWindowTest {
         assertEquals(joystickKey, WheelZoomSettings.key(settings, WheelZoomSettings.Role.JOYSTICK))
     }
 
+    @Test fun nonBydUnitCanAssignPlayPauseWithoutEnablingSiriOrMapZoom() {
+        settings.setTheme(android.R.style.Theme_Material_NoActionBar)
+        WheelZoomSettings.setSiriKey(settings, false)
+        WheelZoomSettings.setEnabled(settings, false)
+        WheelZoomSettings.setMediaPlayPause(settings, true)
+        val key = WheelKey(KeyEvent.KEYCODE_F9, 0, "?")
+        WheelZoomSettings.assign(settings, WheelZoomSettings.Role.MEDIA_PLAY_PAUSE, key)
+        val controls = wheelControls()
+        assertTrue(views(controls).filterIsInstance<Switch>().any {
+            it.contentDescription == settings.getString(R.string.wheel_media_play_pause) && it.isChecked
+        })
+        assertTrue(views(controls).filterIsInstance<TextView>().any {
+            it.text.toString() == settings.getString(R.string.wheel_key_assign,
+                settings.getString(R.string.wheel_key_role_media_play_pause), key.toString())
+        })
+        assertSharedServiceSetupOnce(controls)
+        assertTrue(WheelKeyService.wanted(settings))
+    }
+
+    @Test fun mediaKeyCanBeLearnedInForegroundWithoutAccessibilityService() {
+        WheelZoomSettings.setMediaPlayPause(settings, true)
+        var learned: WheelKey? = null
+        settings.javaClass.getDeclaredMethod("learnInWindow", WheelZoomSettings.Role::class.java,
+            kotlin.jvm.functions.Function0::class.java, kotlin.jvm.functions.Function1::class.java,
+            kotlin.jvm.functions.Function1::class.java).apply { isAccessible = true }
+            .invoke(settings, WheelZoomSettings.Role.MEDIA_PLAY_PAUSE, {},
+                { _: WheelZoomSettings.Role -> fail("unexpected key conflict") },
+                { key: WheelKey -> learned = key })
+        assertTrue(settings.dispatchKeyEvent(key(KeyEvent.KEYCODE_F9, true)))
+        assertTrue(settings.dispatchKeyEvent(key(KeyEvent.KEYCODE_F9, true, repeat = 1)))
+        assertTrue(settings.dispatchKeyEvent(key(KeyEvent.KEYCODE_F9, false)))
+        assertEquals(WheelKey(KeyEvent.KEYCODE_F9, 0, "?"), learned)
+        assertEquals(learned, WheelZoomSettings.key(settings, WheelZoomSettings.Role.MEDIA_PLAY_PAUSE))
+    }
+
     @Test fun nonBydUnitWithThePreviouslySupportedClusterDisplayKeepsWheelControls() {
         settings.setTheme(android.R.style.Theme_Material_NoActionBar)
         WheelZoomSettings.setSiriKey(settings, false)

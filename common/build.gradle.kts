@@ -24,8 +24,9 @@ android {
 
     testOptions {
         unitTests.isIncludeAndroidResources = true
-        // The UI suite covers several SDKs and locale-specific resource sandboxes.
-        unitTests.all { it.maxHeapSize = "1g" }
+        // Multiple SDK and locale Robolectric sandboxes exhaust the 1 GiB full-suite worker.
+        // This setting changes only JVM unit tests, not the APK's runtime memory consumption.
+        unitTests.all { it.maxHeapSize = "1536m" }
     }
 }
 

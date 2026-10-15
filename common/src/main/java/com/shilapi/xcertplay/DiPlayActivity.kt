@@ -3872,8 +3872,20 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
         val zoomAvailable = wheelMapZoomAvailable()
         val vehicleKeysOn = WheelZoomSettings.joystick(this) ||
             (zoomAvailable && WheelZoomSettings.enabled(this))
-        if (WheelZoomSettings.siriKey(this) || vehicleKeysOn) wheelKeyServiceControls(card)
+        if (WheelZoomSettings.siriKey(this) || WheelZoomSettings.mediaPlayPause(this) || vehicleKeysOn) {
+            wheelKeyServiceControls(card)
+        }
         siriKeyControls(card)
+        toggle(card, getString(R.string.wheel_media_play_pause),
+            getString(R.string.wheel_media_play_pause_description),
+            WheelZoomSettings.mediaPlayPause(this)) {
+            WheelZoomSettings.setMediaPlayPause(this, it)
+            render()
+        }
+        if (WheelZoomSettings.mediaPlayPause(this)) {
+            wheelKeyAssignButton(card, WheelZoomSettings.Role.MEDIA_PLAY_PAUSE,
+                getString(R.string.wheel_key_role_media_play_pause))
+        }
         // It acts on BYD's short voice keys (327, 304) only, which other head units never send. Once on it
         // stays reachable, like the controls below, in case the package check misses the car.
         if (byd || WheelZoomSettings.siriLongPressOnly(this)) {
@@ -3939,6 +3951,7 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
                 WheelZoomSettings.Role.JOYSTICK -> R.string.wheel_key_role_joystick
                 WheelZoomSettings.Role.SELECT -> R.string.wheel_key_role_select
                 WheelZoomSettings.Role.SIRI -> null
+                WheelZoomSettings.Role.MEDIA_PLAY_PAUSE -> null
             }.takeIf { joystick }
             val names = listOfNotNull(zoomName, joystickName)
             if (names.isEmpty()) continue
@@ -4002,8 +4015,9 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
                 assign.text = current(key)
                 applyPendingAppearanceRender()
             } } ||
-                // Without the service the Siri key is learnt from this window, so only keys that reach apps.
-                (role == WheelZoomSettings.Role.SIRI && learnInWindow(role, cancelled, refused) {
+                // Without the service, keys that reach this window can still be learnt.
+                ((role == WheelZoomSettings.Role.SIRI ||
+                    role == WheelZoomSettings.Role.MEDIA_PLAY_PAUSE) && learnInWindow(role, cancelled, refused) {
                     assign.text = current(it)
                     applyPendingAppearanceRender()
                 })
@@ -4022,6 +4036,7 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
         WheelZoomSettings.Role.NEXT -> R.string.wheel_key_role_next
         WheelZoomSettings.Role.SELECT -> R.string.wheel_key_role_select
         WheelZoomSettings.Role.SIRI -> R.string.wheel_key_role_siri
+        WheelZoomSettings.Role.MEDIA_PLAY_PAUSE -> R.string.wheel_key_role_media_play_pause
     }
 
     private class WindowKeyLearning(
@@ -4056,7 +4071,17 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
         ) {
             val learning = windowLearning
             if (learning == null || event.keyCode == KeyEvent.KEYCODE_BACK) return@filter WheelZoomKeys.Action.PASS
-            if (inCall(this) || !WheelZoomSettings.siriKey(this)) {
+            if (learning.role == WheelZoomSettings.Role.MEDIA_PLAY_PAUSE &&
+                CarPlayRemoteKeys.isProtectedNavigationKey(event.keyCode)) {
+                toast(getString(R.string.wheel_media_navigation_reserved))
+                return@filter WheelZoomKeys.Action.CONSUME
+            }
+            val enabled = when (learning.role) {
+                WheelZoomSettings.Role.SIRI -> WheelZoomSettings.siriKey(this)
+                WheelZoomSettings.Role.MEDIA_PLAY_PAUSE -> WheelZoomSettings.mediaPlayPause(this)
+                else -> false
+            }
+            if (inCall(this) || !enabled) {
                 cancelKeyLearning()
                 return@filter WheelZoomKeys.Action.PASS
             }
