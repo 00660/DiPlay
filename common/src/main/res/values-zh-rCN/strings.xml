@@ -613,7 +613,7 @@
     <string name="auto_car_hotspot_description">DiPlay 启动时开启车机热点。打开开关会自动通过 ADB 申请所需权限，请允许车机上的授权提示。配合“车辆启动后打开”可随开机启动。保留热点名称和密码，不会自动关闭热点。</string>
     <string name="settings_car_hotspot_config_title">导入车机热点详情（实验性）</string>
     <string name="settings_car_hotspot_config_description">无需手动输入热点信息，尝试导入车机热点信息；导入失败时在用户确认后覆盖热点信息，使用此车载热点的设备可能需要重连。Android 11 及以上需要 ADB；Android 8 到 10 不支持。</string>
-    <string name="settings_car_hotspot_config_unsupported">此 Android 版本无法写入热点设置。</string>
+    <string name="settings_car_hotspot_config_unsupported">此 Android 版本不支持导入车机热点详情。</string>
     <string name="settings_car_hotspot_config_written">车机热点已使用 DiPlay 的密码。</string>
     <string name="settings_car_hotspot_config_imported">已导入车机热点设置。</string>
     <string name="settings_car_hotspot_config_dialog_title">覆盖车机热点设置？</string>

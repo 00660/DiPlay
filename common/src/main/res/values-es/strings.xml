@@ -569,7 +569,7 @@
     <string name="auto_car_hotspot_description">Activa el punto de acceso guardado al abrir DiPlay. El interruptor solicita automáticamente los permisos necesarios mediante ADB; acepta el aviso en la pantalla del coche. Activa la apertura de DiPlay al arrancar para iniciarlo tras el encendido. Conserva el nombre y la contraseña y nunca apaga el punto de acceso.</string>
     <string name="settings_car_hotspot_config_title">Importar los datos del punto de acceso del coche (experimental)</string>
     <string name="settings_car_hotspot_config_description">No hace falta escribir los datos del punto de acceso: se intentan importar los del coche. Si la importación falla, se sobrescriben tras tu confirmación, y los dispositivos que usan este punto de acceso pueden tener que reconectarse. Requiere ADB en Android 11 o posterior; no disponible en Android 8 a 10.</string>
-    <string name="settings_car_hotspot_config_unsupported">No es posible escribir los ajustes del punto de acceso en esta versión de Android.</string>
+    <string name="settings_car_hotspot_config_unsupported">La importación de los datos del punto de acceso del coche no es compatible con esta versión de Android.</string>
     <string name="settings_car_hotspot_config_written">El punto de acceso del coche ahora usa la contraseña de DiPlay.</string>
     <string name="settings_car_hotspot_config_imported">Ajustes del punto de acceso del coche importados.</string>
     <string name="settings_car_hotspot_config_dialog_title">¿Sobrescribir los ajustes del punto de acceso del coche?</string>

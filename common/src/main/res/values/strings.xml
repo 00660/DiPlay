@@ -652,7 +652,7 @@
     <string name="auto_car_hotspot_description">Starts the saved car hotspot when DiPlay opens. Turning this on automatically requests the required permissions through ADB; allow the prompt on the car screen. Enable “Open after the car starts” for boot startup. Keeps the hotspot name and password and never turns it off.</string>
     <string name="settings_car_hotspot_config_title">Import the car hotspot details (experimental)</string>
     <string name="settings_car_hotspot_config_description">Nothing to type: the car hotspot settings are imported; when the import fails, they are overwritten after your confirmation, and devices using this hotspot may have to reconnect. Needs ADB on Android 11 and newer; not available on Android 8 to 10.</string>
-    <string name="settings_car_hotspot_config_unsupported">Writing the hotspot settings is not possible on this Android version.</string>
+    <string name="settings_car_hotspot_config_unsupported">Importing the car hotspot details is not supported on this Android version.</string>
     <string name="settings_car_hotspot_config_written">The car hotspot now uses the DiPlay password.</string>
     <string name="settings_car_hotspot_config_imported">Imported the car hotspot settings.</string>
     <string name="settings_car_hotspot_config_dialog_title">Overwrite the car hotspot settings?</string>
