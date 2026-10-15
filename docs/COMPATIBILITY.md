@@ -31,9 +31,11 @@ Tested on the car named above; other Geely/Lynk firmware is untested.
 
 ## Geely / Lynk & Co instrument cluster map
 
-On the same head unit the instrument cluster is an ordinary 1920x720 presentation display (display 2), so an app can draw on it. The cluster stream is the whole panel at 1920x720 and the safe area describes what the cluster keeps visible, so the scale presets and the BYD small/full-navigation stream pause do not apply there. The route is gated to the measured device and to a display that matches the panel size with the presentation flag; the existing **CarPlay map on instrument cluster** switch, off by default, is the only thing that turns it on, and every other head unit keeps its current behaviour.
+On the same head unit the instrument cluster is an ordinary 1920x720 presentation display (display 2), so an app can draw on it, but the panel keeps its factory layer over Android until the head unit is asked to project. DiPlay asks for that projection through the DIM service's switch (`DimNaviService`, `notifyDimProjectScreenSwitch`, transaction 9). The stock map drives the same head-unit-wide switch, so DiPlay also reads the state back (transaction 10) for as long as its presentation is up and asks for the projection again once the map hands it back: it never acts while the projection reads on (the map owning the cluster), and two consecutive off readings are required so a map switching through off is not fought.
 
-Limits:
+The cluster stream is the whole panel at 1920x720 and the safe area describes what the cluster keeps visible, so the scale presets and the BYD small/full-navigation stream pause do not apply there. The route is gated to the measured device and to a display that matches the panel size with the presentation flag; the existing **CarPlay map on instrument cluster** switch, off by default, is the only thing that turns it on, and every other head unit keeps its current behaviour.
+
+Two limits:
 
 - The panel is entirely DiPlay's, so the safe area has to be aligned on the car against the cluster's own readouts.
 - HUD guidance is not part of this route. Writing navigation data to the head unit's DIM service was measured, but the cluster's navigation area needs the stock map's navigation session, so no HUD result is claimed.
