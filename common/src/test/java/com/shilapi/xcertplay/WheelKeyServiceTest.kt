@@ -334,6 +334,87 @@ class WheelKeyServiceTest {
         assertNull(WheelZoomSettings.conflict(service, WheelZoomSettings.Role.SIRI, mode))
     }
 
+    @Test fun mediaPlayPauseKeyIsOffByDefaultAndWorksWithOnlyItsOwnSettingEnabled() {
+        assertFalse(WheelZoomSettings.mediaPlayPause(service))
+        WheelZoomSettings.setEnabled(service, false)
+        WheelZoomSettings.setSiriKey(service, false)
+        WheelZoomSettings.setMediaPlayPause(service, true)
+        assertTrue(WheelZoomSettings.anyEnabled(service))
+        val selected = WheelKey(KeyEvent.KEYCODE_F9, 0, "?")
+        WheelZoomSettings.assign(service, WheelZoomSettings.Role.MEDIA_PLAY_PAUSE, selected)
+        service.session = { "live-iphone" }
+        val actions = mutableListOf<Int>()
+        service.sendMedia = { index -> actions += index; true }
+
+        assertTrue(key(KeyEvent.KEYCODE_F9, true))
+        assertTrue(key(KeyEvent.KEYCODE_F9, true, repeat = 1))
+        assertTrue(key(KeyEvent.KEYCODE_F9, false))
+        assertEquals(listOf(com.shilapi.xcertplay.airplay.CarPlayMediaButton.PLAY_PAUSE), actions)
+        assertEquals(1, actions.size)
+        assertEquals(false to false, press(KeyEvent.KEYCODE_F8))
+        assertEquals(1, actions.size)
+    }
+
+    @Test fun remappedMediaKeyPreservesVehicleBehaviorDuringCallsWithoutPhoneOrWhenDisabled() {
+        WheelZoomSettings.setEnabled(service, false)
+        WheelZoomSettings.setMediaPlayPause(service, true)
+        WheelZoomSettings.assign(service, WheelZoomSettings.Role.MEDIA_PLAY_PAUSE,
+            WheelKey(KeyEvent.KEYCODE_F9, 0, "?"))
+        var count = 0
+        service.sendMedia = { count++; true }
+        service.session = { null }
+        assertEquals(false to false, press(KeyEvent.KEYCODE_F9))
+        service.session = { "iphone" }
+        service.getSystemService(AudioManager::class.java).mode = AudioManager.MODE_IN_CALL
+        assertEquals(false to false, press(KeyEvent.KEYCODE_F9))
+        service.getSystemService(AudioManager::class.java).mode = AudioManager.MODE_NORMAL
+        assertTrue(key(KeyEvent.KEYCODE_F9, true))
+        WheelZoomSettings.setMediaPlayPause(service, false)
+        assertTrue(key(KeyEvent.KEYCODE_F9, false))
+        assertEquals(false to false, press(KeyEvent.KEYCODE_F9))
+        assertEquals(1, count)
+    }
+
+    @Test fun learningPlayPauseRejectsExistingSiriAndZoomKeys() {
+        WheelZoomSettings.setMediaPlayPause(service, true)
+        WheelZoomSettings.setSiriKey(service, true)
+        val siri = WheelKey(KeyEvent.KEYCODE_F6, 0, "?")
+        WheelZoomSettings.assign(service, WheelZoomSettings.Role.SIRI, siri)
+        var refused: WheelZoomSettings.Role? = null
+        assertTrue(WheelKeyService.learn(WheelZoomSettings.Role.MEDIA_PLAY_PAUSE,
+            refused = { refused = it }) { _, _ -> learned++ })
+        assertEquals(true to true, press(KeyEvent.KEYCODE_F6))
+        assertEquals(WheelZoomSettings.Role.SIRI, refused)
+        assertEquals(0, learned)
+        assertNull(WheelZoomSettings.key(service, WheelZoomSettings.Role.MEDIA_PLAY_PAUSE))
+        assertTrue(WheelKeyService.learn(WheelZoomSettings.Role.MEDIA_PLAY_PAUSE,
+            refused = { refused = it }) { _, _ -> learned++ })
+        assertEquals(true to true, press(KeyEvent.KEYCODE_F1))
+        assertEquals(WheelZoomSettings.Role.MODE, refused)
+        assertEquals(0, learned)
+        // An unused key can be learnt with no other wheel features configured.
+        WheelZoomSettings.setSiriKey(service, false)
+        WheelZoomSettings.setEnabled(service, false)
+        assertTrue(WheelKeyService.learn(WheelZoomSettings.Role.MEDIA_PLAY_PAUSE) { _, _ -> learned++ })
+        assertEquals(true to true, press(KeyEvent.KEYCODE_F9))
+        assertEquals(1, learned)
+        assertEquals(KeyEvent.KEYCODE_F9, WheelZoomSettings.key(service,
+            WheelZoomSettings.Role.MEDIA_PLAY_PAUSE)?.code)
+    }
+
+    @Test fun remoteNavigationKeyCannotBeLearnedForMediaAndRemainsAvailableToTv() {
+        WheelZoomSettings.setEnabled(service, false)
+        WheelZoomSettings.setMediaPlayPause(service, true)
+        var learned = 0
+        assertTrue(WheelKeyService.learn(WheelZoomSettings.Role.MEDIA_PLAY_PAUSE) { _, _ -> learned++ })
+        assertEquals(true to true, press(KeyEvent.KEYCODE_DPAD_CENTER))
+        assertEquals(0, learned)
+        assertNull(WheelZoomSettings.key(service, WheelZoomSettings.Role.MEDIA_PLAY_PAUSE))
+        assertTrue(WheelKeyService.isLearning())
+        assertEquals(true to true, press(KeyEvent.KEYCODE_F9))
+        assertEquals(1, learned)
+    }
+
     @Test fun theSiriKeyWinsOverAnotherRoleWithTheSameKey() {
         siriSetUp()
         // MODE keeps F1 while zoom is off, so learning allowed the same key for Siri.
