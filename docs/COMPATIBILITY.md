@@ -29,6 +29,17 @@ When the car's own music app is playing as well, the wheel reaches both it and C
 
 Tested on the car named above; other Geely/Lynk firmware is untested.
 
+## Geely / Lynk & Co instrument cluster map
+
+On the same head unit the instrument cluster is an ordinary 1920x720 presentation display (display 2), so an app can draw on it. The cluster stream is the whole panel at 1920x720 and the safe area describes what the cluster keeps visible, so the scale presets and the BYD small/full-navigation stream pause do not apply there. The route is gated to the measured device and to a display that matches the panel size with the presentation flag; the existing **CarPlay map on instrument cluster** switch, off by default, is the only thing that turns it on, and every other head unit keeps its current behaviour.
+
+Limits:
+
+- The panel is entirely DiPlay's, so the safe area has to be aligned on the car against the cluster's own readouts.
+- HUD guidance is not part of this route. Writing navigation data to the head unit's DIM service was measured, but the cluster's navigation area needs the stock map's navigation session, so no HUD result is claimed.
+
+Tested on the car named above; other Geely/Lynk firmware is untested.
+
 ## Android 9 Wi-Fi Direct and experimental features
 
 The Android 9 path creates or reuses a persistent system profile with the public legacy group API, reads generated credentials and uses the firmware channel setter where available. It serializes pinning/cancellation, avoids foreign groups and removes only its owned active group; persistent profiles are not deleted. Unknown setter outcomes stop startup, and unreliable pinning/cleanup should use the manual car hotspot. See [legacy limits](ANDROID9_WIFI_DIRECT.md); the contributor's Redmi K20 Pro result does not validate every BYD Android 9 firmware.

@@ -210,6 +210,12 @@ internal class ClusterMapPresentation(
             if (name == null) {
                 // Never replace a missing 5.1 side layer with a full-screen display.
                 if (DiLink51ClusterLayout.supported()) return null
+                if (GeelyClusterDisplay.supported()) {
+                    return displays.firstOrNull { display ->
+                        val size = sizeOf(display)
+                        GeelyClusterDisplay.matches(display, size.x, size.y)
+                    }
+                }
                 return displays.firstOrNull { display ->
                     val size = sizeOf(display)
                     DiLink4ClusterDisplay.accepts(display.name, size.x, size.y)
