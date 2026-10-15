@@ -24,8 +24,9 @@ android {
 
     testOptions {
         unitTests.isIncludeAndroidResources = true
-        // The UI suite covers several SDKs and locale-specific resource sandboxes.
-        unitTests.all { it.maxHeapSize = "1g" }
+        // The UI suite covers several SDKs, native Canvas rendering and locale resource sandboxes.
+        // 1 GiB exhausts the Robolectric worker during the complete suite (GC thrash).
+        unitTests.all { it.maxHeapSize = "1536m" }
     }
 }
 
