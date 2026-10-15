@@ -189,7 +189,8 @@ class WheelKeyService : AccessibilityService() {
         val key = WheelKey.of(event)
         if (BydOutputSettings.carPlayCallControls(this) &&
             CarPlayMediaButton.opensSiriWhileCarPlay(event.keyCode) &&
-            !WheelZoomSettings.isSiriKey(this, key) && session() != null) {
+            !(WheelZoomSettings.siriDoublePress(this) && WheelZoomSettings.isSiriKey(this, key)) &&
+            session() != null) {
             if (!down) {
                 val shortPressIgnored = WheelZoomSettings.siriLongPressOnly(this) && CarPlayMediaButton.isShortVoiceKey(event.keyCode)
                 val sent = !shortPressIgnored && VoiceKeyPair.shared.allowCarPlayKey(event.eventTime) &&
