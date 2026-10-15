@@ -12,6 +12,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.SeekBar
+import android.widget.Switch
 import android.widget.RadioButton
 import android.widget.ScrollView
 import android.widget.TextView
@@ -300,6 +301,56 @@ class CarPlayHostSettingsTest {
             gesture(configured, y = -500f)
             assertFalse(field("menuOpen") as Boolean)
         }
+    }
+
+    @Test fun optedInUpwardGestureRevealsBarsWithoutOpeningSettingsAndDownwardGestureKeepsWorking() {
+        setField("temporarySystemBarsEnabled", true)
+        invoke("applyFullscreenMode")
+        gesture(3, y = -500f)
+        assertFalse(field("menuOpen") as Boolean)
+        assertTrue(field("temporarySystemBarsVisible") as Boolean)
+        assertTrue(AirPlayPersistence.loadHideTopBar(activity))
+        assertTrue(AirPlayPersistence.loadHideBottomBar(activity))
+        gesture(3)
+        assertTrue(field("menuOpen") as Boolean)
+        assertFalse(field("temporarySystemBarsVisible") as Boolean)
+    }
+
+    @Test fun releasingFingersAfterBarPeekCannotGenerateStrayCarPlayTouches() {
+        val controller = mock(CarPlayController::class.java)
+        setField("controller", controller)
+        setField("temporarySystemBarsEnabled", true)
+        touch(MotionEvent.ACTION_DOWN, 1, 100f)
+        touch(MotionEvent.ACTION_POINTER_DOWN, 2, 100f)
+        touch(MotionEvent.ACTION_POINTER_DOWN, 3, 100f)
+        touch(MotionEvent.ACTION_MOVE, 3, -300f)
+        assertTrue(field("temporarySystemBarsVisible") as Boolean)
+        touch(MotionEvent.ACTION_POINTER_UP, 3, -300f)
+        touch(MotionEvent.ACTION_UP, 1, -300f)
+        assertEquals(false, field("gestureSequenceActive"))
+        // Exactly one empty-release when gesture tracking started; no mismatched CarPlay UP.
+        org.mockito.Mockito.verify(controller, org.mockito.Mockito.times(1)).sendTouch(emptyList())
+    }
+
+    @Test fun temporaryBarsSettingIsStagedInFullscreenSettingsAndDiscardable() {
+        AirPlayPersistence.saveTemporarySystemBars(activity, false)
+        invoke("loadPersistedSettings")
+        assertEquals(false, field("temporarySystemBarsEnabled"))
+        invoke("openSettingsMenu")
+        val controls = invoke("buildFullscreenSection") as ViewGroup
+        views(controls).filterIsInstance<Switch>()
+            .single { it.contentDescription == activity.getString(R.string.temporary_system_bars_description) }
+            .performClick()
+        assertEquals(true, field("temporarySystemBarsEnabled"))
+        assertFalse(AirPlayPersistence.loadTemporarySystemBars(activity))
+        invoke("cancelSettingsEdits")
+        assertEquals(false, field("temporarySystemBarsEnabled"))
+        invoke("openSettingsMenu")
+        setField("temporarySystemBarsEnabled", true)
+        invoke("persistMenuSettings")
+        invoke("loadPersistedSettings")
+        assertTrue(AirPlayPersistence.loadTemporarySystemBars(activity))
+        assertEquals(true, field("temporarySystemBarsEnabled"))
     }
 
     @Test fun liftingAFingerCancelsTrackingUntilTheNextGesture() {
