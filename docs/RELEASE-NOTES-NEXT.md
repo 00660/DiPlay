@@ -24,6 +24,7 @@ Changes through DiPlay 0.2.20 are documented in [0.2.20 release notes](RELEASE-N
 ## Wheel keys
 
 - **Play/pause key on the wheel** (**Settings → Vehicle → Wheel keys**), off by default, makes a spare steering-wheel or keyboard key play and pause CarPlay music, for cars with no play/pause button ([#815](https://github.com/shihabal3amri/DiPlay/issues/815)). Keys that remotes and the car already use (navigation, Home, Back, volume, voice and media keys) cannot be assigned. During a call, or without a CarPlay session, the key does what it did before. [#823](https://github.com/shihabal3amri/DiPlay/pull/823)
+- **Double press for Siri** (**Settings → Vehicle → Wheel keys**, with the Siri key assigned), off by default: the assigned Siri key opens Siri only on a double press, and both presses still reach the car, so a key that already does something in the car keeps doing it. Siri opens after the second release and an adjustable delay (300 ms by default), so the car's own assistant can close first; the double-press interval is adjustable too (600 ms by default). It works through the wheel-key service when the car's assistant takes the screen, and through the CarPlay window otherwise. [#813](https://github.com/shihabal3amri/DiPlay/pull/813)
 
 ## Diagnostics
 
