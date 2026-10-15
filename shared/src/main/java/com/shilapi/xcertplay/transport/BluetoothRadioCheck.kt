@@ -27,8 +27,8 @@ object BluetoothRadioCheck {
      */
     fun blockerForState(adapterPresent: Boolean, state: Int?, pausedByDiPlay: Boolean): String? = when {
         !adapterPresent || state == null -> NO_ADAPTER
-        state == android.bluetooth.BluetoothAdapter.STATE_OFF && !pausedByDiPlay -> RADIO_OFF
-        state == android.bluetooth.BluetoothAdapter.STATE_TURNING_OFF -> RADIO_OFF
+        (state == android.bluetooth.BluetoothAdapter.STATE_OFF ||
+            state == android.bluetooth.BluetoothAdapter.STATE_TURNING_OFF) && !pausedByDiPlay -> RADIO_OFF
         else -> null
     }
 

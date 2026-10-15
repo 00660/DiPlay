@@ -6,20 +6,12 @@ import android.bluetooth.BluetoothManager
 import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
-
 /**
- * Diagnostic snapshot for Bluetooth state and failure categorization using public Android APIs.
+ * Diagnostic snapshot for Bluetooth state using public Android APIs.
  *
  * Privacy guarantee: Never records MAC addresses, PINs, pairing secrets, or device names.
  */
 object BluetoothDiagnosticSnapshot {
-    private const val PREFS = "diplay_bluetooth_diagnostics"
-    private const val KEY_LAST_FAILURE_CATEGORY = "last_failure_category"
-    private const val KEY_LAST_FAILURE_SUMMARY = "last_failure_summary"
-    private const val KEY_LAST_FAILURE_TIME = "last_failure_time"
 
     enum class Classification {
         ABSENT,
@@ -27,18 +19,7 @@ object BluetoothDiagnosticSnapshot {
         TURNING_OFF,
         DISABLED,
         PERMISSION_ERROR,
-        SOCKET_SERVICE_MISSING,
         READY,
-    }
-
-    enum class FailureCategory {
-        SOCKET_MANAGER_MISSING,
-        PERMISSION_REFUSED,
-        RFCOMM_FAILURE,
-        UNREAL_LINK,
-        RADIO_OFF,
-        TIMEOUT,
-        OTHER,
     }
 
     data class Snapshot(
@@ -51,22 +32,7 @@ object BluetoothDiagnosticSnapshot {
         val isEnabled: Boolean,
         val connectPermissionStatus: String,
         val classification: Classification,
-        val lastFailureCategory: String?,
-        val lastFailureSummary: String?,
-        val lastFailureTimeMs: Long,
     )
-
-    fun recordFailure(context: Context, category: FailureCategory, summary: String) {
-        runCatching {
-            val safeSummary = summary.take(120)
-                .replace(Regex("(?i)([0-9a-f]{2}:){5}[0-9a-f]{2}"), "[REDACTED_MAC]")
-            context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit()
-                .putString(KEY_LAST_FAILURE_CATEGORY, category.name)
-                .putString(KEY_LAST_FAILURE_SUMMARY, safeSummary)
-                .putLong(KEY_LAST_FAILURE_TIME, System.currentTimeMillis())
-                .apply()
-        }
-    }
 
     fun capture(context: Context): Snapshot {
         val apiLevel = Build.VERSION.SDK_INT
@@ -102,18 +68,12 @@ object BluetoothDiagnosticSnapshot {
             "NOT_REQUIRED(API $apiLevel)"
         }
 
-        val prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
-        val lastFailureCategory = prefs.getString(KEY_LAST_FAILURE_CATEGORY, null)
-        val lastFailureSummary = prefs.getString(KEY_LAST_FAILURE_SUMMARY, null)
-        val lastFailureTimeMs = prefs.getLong(KEY_LAST_FAILURE_TIME, 0L)
-
         val classification = when {
             effectiveAdapter == null -> Classification.ABSENT
             connectPermissionStatus == "DENIED" -> Classification.PERMISSION_ERROR
             stateCode == BluetoothAdapter.STATE_TURNING_ON -> Classification.TURNING_ON
             stateCode == BluetoothAdapter.STATE_TURNING_OFF -> Classification.TURNING_OFF
             !isEnabled -> Classification.DISABLED
-            lastFailureCategory == FailureCategory.SOCKET_MANAGER_MISSING.name -> Classification.SOCKET_SERVICE_MISSING
             else -> Classification.READY
         }
 
@@ -127,19 +87,11 @@ object BluetoothDiagnosticSnapshot {
             isEnabled = isEnabled,
             connectPermissionStatus = connectPermissionStatus,
             classification = classification,
-            lastFailureCategory = lastFailureCategory,
-            lastFailureSummary = lastFailureSummary,
-            lastFailureTimeMs = lastFailureTimeMs,
         )
     }
 
     fun report(context: Context): String {
         val snap = capture(context)
-        val timeStr = if (snap.lastFailureTimeMs > 0) {
-            SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US).format(Date(snap.lastFailureTimeMs))
-        } else {
-            "none"
-        }
 
         val presenceDetail = if (snap.classification == Classification.ABSENT) {
             "ABSENT (Standard Bluetooth adapter is unavailable; separate OEM Bluetooth module is a possibility requiring device evidence)"
@@ -158,8 +110,6 @@ object BluetoothDiagnosticSnapshot {
             appendLine("isEnabled: ${snap.isEnabled}")
             appendLine("BLUETOOTH_CONNECT permission: ${snap.connectPermissionStatus}")
             appendLine("Classification: ${snap.classification}")
-            appendLine("Last recorded failure: category=${snap.lastFailureCategory ?: "none"} " +
-                "time=$timeStr summary=${snap.lastFailureSummary ?: "none"}")
         }
     }
 }

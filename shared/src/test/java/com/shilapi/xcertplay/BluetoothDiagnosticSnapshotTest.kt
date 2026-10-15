@@ -24,7 +24,6 @@ class BluetoothDiagnosticSnapshotTest {
     fun setUp() {
         context = RuntimeEnvironment.getApplication()
         ShadowBluetoothAdapter.setIsBluetoothSupported(true)
-        context.getSharedPreferences("diplay_bluetooth_diagnostics", Context.MODE_PRIVATE).edit().clear().commit()
     }
 
     @Test
@@ -78,21 +77,9 @@ class BluetoothDiagnosticSnapshotTest {
     }
 
     @Test
-    fun recordsAndRedactsFailureInfo() {
-        BluetoothDiagnosticSnapshot.recordFailure(
-            context,
-            BluetoothDiagnosticSnapshot.FailureCategory.SOCKET_MANAGER_MISSING,
-            "Could not connect RFCOMM to AA:BB:CC:DD:EE:FF: socket manager missing",
-        )
-
-        val snap = BluetoothDiagnosticSnapshot.capture(context)
-        assertEquals(BluetoothDiagnosticSnapshot.FailureCategory.SOCKET_MANAGER_MISSING.name, snap.lastFailureCategory)
-        assertTrue(snap.lastFailureSummary!!.contains("[REDACTED_MAC]"))
-        assertFalse(snap.lastFailureSummary!!.contains("AA:BB:CC:DD:EE:FF"))
-
+    fun reportFormattingContainsSnapshotHeader() {
         val report = BluetoothDiagnosticSnapshot.report(context)
         assertTrue(report.contains("--- Bluetooth Diagnostic Snapshot ---"))
-        assertTrue(report.contains("SOCKET_MANAGER_MISSING"))
-        assertFalse(report.contains("AA:BB:CC:DD:EE:FF"))
+        assertTrue(report.contains("Android API level: 27"))
     }
 }

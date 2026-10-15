@@ -2558,11 +2558,6 @@ class CarPlayController(
                     "${RFCOMM_CONNECT_TIMEOUT_MILLIS}ms address=$address",
             )
             runCatching { socket.close() }
-            BluetoothDiagnosticSnapshot.recordFailure(
-                appContext,
-                BluetoothDiagnosticSnapshot.FailureCategory.TIMEOUT,
-                "RFCOMM connect timed out after ${RFCOMM_CONNECT_TIMEOUT_MILLIS}ms",
-            )
             throw IOException(
                 "Timed out after ${RFCOMM_CONNECT_TIMEOUT_MILLIS}ms connecting RFCOMM to $address",
             )
@@ -2570,17 +2565,6 @@ class CarPlayController(
         val failure = result.get() ?: return
         if (BluetoothLinkCheck.socketServiceMissing(failure)) {
             connectionDiagnostic("Bluetooth socket manager missing failureClass=${failure.javaClass.simpleName}")
-            BluetoothDiagnosticSnapshot.recordFailure(
-                appContext,
-                BluetoothDiagnosticSnapshot.FailureCategory.SOCKET_MANAGER_MISSING,
-                "Bluetooth service has no socket manager: ${failure.message}",
-            )
-        } else {
-            BluetoothDiagnosticSnapshot.recordFailure(
-                appContext,
-                BluetoothDiagnosticSnapshot.FailureCategory.RFCOMM_FAILURE,
-                "RFCOMM connect failed: ${failure.message}",
-            )
         }
         throw BluetoothLinkCheck.connectFailure(failure, address)
     }
