@@ -90,6 +90,9 @@ object CarHotspotStartMain {
         val effective = saved?.takeIf { it.isNotEmpty() } ?: ssid
         builderType.getMethod("setSsid", String::class.java).invoke(builder, effective)
         val security = current?.javaClass?.methods?.firstOrNull { it.name == "getSecurityType" }?.invoke(current) as? Int
+        // An open hotspot from DiPlay must not strip the car's saved password.
+        if (passphrase.isEmpty() && current != null && security != null &&
+            security != staticInt(configuration, "SECURITY_TYPE_OPEN")) return "error open"
         if (passphrase.isNotEmpty()) {
             builderType.getMethod("setPassphrase", String::class.java, Int::class.javaPrimitiveType)
                 .invoke(builder, passphrase, security?.takeIf { it != staticInt(configuration, "SECURITY_TYPE_OPEN") }

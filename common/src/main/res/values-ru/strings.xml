@@ -578,6 +578,7 @@
     <string name="settings_car_hotspot_config_effect">Вступит в силу при следующем включении точки доступа автомобиля.</string>
     <string name="settings_car_hotspot_config_failed">DiPlay не удалось записать настройки точки доступа автомобиля. Имя и пароль остались без изменений.</string>
     <string name="settings_car_hotspot_config_wpa3">Точка доступа WPA3 остаётся без изменений. Сохраните данные точки доступа с WPA2, чтобы записать их в автомобиль.</string>
+    <string name="settings_car_hotspot_config_open">Открытая точка доступа DiPlay не перезаписывает пароль автомобиля.</string>
     <string name="hotspot_control_missing">Нет разрешения управления точкой доступа. Выдайте его через ADB или включите точку доступа в настройках автомобиля.</string>
     <string name="hotspot_permission_granted">Разрешение предоставлено.</string>
     <string name="hotspot_permission_failed">Запрошенное разрешение не выдано. Проверьте настройки автомобиля и повторите попытку.</string>

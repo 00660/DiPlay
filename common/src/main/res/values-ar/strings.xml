@@ -578,6 +578,7 @@
     <string name="settings_car_hotspot_config_effect">يُطبَّق في المرة القادمة التي تبدأ فيها نقطة اتصال السيارة.</string>
     <string name="settings_car_hotspot_config_failed">لم يتمكن DiPlay من كتابة إعدادات نقطة اتصال السيارة. بقي الاسم وكلمة المرور دون تغيير.</string>
     <string name="settings_car_hotspot_config_wpa3">تبقى نقطة الاتصال بنمط WPA3 دون تغيير. احفظ تفاصيل نقطة الاتصال بنمط WPA2 لكتابتها في السيارة.</string>
+    <string name="settings_car_hotspot_config_open">لا تُكتب نقطة الاتصال المفتوحة في DiPlay فوق كلمة مرور السيارة.</string>
     <string name="hotspot_control_missing">إذن التحكم بنقطة الاتصال غير متاح. امنحه عبر ADB أو شغّل نقطة الاتصال من إعدادات السيارة.</string>
     <string name="hotspot_permission_granted">تم منح الإذن.</string>
     <string name="hotspot_permission_failed">لم يتم منح الإذن المطلوب. راجع إعدادات السيارة وحاول مجددًا.</string>

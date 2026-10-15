@@ -33,6 +33,7 @@ object CarHotspotConfigWrite {
         UNSUPPORTED_SDK("this Android version does not allow writing the car hotspot configuration"),
         ADB_UNAVAILABLE("ADB access is missing for the car hotspot configuration write"),
         FAILED("the car hotspot configuration write failed"),
+        OPEN_REJECTED("an open hotspot does not overwrite the car's password"),
     }
 
     /** The result of a write plus the SSID that is actually saved, which the car may have kept. */
@@ -72,44 +73,50 @@ object CarHotspotConfigWrite {
         write: (WifiConfiguration) -> Boolean?,
         readBack: () -> WifiConfiguration?,
         log: (String) -> Unit,
-    ): WriteOutcome = try {
-        val current = readBack()
-        val effective = if (current?.SSID?.isNotBlank() == true) credentials.copy(ssid = current.SSID) else credentials
-        val config = newConfig().apply {
-            applyTo(this, effective)
-            if (current != null) {
-                // The car keeps everything else about its saved configuration: hidden SSID and band/channel
-                // unless a 5 GHz move was asked for.
-                hiddenSSID = current.hiddenSSID
-                val type = WifiConfiguration::class.java
-                val currentBand = current.javaClass.getField("apBand").getInt(current)
-                val fiveGhz = type.getField("AP_BAND_5GHZ").getInt(null)
-                if (credentials.band != ManualHotspotBand.GHZ_5 || currentBand == fiveGhz) {
-                    javaClass.getField("apBand").setInt(this, currentBand)
-                    javaClass.getField("apChannel").setInt(this, current.javaClass.getField("apChannel").getInt(current))
+    ): WriteOutcome {
+        return try {
+            val current = readBack()
+            if (credentials.security == ManualHotspotSecurity.OPEN && isSecured(current)) {
+                log("car hotspot config: an open hotspot does not overwrite the car's password")
+                return WriteOutcome(Result.OPEN_REJECTED)
+            }
+            val effective = if (current?.SSID?.isNotBlank() == true) credentials.copy(ssid = current.SSID) else credentials
+            val config = newConfig().apply {
+                applyTo(this, effective)
+                if (current != null) {
+                    // The car keeps everything else about its saved configuration: hidden SSID and band/channel
+                    // unless a 5 GHz move was asked for.
+                    hiddenSSID = current.hiddenSSID
+                    val type = WifiConfiguration::class.java
+                    val currentBand = current.javaClass.getField("apBand").getInt(current)
+                    val fiveGhz = type.getField("AP_BAND_5GHZ").getInt(null)
+                    if (credentials.band != ManualHotspotBand.GHZ_5 || currentBand == fiveGhz) {
+                        javaClass.getField("apBand").setInt(this, currentBand)
+                        javaClass.getField("apChannel").setInt(this, current.javaClass.getField("apChannel").getInt(current))
+                    }
                 }
             }
-        }
-        if (write(config) == false) {
-            log("car hotspot config: the framework rejected the configuration")
+            if (write(config) == false) {
+                log("car hotspot config: the framework rejected the configuration")
+                WriteOutcome(Result.FAILED)
+            } else {
+                val saved = readBack()
+                when {
+                    saved == null -> {
+                        log("car hotspot config: no configuration to read back")
+                        WriteOutcome(Result.FAILED)
+                    }
+                    matches(saved, effective) -> WriteOutcome(Result.WRITTEN, effective.ssid)
+                    else -> {
+                        log("car hotspot config: readback does not match the written credentials")
+                        WriteOutcome(Result.FAILED)
+                    }
+                }
+            }
+        } catch (error: Exception) {
+            log("car hotspot config: app write failed ${CarHotspotTethering.describe(error)}")
             WriteOutcome(Result.FAILED)
-        } else {
-            val saved = readBack()
-            when {
-                saved == null -> {
-                    log("car hotspot config: no configuration to read back")
-                    WriteOutcome(Result.FAILED)
-                }
-                matches(saved, effective) -> WriteOutcome(Result.WRITTEN, effective.ssid)
-                else -> {
-                    log("car hotspot config: readback does not match the written credentials")
-                    WriteOutcome(Result.FAILED)
-                }
-            }
         }
-    } catch (error: Exception) {
-        log("car hotspot config: app write failed ${CarHotspotTethering.describe(error)}")
-        WriteOutcome(Result.FAILED)
     }
 
     private fun writeWithApp(context: Context, credentials: HotspotCredentials, log: (String) -> Unit): WriteOutcome {
@@ -124,6 +131,12 @@ object CarHotspotConfigWrite {
             },
             readBack = { managerType.getMethod("getWifiApConfiguration").invoke(wifi) as? WifiConfiguration },
             log = log)
+    }
+
+    /** True when the saved configuration is not open, so an open write would strip its password. */
+    internal fun isSecured(config: WifiConfiguration?): Boolean {
+        if (config == null) return false
+        return !config.preSharedKey.isNullOrEmpty() || config.allowedKeyManagement.cardinality() != 0
     }
 
     internal fun applyTo(config: WifiConfiguration, credentials: HotspotCredentials) {
@@ -196,6 +209,7 @@ object CarHotspotConfigWrite {
         return when {
             reply != null && CarHotspotStartMain.apConfigAccepted(reply) ->
                 WriteOutcome(Result.WRITTEN, CarHotspotStartMain.apConfigSsid(reply))
+            reply == "error open" -> WriteOutcome(Result.OPEN_REJECTED)
             else -> WriteOutcome(Result.FAILED)
                 .also { log("car hotspot config: shell write failed: ${reply ?: "no reply"}") }
         }

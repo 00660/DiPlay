@@ -578,6 +578,7 @@
     <string name="settings_car_hotspot_config_effect">Se aplicará la próxima vez que se active el punto de acceso del coche.</string>
     <string name="settings_car_hotspot_config_failed">DiPlay no pudo escribir los ajustes del punto de acceso del coche. El nombre y la contraseña no cambiaron.</string>
     <string name="settings_car_hotspot_config_wpa3">Un punto de acceso WPA3 se mantiene sin cambios. Guarda los detalles con WPA2 para escribirlos en el coche.</string>
+    <string name="settings_car_hotspot_config_open">Un punto de acceso abierto en DiPlay no sobrescribe la contraseña del coche.</string>
     <string name="hotspot_control_missing">Falta el permiso de control del punto de acceso. Concédelo mediante ADB o actívalo en los ajustes del coche.</string>
     <string name="hotspot_permission_granted">Permiso concedido.</string>
     <string name="hotspot_permission_failed">No se ha concedido el permiso solicitado. Revisa los ajustes del coche e inténtalo de nuevo.</string>

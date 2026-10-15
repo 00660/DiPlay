@@ -3022,10 +3022,14 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
             runOnUiThread {
                 carHotspotConfigStatus = when (outcome.result) {
                     CarHotspotConfigWrite.Result.WRITTEN -> {
+                        // The car may have kept its own SSID; DiPlay must offer the iPhone the name
+                        // that is actually broadcast.
+                        outcome.ssid?.let { AirPlayPersistence.saveManualHotspotSsid(applicationContext, it) }
                         toast(getString(R.string.settings_car_hotspot_config_effect))
                         R.string.settings_car_hotspot_config_written
                     }
                     CarHotspotConfigWrite.Result.SKIPPED -> R.string.settings_car_hotspot_config_wpa3
+                    CarHotspotConfigWrite.Result.OPEN_REJECTED -> R.string.settings_car_hotspot_config_open
                     CarHotspotConfigWrite.Result.ADB_UNAVAILABLE -> when (access) {
                         LocalAdb.Access.NOT_APPROVED -> R.string.adb_not_approved
                         LocalAdb.Access.UNSUPPORTED -> R.string.adb_pairing_only
@@ -3649,7 +3653,14 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
         AirPlayPersistence.saveManualHotspotBand(this, com.shilapi.xcertplay.orchestration.ManualHotspotBand.AUTO)
         AirPlayPersistence.saveManualHotspotChannel(this, 0)
         markReconnectNeeded()
-        if (CarHotspotConfigWrite.supported() && CarHotspotSettings.configWrite(this)) writeCarHotspotConfigNow()
+        if (CarHotspotConfigWrite.supported() && CarHotspotSettings.configWrite(this)) {
+            AlertDialog.Builder(this)
+                .setTitle(getString(R.string.settings_car_hotspot_config_dialog_title))
+                .setMessage(getString(R.string.settings_car_hotspot_config_dialog_message))
+                .setPositiveButton(getString(R.string.settings_car_hotspot_config_dialog_confirm)) { _, _ -> writeCarHotspotConfigNow() }
+                .setNegativeButton(getString(R.string.cancel), null)
+                .show()
+        }
     }
 
     private fun askHotspotCredentials(existingWifi: Boolean = false, done: (String, String, ManualHotspotSecurity) -> Unit) {

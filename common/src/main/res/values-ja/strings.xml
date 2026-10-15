@@ -659,6 +659,7 @@
     <string name="settings_car_hotspot_config_effect">次に車載ホットスポットが起動したときに反映されます。</string>
     <string name="settings_car_hotspot_config_failed">DiPlay は車のホットスポット設定を書き込めませんでした。名前とパスワードは変更されていません。</string>
     <string name="settings_car_hotspot_config_wpa3">WPA3 のホットスポットは変更しません。WPA2 で詳細を保存すると書き込めます。</string>
+    <string name="settings_car_hotspot_config_open">DiPlayのオープンホットスポットは車載のパスワードを上書きしません。</string>
     <string name="hotspot_control_missing">ホットスポット操作の権限がありません。ADBで設定するか、車の設定からホットスポットを開いてください。</string>
     <string name="hotspot_permission_granted">権限を許可しました。</string>
     <string name="hotspot_permission_failed">要求した権限が許可されませんでした。車の設定を確認して再試行してください。</string>

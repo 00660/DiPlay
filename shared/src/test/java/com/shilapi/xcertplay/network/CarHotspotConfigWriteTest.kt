@@ -154,6 +154,35 @@ class CarHotspotConfigWriteTest {
         assertEquals("9\npassword1", String(stdin!!, Charsets.UTF_8))
     }
 
+    @Test fun anOpenWriteIsRejectedWhenTheCarHasAPassword() {
+        val secured = WifiConfiguration().apply { SSID = "Car-Original"; preSharedKey = "carpass" }
+        assertEquals(CarHotspotConfigWrite.WriteOutcome(Result.OPEN_REJECTED),
+            CarHotspotConfigWrite.writeApp(credentials.copy(security = ManualHotspotSecurity.OPEN),
+            newConfig = { WifiConfiguration() },
+            write = { throw AssertionError("no write should happen") },
+            readBack = { secured },
+            log = ::log))
+    }
+
+    @Test fun anOpenWriteOverAnOpenCarHotspotStillWrites() {
+        val open = WifiConfiguration().apply { SSID = "Car-Original" }
+        var written: WifiConfiguration? = null
+        var reads = 0
+        val outcome = CarHotspotConfigWrite.writeApp(credentials.copy(security = ManualHotspotSecurity.OPEN),
+            newConfig = { WifiConfiguration() },
+            write = { written = it; true },
+            readBack = { reads++; if (reads == 1) open else written },
+            log = ::log)
+        assertEquals(CarHotspotConfigWrite.WriteOutcome(Result.WRITTEN, "Car-Original"), outcome)
+        assertTrue(written?.preSharedKey.isNullOrEmpty())
+        assertTrue(written?.allowedKeyManagement?.isEmpty == true)
+    }
+
+    @Test fun shellWriteRefusesToStripTheCarPassword() {
+        assertEquals(CarHotspotConfigWrite.WriteOutcome(Result.OPEN_REJECTED), CarHotspotConfigWrite.writeAdb(
+            { _, _, _ -> "DIPLAY_HOTSPOT_APCONFIG_V1|error open" }, "", credentials, 4_000, ::log))
+    }
+
     @Test fun shellWriteRejectsFailuresAndSilence() {
         assertEquals(CarHotspotConfigWrite.WriteOutcome(Result.FAILED), CarHotspotConfigWrite.writeAdb(
             { _, _, _ -> "DIPLAY_HOTSPOT_APCONFIG_V1|error rejected" }, "", credentials, 4_000, ::log))

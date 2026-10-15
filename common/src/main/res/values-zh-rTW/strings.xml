@@ -605,6 +605,7 @@
     <string name="settings_car_hotspot_config_effect">將在下次熱點開啟時生效。</string>
     <string name="settings_car_hotspot_config_failed">DiPlay 無法寫入車機熱點設定，名稱和密碼保持不變。</string>
     <string name="settings_car_hotspot_config_wpa3">WPA3 熱點保持不變。請將熱點詳細資訊儲存為 WPA2 後再寫入車機。</string>
+    <string name="settings_car_hotspot_config_open">DiPlay 的開放熱點不會改寫車機的熱點密碼。</string>
     <string name="hotspot_control_missing">缺少熱點控制權限。請透過 ADB 授權，或在車機設定中手動開啟熱點。</string>
     <string name="hotspot_permission_granted">授權成功。</string>
     <string name="hotspot_permission_failed">未獲得所請求的權限。請檢查車機設定後再試一次。</string>
