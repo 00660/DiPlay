@@ -619,7 +619,7 @@
     <string name="settings_car_hotspot_config_dialog_title">覆盖车机热点设置？</string>
     <string name="settings_car_hotspot_config_dialog_message">读取不到车机保存的热点配置。继续将以 DiPlay 的热点详情覆盖车机设置：热点名称可能改变，密码会被替换，其他已连接的设备需要重新输入密码。</string>
     <string name="settings_car_hotspot_config_dialog_generate_message">读取不到车机热点配置，DiPlay 也还没有保存热点详情。继续将在车机上创建新的热点名称和密码；其他设备需要输入新密码。</string>
-    <string name="settings_car_hotspot_config_dialog_save_message">DiPlay 保存的热点名称和密码将被写入车机设置，使用此热点的设备可能需要重新输入密码。</string>
+    <string name="settings_car_hotspot_config_dialog_save_message">DiPlay 的热点密码将被写入车机热点设置，使用此热点的设备可能需要重新输入密码。</string>
     <string name="settings_car_hotspot_config_dialog_confirm">覆盖并继续</string>
     <string name="settings_car_hotspot_config_effect">将在下次热点打开时生效。</string>
     <string name="settings_car_hotspot_config_failed">DiPlay 无法写入车机热点设置，名称和密码保持不变。</string>

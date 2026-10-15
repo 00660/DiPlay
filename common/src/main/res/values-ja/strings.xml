@@ -656,7 +656,7 @@
     <string name="settings_car_hotspot_config_dialog_title">車のホットスポット設定を上書きしますか？</string>
     <string name="settings_car_hotspot_config_dialog_message">車に保存されているホットスポット設定を読み取れませんでした。続行すると、DiPlay のホットスポット情報で上書きします。ホットスポットの名前は変わる可能性があり、パスワードは置き換えられます。接続済みの他のデバイスはパスワードを再入力する必要があります。</string>
     <string name="settings_car_hotspot_config_dialog_generate_message">車のホットスポット設定を読み取れず、DiPlay にも保存された情報がありません。続行すると、車に新しいホットスポット名とパスワードが作成され、他のデバイスは新しいパスワードを入力する必要があります。</string>
-    <string name="settings_car_hotspot_config_dialog_save_message">保存したホットスポットの名前とパスワードは車の設定に書き込まれます。このホットスポットを使用しているデバイスは、パスワードの再入力が必要になる場合があります。</string>
+    <string name="settings_car_hotspot_config_dialog_save_message">DiPlay のホットスポットのパスワードが車のホットスポット設定に書き込まれます。このホットスポットを使用しているデバイスは、パスワードの再入力が必要になる場合があります。</string>
     <string name="settings_car_hotspot_config_dialog_confirm">上書きして続行</string>
     <string name="settings_car_hotspot_config_effect">次に車載ホットスポットが起動したときに反映されます。</string>
     <string name="settings_car_hotspot_config_failed">DiPlay は車のホットスポット設定を書き込めませんでした。名前とパスワードは変更されていません。</string>
