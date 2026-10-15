@@ -879,4 +879,11 @@
     <string name="black_corner_overlay_off">Desactivado</string>
     <string name="black_corner_overlay_value">%1$d dp</string>
     <string name="iphone_corner_mask_mode">Máscara del iPhone (experimental)</string>
+    <string name="settings_launcher_bubble">Burbuja de la pantalla de inicio (experimental)</string>
+    <string name="settings_launcher_bubble_description">Muestra el icono de DiPlay como una burbuja sobre la pantalla de inicio del coche: tócala para volver a CarPlay y arrástrala donde quieras. Se oculta al abrir DiPlay y vuelve al salir. Mantén pulsado para fijar su posición y vuelve a mantener pulsado para liberarla. Necesita el permiso para mostrarse sobre otras aplicaciones.</string>
+    <string name="settings_launcher_bubble_size">Tamaño de la burbuja</string>
+    <string name="settings_launcher_bubble_locked">Posición fijada</string>
+    <string name="settings_launcher_bubble_unlocked">Posición liberada</string>
+    <string name="settings_launcher_bubble_hold_to_lock">Mantén para fijar</string>
+    <string name="settings_launcher_bubble_hold_to_unlock">Mantén para liberar</string>
 </resources>
