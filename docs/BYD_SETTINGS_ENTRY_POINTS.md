@@ -211,10 +211,21 @@ private fun answeredByBydDecoy(action: String): Boolean {
   `com.byd.btsetting/com.byd.btsetting.BluetoothManagerDialog` where the decoy answers
   `BLUETOOTH_SETTINGS`. All four call sites use it.
 - **Hotspot** — `openCarWifiSettings()` tries
-  `com.byd.vehiclesettings/...link.hotspot.PerHospotActivity` in the `target == null` branch, which is
-  the branch this firmware takes. The branch is entered when no app answers
-  `com.android.settings.WIFI_TETHER_SETTINGS`, which the factory image confirms is the case here, so
-  the AOSP action must not be the only candidate.
+  `com.byd.vehiclesettings/...link.hotspot.PerHospotActivity` whenever the AOSP hotspot screen is
+  unusable, which is either when nothing answers `com.android.settings.WIFI_TETHER_SETTINGS` (what the
+  factory image does) or when the decoy does. Both cases are settled by `answeredByBydDecoy`, not by
+  comparing the resolving package: a later build that adds a real tether screen to `VehicleSettings`
+  would resolve to the same package and must not be mistaken for the decoy.
+
+When `PerHospotActivity` cannot be opened, the code does **not** hand the driver to the
+`android.settings.WIRELESS_SETTINGS` fallback on a decoy build — that action is on the decoy list too,
+so it would answer with the same "not supported" dialog that brought the driver here. Where
+`answeredByBydDecoy(WIRELESS_SETTINGS)` holds, it shows the same toast as the Bluetooth path instead.
+Where it does not, the fallback is taken exactly as before.
+
+`BydSettingsDecoyTest` covers all four shapes: the decoy on Android 7.1 (BYD's screen is opened), a
+stock `com.android.settings` resolver, an unrelated app claiming the action, and the same decoy on
+Android 7.1's successor (left alone, the standard action is used).
 
 The test needs both halves. The decoy is identified by package **and** class, because
 `com.byd.vehiclesettings` also holds the real `WifiActivity` and `InstalledAppDetailsActivity` — the
