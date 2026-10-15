@@ -3657,7 +3657,7 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
         if (CarHotspotConfigWrite.supported() && CarHotspotSettings.configWrite(this)) {
             AlertDialog.Builder(this)
                 .setTitle(getString(R.string.settings_car_hotspot_config_dialog_title))
-                .setMessage(getString(R.string.settings_car_hotspot_config_dialog_message))
+                .setMessage(getString(R.string.settings_car_hotspot_config_dialog_save_message))
                 .setPositiveButton(getString(R.string.settings_car_hotspot_config_dialog_confirm)) { _, _ -> writeCarHotspotConfigNow() }
                 .setNegativeButton(getString(R.string.cancel), null)
                 .setOnCancelListener { render() }

@@ -602,6 +602,7 @@
     <string name="settings_car_hotspot_config_dialog_title">覆寫車機熱點設定？</string>
     <string name="settings_car_hotspot_config_dialog_message">無法讀取車機已儲存的熱點設定。繼續將以 DiPlay 的熱點詳情覆寫車機設定：熱點名稱可能改變，密碼會被取代，其他已連線的裝置需要重新輸入密碼。</string>
     <string name="settings_car_hotspot_config_dialog_generate_message">無法讀取車機熱點設定，DiPlay 也還沒有儲存熱點詳細資訊。繼續將在車機上建立新的熱點名稱和密碼；其他裝置需要輸入新密碼。</string>
+    <string name="settings_car_hotspot_config_dialog_save_message">DiPlay 儲存的熱點名稱和密碼將被寫入車機設定，使用此熱點的裝置可能需要重新輸入密碼。</string>
     <string name="settings_car_hotspot_config_dialog_confirm">覆寫並繼續</string>
     <string name="settings_car_hotspot_config_effect">將在下次熱點開啟時生效。</string>
     <string name="settings_car_hotspot_config_failed">DiPlay 無法寫入車機熱點設定，名稱和密碼保持不變。</string>

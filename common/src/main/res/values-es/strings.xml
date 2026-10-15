@@ -575,6 +575,7 @@
     <string name="settings_car_hotspot_config_dialog_title">¿Sobrescribir los ajustes del punto de acceso del coche?</string>
     <string name="settings_car_hotspot_config_dialog_message">No se pudo leer la configuración del punto de acceso guardada en el coche. Si continúas, se sobrescribirá con los datos del punto de acceso de DiPlay: el nombre puede cambiar, la contraseña se sustituye y los demás dispositivos conectados tendrán que volver a introducirla.</string>
     <string name="settings_car_hotspot_config_dialog_generate_message">No se pudo leer nada del coche y DiPlay aún no tiene datos del punto de acceso. Si continúas, se creará un nombre y una contraseña nuevos en el coche; los demás dispositivos tendrán que introducir la nueva contraseña.</string>
+    <string name="settings_car_hotspot_config_dialog_save_message">El nombre y la contraseña guardados del punto de acceso se escriben en los ajustes del coche. Los dispositivos que usen este punto de acceso pueden tener que volver a introducir la contraseña.</string>
     <string name="settings_car_hotspot_config_dialog_confirm">Sobrescribir y continuar</string>
     <string name="settings_car_hotspot_config_effect">Se aplicará la próxima vez que se active el punto de acceso del coche.</string>
     <string name="settings_car_hotspot_config_failed">DiPlay no pudo escribir los ajustes del punto de acceso del coche. El nombre y la contraseña no cambiaron.</string>

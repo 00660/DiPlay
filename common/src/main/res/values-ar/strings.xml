@@ -575,6 +575,7 @@
     <string name="settings_car_hotspot_config_dialog_title">هل تريد الكتابة فوق إعدادات نقطة اتصال السيارة؟</string>
     <string name="settings_car_hotspot_config_dialog_message">تعذّرت قراءة إعداد نقطة الاتصال المحفوظ في السيارة. سيؤدي المتابعة إلى الكتابة فوقه بتفاصيل نقطة اتصال DiPlay: قد يتغير الاسم، وتُستبدل كلمة المرور، وعلى الأجهزة المتصلة الأخرى إعادة إدخال كلمة المرور.</string>
     <string name="settings_car_hotspot_config_dialog_generate_message">تعذّرت قراءة أي إعداد من السيارة ولا توجد لدى DiPlay تفاصيل محفوظة. سيؤدي المتابعة إلى إنشاء اسم وكلمة مرور جديدين لنقطة الاتصال في السيارة؛ وسيتعين على الأجهزة الأخرى إدخال كلمة المرور الجديدة.</string>
+    <string name="settings_car_hotspot_config_dialog_save_message">يُكتب اسم نقطة الاتصال وكلمة المرور المحفوظان في إعدادات السيارة. قد تضطر الأجهزة التي تستخدم نقطة الاتصال هذه إلى إعادة إدخال كلمة المرور.</string>
     <string name="settings_car_hotspot_config_dialog_confirm">الكتابة فوقه والمتابعة</string>
     <string name="settings_car_hotspot_config_effect">يُطبَّق في المرة القادمة التي تبدأ فيها نقطة اتصال السيارة.</string>
     <string name="settings_car_hotspot_config_failed">لم يتمكن DiPlay من كتابة إعدادات نقطة اتصال السيارة. بقي الاسم وكلمة المرور دون تغيير.</string>

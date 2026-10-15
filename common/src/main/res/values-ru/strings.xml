@@ -575,6 +575,7 @@
     <string name="settings_car_hotspot_config_dialog_title">Перезаписать настройки точки доступа автомобиля?</string>
     <string name="settings_car_hotspot_config_dialog_message">Не удалось прочитать сохранённую на автомобиле конфигурацию точки доступа. Продолжив, вы перезапишете её данными точки доступа DiPlay: имя точки доступа может измениться, пароль будет заменён, а другим подключённым устройствам придётся ввести пароль заново.</string>
     <string name="settings_car_hotspot_config_dialog_generate_message">Не удалось прочитать настройки точки доступа автомобиля, и в DiPlay ещё нет сохранённых данных. При продолжении в автомобиле будут созданы новое имя и пароль точки доступа; другим устройствам придётся ввести новый пароль.</string>
+    <string name="settings_car_hotspot_config_dialog_save_message">Сохранённые имя и пароль точки доступа записываются в настройки автомобиля. Устройствам, использующим эту точку доступа, может потребоваться повторный ввод пароля.</string>
     <string name="settings_car_hotspot_config_dialog_confirm">Перезаписать и продолжить</string>
     <string name="settings_car_hotspot_config_effect">Вступит в силу при следующем включении точки доступа автомобиля.</string>
     <string name="settings_car_hotspot_config_failed">DiPlay не удалось записать настройки точки доступа автомобиля. Имя и пароль остались без изменений.</string>
