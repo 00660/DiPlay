@@ -109,6 +109,7 @@ object AirPlayPersistence {
     private const val KEY_RIGHT_HAND_DRIVE = "right_hand_drive"
     private const val KEY_HIDE_TOP_BAR = "hide_top_bar"
     private const val KEY_HIDE_BOTTOM_BAR = "hide_bottom_bar"
+    private const val KEY_TEMPORARY_SYSTEM_BARS = "temporary_system_bars"
     private const val KEY_HARMAN_FULLSCREEN = "harman_fullscreen"
     private const val KEY_SAFE_AREA_DRAW_OUTSIDE = "safe_area_draw_outside"
     private const val KEY_MAIN_DISPLAY_DISABLE_SAFE_AREA = "main_display_disable_safe_area"
@@ -1316,6 +1317,17 @@ object AirPlayPersistence {
     fun saveHideBottomBar(context: Context, hide: Boolean) {
         context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit()
             .putBoolean(KEY_HIDE_BOTTOM_BAR, hide)
+            .apply()
+    }
+
+    /** Optional three-finger upward reveal; does not alter the saved bar visibility preference. */
+    fun loadTemporarySystemBars(context: Context): Boolean =
+        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+            .getBoolean(KEY_TEMPORARY_SYSTEM_BARS, false)
+
+    fun saveTemporarySystemBars(context: Context, enabled: Boolean) {
+        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit()
+            .putBoolean(KEY_TEMPORARY_SYSTEM_BARS, enabled)
             .apply()
     }
 
