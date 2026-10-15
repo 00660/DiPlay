@@ -94,6 +94,17 @@ class WirelessPermissionRefusalTest {
         assertEquals(activity.getString(R.string.allow_nearby_devices_for_diplay_in_the_head_unit_s_app_per), stage(activity))
     }
 
+    // Android 17's local network access alone gets the sentence that sends the driver to the app permissions,
+    // shown as it is (WirelessPermissionsTest covers which refusal gets which sentence).
+    @Config(sdk = [33])
+    @Test fun theCheckAppPermissionsSentenceIsShownAsItIs() {
+        val activity = open()
+        ReflectionHelpers.callInstanceMethod<Unit>(activity, "setConnectionStage",
+            ReflectionHelpers.ClassParameter.from(Int::class.javaPrimitiveType,
+                WirelessPermissions.refusalMessage(listOf(Manifest.permission.ACCESS_LOCAL_NETWORK))))
+        assertEquals(activity.getString(R.string.could_not_start_carplay_return_to_diplay_and_check_app_per), stage(activity))
+    }
+
     // Android 12 needs both: once Location is allowed in the app permissions, the screen names the other one.
     @Config(sdk = [32])
     @Test fun theScreenNamesWhatIsStillMissingAfterTheDriverAllowsPartOfIt() {

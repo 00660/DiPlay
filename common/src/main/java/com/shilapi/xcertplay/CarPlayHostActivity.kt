@@ -996,14 +996,7 @@ class CarPlayHostActivity : ComponentActivity() {
             return
         }
         if (!wirelessPermissionsRefused) return
-        val missing = missingWirelessPermissions()
-        setConnectionStage(
-            if (Manifest.permission.ACCESS_FINE_LOCATION in missing || Manifest.permission.ACCESS_COARSE_LOCATION in missing) {
-                R.string.allow_precise_location_for_diplay_in_the_head_unit_s_app_p
-            } else {
-                R.string.allow_nearby_devices_for_diplay_in_the_head_unit_s_app_per
-            },
-        )
+        setConnectionStage(WirelessPermissions.refusalMessage(missingWirelessPermissions()))
     }
 
     private fun requiredWirelessPermissions(): List<String> =
@@ -6222,6 +6215,8 @@ class CarPlayHostActivity : ComponentActivity() {
     // The keywords are English; matching the English text keeps the result the same in every UI language.
     private fun friendlyStage(message: String, englishMessage: String = message): String = when {
         message == getString(R.string.vpn_authorization_unavailable) -> message
+        // It says where to look itself; its word "permissions" would turn it into the generic permission line.
+        message == getString(R.string.could_not_start_carplay_return_to_diplay_and_check_app_per) -> message
         message == getString(R.string.waiting_for_mfi_coprocessor) ||
             message == getString(R.string.requesting_mfi_usb_permission) -> message
         englishMessage.contains("CarPlay configuration request", true) -> getString(R.string.iphone_usb_mode_rejected)
