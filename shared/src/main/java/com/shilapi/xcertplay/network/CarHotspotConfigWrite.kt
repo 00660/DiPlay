@@ -136,6 +136,7 @@ object CarHotspotConfigWrite {
     /** True when the saved configuration is not open, so an open write would strip its password. */
     internal fun isSecured(config: WifiConfiguration?): Boolean {
         if (config == null) return false
+        if (config.allowedKeyManagement.get(WifiConfiguration.KeyMgmt.NONE)) return false
         return !config.preSharedKey.isNullOrEmpty() || config.allowedKeyManagement.cardinality() != 0
     }
 

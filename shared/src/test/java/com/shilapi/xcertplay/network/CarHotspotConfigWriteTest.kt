@@ -165,7 +165,10 @@ class CarHotspotConfigWriteTest {
     }
 
     @Test fun anOpenWriteOverAnOpenCarHotspotStillWrites() {
-        val open = WifiConfiguration().apply { SSID = "Car-Original" }
+        val open = WifiConfiguration().apply {
+            SSID = "Car-Original"
+            allowedKeyManagement.set(WifiConfiguration.KeyMgmt.NONE)
+        }
         var written: WifiConfiguration? = null
         var reads = 0
         val outcome = CarHotspotConfigWrite.writeApp(credentials.copy(security = ManualHotspotSecurity.OPEN),
@@ -176,6 +179,16 @@ class CarHotspotConfigWriteTest {
         assertEquals(CarHotspotConfigWrite.WriteOutcome(Result.WRITTEN, "Car-Original"), outcome)
         assertTrue(written?.preSharedKey.isNullOrEmpty())
         assertTrue(written?.allowedKeyManagement?.isEmpty == true)
+    }
+
+    @Test fun isSecuredDistinguishesOpenAndSecuredConfigurations() {
+        assertFalse(CarHotspotConfigWrite.isSecured(null))
+        assertFalse(CarHotspotConfigWrite.isSecured(WifiConfiguration()))
+        val none = WifiConfiguration().apply { allowedKeyManagement.set(WifiConfiguration.KeyMgmt.NONE) }
+        assertFalse(CarHotspotConfigWrite.isSecured(none))
+        assertTrue(CarHotspotConfigWrite.isSecured(WifiConfiguration().apply { preSharedKey = "carpass" }))
+        val wpa2 = WifiConfiguration().apply { allowedKeyManagement.set(WifiConfiguration.KeyMgmt.WPA2_PSK) }
+        assertTrue(CarHotspotConfigWrite.isSecured(wpa2))
     }
 
     @Test fun shellWriteRefusesToStripTheCarPassword() {
