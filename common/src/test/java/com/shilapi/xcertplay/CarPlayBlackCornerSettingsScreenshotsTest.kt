@@ -48,6 +48,7 @@ class CarPlayBlackCornerSettingsScreenshotsTest {
                 assertTrue(descendants(section).filterIsInstance<SeekBar>().any {
                     it.max == CarPlayBlackCornerOverlay.RADII_DP.lastIndex
                 })
+                assertTrue(CarPlayBlackCornerOverlay.RADII_DP.contains(CarPlayBlackCornerOverlay.IPHONE_MASK))
                 val width = (widthDp * activity.resources.displayMetrics.density).toInt()
                 section.measure(View.MeasureSpec.makeMeasureSpec(width, View.MeasureSpec.EXACTLY),
                     View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED))

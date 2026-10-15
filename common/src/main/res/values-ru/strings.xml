@@ -865,7 +865,8 @@
     <string name="settings_wifi_direct_scan_pause">Приостановить поиск Wi-Fi автомобилем при CarPlay · нужен ADB</string>
     <string name="settings_wifi_direct_scan_pause_description">В режиме Wi-Fi Direct автомобиль ищет сети Wi-Fi каждые несколько секунд, и каждый поиск прерывает музыку и видео. Когда параметр включён, DiPlay приостанавливает поиск, пока работает CarPlay. Тогда автомобиль и сам не подключается к известной сети, например к точке доступа телефона, пока CarPlay не завершится; подключиться можно вручную в настройках Wi-Fi автомобиля. Выключите, чтобы автомобиль подключался сам. Применяется при следующем подключении.</string>
     <string name="black_corner_overlay">Чёрные закруглённые углы</string>
-    <string name="black_corner_overlay_description">Закрывает углы изображения CarPlay локальной чёрной маской. Выберите минимальный радиус, скрывающий фон. По умолчанию выключено; форма может отличаться от маски iPhone. Предпросмотр сразу, сохранение фиксирует выбор.</string>
+    <string name="black_corner_overlay_description">Закрывает углы CarPlay чёрным. Выберите Выкл., ручной радиус или маску iPhone (экспериментально). Для режима iPhone требуется переподключение; без действительной маски используется приближение 24 dp. Ручные изменения отображаются сразу, выбор сохраняется кнопкой сохранения.</string>
     <string name="black_corner_overlay_off">Выкл.</string>
     <string name="black_corner_overlay_value">%1$d dp</string>
+    <string name="iphone_corner_mask_mode">Маска iPhone (экспериментально)</string>
 </resources>

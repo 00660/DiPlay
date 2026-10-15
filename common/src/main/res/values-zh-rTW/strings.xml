@@ -925,7 +925,8 @@
     <string name="settings_wifi_direct_scan_pause">CarPlay 期間暫停車機 Wi-Fi 搜尋 · 需要 ADB</string>
     <string name="settings_wifi_direct_scan_pause_description">Wi-Fi Direct 時，車機每隔幾秒搜尋一次 Wi-Fi 網路，每次搜尋都會讓音樂和畫面卡頓。開啟後，CarPlay 執行期間 DiPlay 會暫停這個搜尋。這段期間車機也不會自動連線已知網路（例如手機熱點），可以在車機 Wi-Fi 設定裡手動連線；CarPlay 結束後恢復。關閉後車機可以自動連線。下次連線時生效。</string>
     <string name="black_corner_overlay">黑色圓角遮罩</string>
-    <string name="black_corner_overlay_description">在本機將 CarPlay 畫面四角遮成黑色。請選擇能遮住桌布的最小圓角半徑。預設關閉；並非 iPhone 提供的精確遮罩。可立即預覽，儲存後保留設定。</string>
+    <string name="black_corner_overlay_description">將 CarPlay 畫面四角遮成黑色。可選擇關閉、手動圓角半徑或 iPhone 遮罩（實驗性）。iPhone 模式需要重新連線；若未收到有效遮罩，則使用 24 dp 近似值。手動調整可立即預覽，儲存後保留設定。</string>
     <string name="black_corner_overlay_off">關閉</string>
     <string name="black_corner_overlay_value">%1$d dp</string>
+    <string name="iphone_corner_mask_mode">iPhone 遮罩（實驗性）</string>
 </resources>
