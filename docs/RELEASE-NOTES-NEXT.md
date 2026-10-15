@@ -29,3 +29,4 @@ Changes through DiPlay 0.2.20 are documented in [0.2.20 release notes](RELEASE-N
 ## Diagnostics
 
 - The crash record in the report keeps up to six of DiPlay's own stack frames after the first twelve. A crash inside an Android call filled the first twelve with Android's frames, so the record from [#463](https://github.com/shihabal3amri/DiPlay/issues/463) did not show which DiPlay code made the call. [#827](https://github.com/shihabal3amri/DiPlay/pull/827)
+- While DiPlay waits for the iPhone over USB, the report lists the USB devices Android sees, as `vid:pid node`, once and again only when the list changes (`wired iPhone not listed by Android; USB devices=[…]`). `iPhone USB device not present` alone could not tell a port that Android does not see at all, such as a charge-only port, from a cable or iPhone problem ([#763](https://github.com/shihabal3amri/DiPlay/issues/763)). [#830](https://github.com/shihabal3amri/DiPlay/pull/830)
