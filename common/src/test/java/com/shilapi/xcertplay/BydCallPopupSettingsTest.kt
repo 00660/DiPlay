@@ -18,9 +18,11 @@ import org.robolectric.annotation.GraphicsMode
 import org.robolectric.util.ReflectionHelpers
 
 @RunWith(RobolectricTestRunner::class)
-@Config(sdk = [32], qualifiers = "en", manifest = Config.NONE)
+@Config(sdk = [29], qualifiers = "en", manifest = Config.NONE)
 class BydCallPopupSettingsTest {
-    @Test fun popupOptInDefaultsOffAndChangesOnlyItsPreferenceWithoutReconnect() {
+    @Test
+    @Config(sdk = [29, 32])
+    fun popupOptInDefaultsOffAndChangesOnlyItsPreferenceWithoutReconnect() {
         val activity = Robolectric.buildActivity(DiPlayActivity::class.java).get()
         activity.setTheme(android.R.style.Theme_Material_NoActionBar)
         val prefs = activity.getSharedPreferences("xcertplay_airplay", 0)
@@ -30,7 +32,7 @@ class BydCallPopupSettingsTest {
         ReflectionHelpers.callInstanceMethod<Unit>(activity, "allSettingsSections",
             ReflectionHelpers.ClassParameter.from(LinearLayout::class.java, content))
         val popup = switches(content).singleOrNull { it.contentDescription == "Hide BYD call popup (experimental)" }
-        assertNotNull("Android 12L must expose the opt-in popup control", popup)
+        assertNotNull("Android 10 and later must expose the opt-in popup control", popup)
         assertFalse(popup!!.isChecked)
         val before = prefs.all.toMap()
         popup.isChecked = true
@@ -38,6 +40,20 @@ class BydCallPopupSettingsTest {
         popup.isChecked = false
         assertEquals(before + ("hide_byd_call_popup" to false), prefs.all)
         assertFalse(PendingReconnect.isPending(null))
+    }
+
+    @Test
+    @Config(sdk = [28])
+    fun popupControlIsHiddenBelowAndroid10() {
+        val activity = Robolectric.buildActivity(DiPlayActivity::class.java).get()
+        activity.setTheme(android.R.style.Theme_Material_NoActionBar)
+        ReflectionHelpers.setField(activity, "settingsSectionFilter", setOf(SettingsSection.ADVANCED_MEDIA))
+        val content = LinearLayout(activity)
+        ReflectionHelpers.callInstanceMethod<Unit>(activity, "allSettingsSections",
+            ReflectionHelpers.ClassParameter.from(LinearLayout::class.java, content))
+        assertTrue(switches(content).none {
+            it.contentDescription == activity.getString(R.string.settings_hide_byd_call_popup)
+        })
     }
 
     @Test
