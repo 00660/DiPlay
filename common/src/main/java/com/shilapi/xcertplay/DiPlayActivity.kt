@@ -3659,6 +3659,7 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
                 .setMessage(getString(R.string.settings_car_hotspot_config_dialog_message))
                 .setPositiveButton(getString(R.string.settings_car_hotspot_config_dialog_confirm)) { _, _ -> writeCarHotspotConfigNow() }
                 .setNegativeButton(getString(R.string.cancel), null)
+                .setOnCancelListener { render() }
                 .show()
         }
     }
