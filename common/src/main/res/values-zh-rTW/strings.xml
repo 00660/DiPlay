@@ -695,8 +695,8 @@
     <string name="car_button_in_carplay">CarPlay 中的車輛按鈕</string>
     <string name="car_button_name">名稱</string>
     <string name="car_button_saved_next_connection">已儲存。下次連線時，CarPlay 會顯示新的圖示和名稱。</string>
-    <string name="carplay_call_controls_experimental">CarPlay 通話按鍵（實驗性）</string>
-    <string name="carplay_call_controls_experimental_description">啟用尚未驗證的 DiLink 3 通話、語音與播放／暫停按鍵。仍需實車測試。CarPlay 來電響鈴時，下一首接聽、上一首拒接。預設關閉；儀表通話資訊卡是獨立設定。</string>
+    <string name="carplay_call_controls_experimental">CarPlay 通話、Siri 與媒體按鍵（實驗性）</string>
+    <string name="carplay_call_controls_experimental_description">電話鍵接聽 CarPlay 來電，掛斷鍵／模式鍵拒接或掛斷。來電響鈴時，也可用下一首接聽、上一首拒接；通話接通後，上下首不會掛斷通話。同時啟用 DiLink 3 專用 Siri 與播放／暫停按鍵。預設關閉，車型與韌體支援情況需實車確認；儀表通話顯示另行設定。</string>
     <string name="carplay_calls_on_dashboard">在儀表板顯示 CarPlay 通話</string>
     <string name="carplay_calls_on_dashboard_description">CarPlay 來電和通話期間，儀表板會顯示來電者，儀表板與抬頭顯示器會顯示通話時間，與比亞迪原廠 CarPlay 應用程式相同。通話期間車輛也會降低風扇轉速。立即生效。車機須啟用網路 ADB。</string>
     <string name="carplay_dock">CarPlay 程式列</string>
