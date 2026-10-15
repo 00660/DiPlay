@@ -298,6 +298,7 @@ class CarPlayController(
     private var attachCloseable: Closeable? = null
     private var ch341PermissionCloseable: Closeable? = null
     private var lastCh341Listing: String? = null
+    private var lastIphoneListing: String? = null
     private var vpnLatch = CountDownLatch(1)
     private val teardownComplete = CountDownLatch(1)
 
@@ -1862,9 +1863,11 @@ class CarPlayController(
         if (closed || phase != Phase.IPHONE) return
         val device = iphoneHost.discover().firstOrNull()
         if (device == null) {
+            reportIphoneMissing()
             onStatus(CarPlayStatus.WaitingForIphone)
             scheduleAvailabilityPoll(Phase.IPHONE, ::checkIphoneAvailability)
         } else {
+            lastIphoneListing = null
             debugLog(
                 "wired iPhone discovered vid=0x${device.vendorId.toString(16)} " +
                     "pid=0x${device.productId.toString(16)}",
@@ -1872,6 +1875,16 @@ class CarPlayController(
             availabilityPollGeneration.incrementAndGet()
             requestIphonePermission(device)
         }
+    }
+
+    // "iPhone USB device not present" said only that no Apple device was listed. What Android does list shows
+    // whether it sees anything on the head unit's port, a USB stick for example, or nothing at all (#763).
+    // Each poll reports only a change.
+    private fun reportIphoneMissing() {
+        val listed = runCatching { iphoneHost.listedDevices().joinToString(", ") }.getOrElse { "unavailable" }
+        if (listed == lastIphoneListing) return
+        lastIphoneListing = listed
+        debugLog("wired iPhone not listed by Android; USB devices=[$listed]")
     }
 
     private fun requestIphonePermission(device: UsbDevice) {
