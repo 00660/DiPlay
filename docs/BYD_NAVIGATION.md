@@ -135,14 +135,6 @@ BYD's own CarPlay app (`com.byd.carplay.ui`) answers CarPlay calls from the whee
 DiPlay follows the iPhone's calls from iAP2 CallStateUpdate (0x4155, already subscribed). The separate
 **CarPlay call, Siri and media keys (experimental)** setting is disabled by default and requires explicit opt-in.
 
-The initial implementation, commit [`ec80b80a`](https://github.com/shihabal3amri/DiPlay/commit/ec80b80a2eb5ca2db08558bd892222338956a3e2),
-handled the phone and hang-up/mode keys whenever a CarPlay call and session were present, without a
-separate opt-in. During the same [PR #243](https://github.com/shihabal3amri/DiPlay/pull/243), before it
-merged, commit [`44cfa2e0`](https://github.com/shihabal3amri/DiPlay/commit/44cfa2e0851c3fa8d37dc3a520a158526fda5c5d)
-added this default-off setting; an absent saved value also reads as off. This history does not establish
-when or why a particular vehicle's saved setting became off. Later track-key support did not replace
-the original phone and hang-up/mode keys: all use this same switch.
-
 With that setting enabled and a CarPlay session active:
 
 - the phone key (313) answers a ringing call with CarPlay's telephony HID Hook Switch, and is consumed without hanging up during a connected call. It reaches DiPlay through the focused CarPlay screen or the wheel key service; outside the CarPlay screen, the service is needed. Since BYD has already opened its phone screen by the key's release, DiPlay brings CarPlay back to the front;
