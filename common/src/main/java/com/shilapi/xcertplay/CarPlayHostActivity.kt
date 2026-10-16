@@ -3432,10 +3432,13 @@ class CarPlayHostActivity : ComponentActivity() {
         AirPlayPersistence.saveBlackCornerRadiusDp(this, blackCornerRadiusDp)
     }
 
-    /** The fields [validateManualHotspotSettings] checks, hashed like [menuSettingsSignature]. */
+    /**
+     * The fields [validateManualHotspotSettings] checks and the wireless switch, hashed like
+     * [menuSettingsSignature]. Switching to wireless puts the hotspot to use, so it is checked again.
+     */
     private fun wirelessNetworkSignature(): Int = listOf(
-        wirelessHotspotMode, existingWifiSsid, existingWifiPassphrase, manualHotspotSsid, manualHotspotPassphrase,
-        manualHotspotBand, manualHotspotChannel, manualHotspotSecurity,
+        wirelessEnabled, wirelessHotspotMode, existingWifiSsid, existingWifiPassphrase, manualHotspotSsid,
+        manualHotspotPassphrase, manualHotspotBand, manualHotspotChannel, manualHotspotSecurity,
     ).joinToString("|").hashCode()
 
     /**
