@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="ambient_delay_title">Ritardo luce ambientale</string>
+    <string name="ambient_delay_description">Ritardo in millisecondi tra l’energia audio e il cambio di luce. Regola per sincronizzare le luci con il suono nell’abitacolo. Le modifiche si applicano dopo il salvataggio.</string>
+    <string name="ambient_delay_value">%1$d ms</string>
+</resources>

@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="nav_wheel_title">Tasti del volante per la navigazione</string>
+    <string name="nav_wheel_description">Usa i tasti precedente/successivo del volante per ingrandire la mappa di CarPlay. In conflitto con il cambio brano. Si applica immediatamente.</string>
+</resources>

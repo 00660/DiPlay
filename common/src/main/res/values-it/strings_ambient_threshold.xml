@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="ambient_threshold_title">Soglia audio</string>
+    <string name="ambient_threshold_description">Energia audio minima per attivare un cambio di luce. Valori più alti ignorano il rumore di fondo. Le modifiche si applicano dopo il salvataggio.</string>
+    <string name="ambient_threshold_value">%1$d %%</string>
+</resources>

@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_hide_byd_call_popup">Nascondi popup di chiamata BYD (sperimentale)</string>
+    <string name="settings_hide_byd_call_popup_description">Solo BYD con Android 12L. Richiede ADB locale autorizzato. Nasconde il popup di chiamata nativo mentre CarPlay è in primo piano; lo ripristina in background. Non modifica l’audio Bluetooth né nasconde l’app telefono completa.</string>
+</resources>

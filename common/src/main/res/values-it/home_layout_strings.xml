@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="home_layout_title">Layout schermata Home</string>
+    <string name="home_layout_default">Predefinito</string>
+    <string name="home_layout_classic">Classico</string>
+    <string name="home_layout_description">Classico sposta le schede di connessione e le impostazioni in un elenco verticale più semplice. Le modifiche si applicano immediatamente.</string>
+</resources>
