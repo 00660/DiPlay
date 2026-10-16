@@ -5442,6 +5442,7 @@ class CarPlayHostActivity : ComponentActivity() {
                 config.identification.vehicleSpeedEnabled -> VehicleSpeedLocationProvider(
                     AndroidCarPlayLocationProvider(this),
                     com.shilapi.xcertplay.hud.BydNavigationOutputs.wheelSpeed(applicationContext),
+                    log = ::appendLog,
                 )
                 else -> AndroidCarPlayLocationProvider(this)
             }
