@@ -16,6 +16,7 @@ import android.hardware.usb.UsbManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Color
+import android.graphics.Rect
 import android.graphics.RectF
 import android.graphics.RenderEffect
 import android.graphics.Shader
@@ -416,6 +417,10 @@ class CarPlayHostActivity : ComponentActivity() {
     // The staged menu settings as they stood when it opened, so leaving can tell whether any
     // edit is pending. A hash, not the values: one of them is the hotspot passphrase.
     private var menuSettingsSignature: Int? = null
+    // The same for the Wi-Fi details that Save checks, so details the menu left alone are not checked.
+    private var menuWirelessNetworkSignature: Int? = null
+    // Opens the menu page that holds a view; set by the menu that is showing.
+    private var revealInSettingsMenu: (View) -> Unit = {}
     private var locationReportingSwitch: Switch? = null
     private var statusView: TextView? = null
     private var statusScrollView: ScrollView? = null
@@ -3245,6 +3250,10 @@ class CarPlayHostActivity : ComponentActivity() {
             scroll.scrollTo(0, 0)
             chips.requestLayout()
         }
+        revealInSettingsMenu = { view ->
+            pages.entries.firstOrNull { (_, page) -> generateSequence(view.parent) { it.parent }.any { it === page } }
+                ?.let { (key, _) -> selectCategory(key) }
+        }
         fun categoryButton(key: String, title: Int) = DiPlayButton(this).apply {
             text = getString(title)
             textSize = 16f
@@ -3421,6 +3430,24 @@ class CarPlayHostActivity : ComponentActivity() {
         AirPlayPersistence.saveSafeAreaDrawOutside(this, safeAreaDrawOutside)
         AirPlayPersistence.saveMainDisplayDisableSafeArea(this, mainDisplayDisableSafeArea)
         AirPlayPersistence.saveBlackCornerRadiusDp(this, blackCornerRadiusDp)
+    }
+
+    /** The fields [validateManualHotspotSettings] checks, hashed like [menuSettingsSignature]. */
+    private fun wirelessNetworkSignature(): Int = listOf(
+        wirelessHotspotMode, existingWifiSsid, existingWifiPassphrase, manualHotspotSsid, manualHotspotPassphrase,
+        manualHotspotBand, manualHotspotChannel, manualHotspotSecurity,
+    ).joinToString("|").hashCode()
+
+    /**
+     * Shows why Save and reconnect did not save. The message sits under the setting, often on another
+     * page or below the visible part of it, so without this the button seemed to do nothing (#848).
+     */
+    private fun showRejectedSetting(message: TextView?, what: String) {
+        // Not the message itself: it can name the SSID or password, and the log drops such lines.
+        appendLog("Settings not saved; $what rejected")
+        message ?: return
+        revealInSettingsMenu(message)
+        message.post { message.requestRectangleOnScreen(Rect(0, 0, message.width, message.height), true) }
     }
 
     /** Mirrors [persistMenuSettings]: a field staged there belongs here too. */
@@ -5970,6 +5997,7 @@ class CarPlayHostActivity : ComponentActivity() {
         loadPersistedSettings()
         settingsBaseline = captureSettingsBaseline()
         menuSettingsSignature = menuSettingsSignature()
+        menuWirelessNetworkSignature = wirelessNetworkSignature()
         // Rebuild controls from saved values so a cancelled edit cannot reappear on reopening.
         settingsMenu?.let { previous ->
             val parent = previous.parent as ViewGroup
@@ -6020,8 +6048,17 @@ class CarPlayHostActivity : ComponentActivity() {
 
     private fun saveSettingsAndReconnect() {
         if (!menuOpen) return
-        if (!validateMfiSettings()) return
-        if (!validateManualHotspotSettings()) return
+        if (!validateMfiSettings()) {
+            showRejectedSetting(mfiErrorView, "MFi settings")
+            return
+        }
+        // Wi-Fi details the menu left alone are saved as they are. A driver on USB who never set up the
+        // car hotspot has an empty one, and checking it kept every other setting from saving (#848).
+        if (wirelessNetworkSignature() != menuWirelessNetworkSignature && !validateManualHotspotSettings()) {
+            showRejectedSetting(listOfNotNull(manualHotspotErrorView, existingWifiErrorView)
+                .firstOrNull { it.visibility == View.VISIBLE }, "Wi-Fi details")
+            return
+        }
         persistMenuSettings()
         settingsBaseline = null
         finishSettingsMenu("Settings saved", reconnect = true)
@@ -6064,6 +6101,7 @@ class CarPlayHostActivity : ComponentActivity() {
         menuOpen = false
         updateCallPopupGuard()
         menuSettingsSignature = null
+        menuWirelessNetworkSignature = null
         settingsMenu?.visibility = View.GONE
         gestureOverlay?.visibility = View.VISIBLE
         settingsGestureHint?.text = settingsGestureHintText()
