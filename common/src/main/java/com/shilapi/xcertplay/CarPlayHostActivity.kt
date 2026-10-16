@@ -588,6 +588,9 @@ class CarPlayHostActivity : ComponentActivity() {
     private var startAfterHandshakeReset = false
     private var restartGeneration = 0
     private var reconnectScheduled = false
+    // How often the current controller reached its control loop. A retry scheduled before it went up
+    // finds the same attempt running again and leaves it alone (#873).
+    private var controlRunningCount = 0
     private var requestedSmallWindowForStream: Boolean? = null
     @Volatile private var adbNaviMode: com.shilapi.xcertplay.hud.BydClusterNaviMode? = null
     private var sessionLog: SessionLogFile? = null
@@ -5300,6 +5303,7 @@ class CarPlayHostActivity : ComponentActivity() {
         controllerGeneration: Int,
     ): (CarPlayStatus) -> Unit = report@{ status ->
         if (controllerGeneration != restartGeneration) return@report
+        if (status is CarPlayStatus.RunningControl || status is CarPlayStatus.RunningWireless) controlRunningCount++
         if (status is CarPlayStatus.Failed || status is CarPlayStatus.ControlEnded) {
             callPopupSessionReady = false
             updateCallPopupGuard()
@@ -5881,6 +5885,7 @@ class CarPlayHostActivity : ComponentActivity() {
         }
         reconnectAttempts += 1
         appendLog("$reason; retrying in ${delayMillis}ms generation=$generation startupFailure=$startupFailure startupRetries=${startupRetryBudget.retries}")
+        val controlRunsAtFailure = controlRunningCount
         mainHandler.postDelayed(
             {
                 reconnectScheduled = false
@@ -5891,6 +5896,12 @@ class CarPlayHostActivity : ComponentActivity() {
                     handshakeResetInProgress || startupRetryStopped ||
                     generation != restartGeneration
                 ) {
+                    return@postDelayed
+                }
+                // A wired attempt can report a failure and still go on: a second CarPlay mode request
+                // failed while the iPhone was already switching, and the switch then completed (#873).
+                if (controlRunningCount != controlRunsAtFailure) {
+                    appendLog("Not reconnecting after $reason: the same attempt is running again")
                     return@postDelayed
                 }
                 restartCarPlay("Reconnecting after $reason")
