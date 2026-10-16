@@ -888,6 +888,9 @@
     <string name="settings_ambient_parked_notice">請停車後設定。實驗性支援部分 BYD 燈光介面，無法保證每種車型及韌體相容。0 表示原廠最低檔，不代表關燈。</string>
     <string name="settings_ambient_checking">檢查中…</string>
     <string name="settings_ambient_unavailable">唯讀檢查失敗：缺少既有 ADB 授權或支援的燈光介面。未儲存燈光設定。請停車後另行設定存取；本功能不啟用 ADB，也不請求授權。</string>
+    <string name="settings_ambient_car_rhythm">車輛原廠音樂律動</string>
+    <string name="settings_ambient_car_rhythm_description">播放 CarPlay 音樂時，啟用車輛原廠的氛圍燈音樂律動，顏色與效果使用車輛氛圍燈選單中的設定（需在其中開啟音樂律動）。期間 DiPlay 不直接控制燈光。開啟時會檢查。僅當車機不允許 DiPlay 自行啟動律動時，才需要車機網路 ADB。</string>
+    <string name="settings_ambient_car_rhythm_unavailable">車輛音樂律動無法使用：DiPlay 無法自行啟動律動，並且沒有網路 ADB 權限或車機音訊服務不支援所需呼叫。未儲存任何設定。</string>
     <string name="settings_disable_media_key_audio_focus">停用媒體按鍵音訊焦點（實驗性）</string>
     <string name="settings_disable_media_key_audio_focus_description">CarPlay 音樂播放時不再由 DiPlay 要求媒體音訊焦點。若車機將實體音量鍵導向 DiPlay，導致音量鍵無法調整音量，請開啟此項。部分依賴音訊焦點的車機可能無法繼續使用方向盤播放、暫停和切歌鍵。下次連線至 CarPlay 時生效。</string>
     <string name="settings_ambient_album">跟隨專輯封面</string>
