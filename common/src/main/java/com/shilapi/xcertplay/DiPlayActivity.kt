@@ -2991,12 +2991,12 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
     /**
      * True on the head units this BYD settings work is for, and only those.
      *
-     * DiLink 1.0 ships Android 7.1, which is also DiPlay's minimum, so this is the whole of the range
-     * anyone has checked. Every BYD path below is behind this so that no other head unit changes
-     * behaviour — a stock Android build of any version has no such package to find, and a newer BYD
-     * build stays exactly as it is today until it can be measured on a car.
+     * DiLink 1.0 ships Android 7.1, the only version anyone has checked. Every BYD path below is behind
+     * this so that no other head unit changes behaviour — a stock Android build of any version has no
+     * such package to find, and an older or newer BYD build stays exactly as it is today until it can
+     * be measured on a car.
      */
-    private val targetedByBydSettingsWork get() = Build.VERSION.SDK_INT <= Build.VERSION_CODES.N_MR1
+    private val targetedByBydSettingsWork get() = Build.VERSION.SDK_INT == Build.VERSION_CODES.N_MR1
 
     /**
      * True when [action] is answered by BYD's decoy rather than a real settings screen.
