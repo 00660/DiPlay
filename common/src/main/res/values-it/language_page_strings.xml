@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="language_page_title">Lingua e regione</string>
-    <string name="language_page_description">Imposta la lingua dell’app e le preferenze regionali. La predefinita di sistema segue le impostazioni di Android. Si applica immediatamente.</string>
+    <string name="settings_language_summary">Scegli una lingua per DiPlay</string>
 </resources>
