@@ -18,6 +18,7 @@ object BydOutputSettings {
     private const val KEY_VIDEO_WHILE_PARKED = "video_while_parked"
     private const val KEY_CLUSTER_SONG = "cluster_song"
     private const val KEY_CLUSTER_SONG_ON_CHANGE = "cluster_song_on_change"
+    private const val KEY_CLUSTER_SONG_GATE = "cluster_song_gate"
     private const val KEY_HUD_SONG = "hud_song"
     private const val KEY_CARPLAY_CALLS = "carplay_calls"
     private const val KEY_CARPLAY_CALL_CONTROLS = "carplay_call_controls_experimental"
@@ -81,6 +82,18 @@ object BydOutputSettings {
 
     fun setClusterSong(context: Context, enabled: Boolean) =
         prefs(context).edit().putBoolean(KEY_CLUSTER_SONG, enabled).apply()
+
+    /**
+     * Open the gate so the dashboard music card appears. DiPlay writes the song to the instrument
+     * cluster (device 1007), but BYD's card stays hidden until the car's media stack has been opened
+     * once; opening the gate launches the media app, which briefly covers the screen and then returns
+     * to DiPlay. Off keeps the write but the card may stay hidden unless the media stack was already
+     * active. Applies at once. Defaults on so the song keeps showing as before.
+     */
+    fun clusterSongGate(context: Context): Boolean = prefs(context).getBoolean(KEY_CLUSTER_SONG_GATE, true)
+
+    fun setClusterSongGate(context: Context, enabled: Boolean) =
+        prefs(context).edit().putBoolean(KEY_CLUSTER_SONG_GATE, enabled).apply()
 
     /** Show CarPlay calls on the dashboard and HUD like BYD's CarPlay app (needs ADB over network); applies at once. */
     fun carPlayCalls(context: Context): Boolean = prefs(context).getBoolean(KEY_CARPLAY_CALLS, false)

@@ -4188,6 +4188,15 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
             BydOutputSettings.setClusterSong(this, it)
             if (it) checkAdbState(mayAsk = true)
             BydNavigationOutputs.clusterSongChanged(it)
+            // The gate switch below depends on this one, so rebuild the card to show or hide it.
+            render()
+        }
+        // Shown only while Dashboard song is on: the gate that makes BYD's music card appear.
+        if (BydOutputSettings.clusterSong(this)) {
+            toggle(card, getString(R.string.cluster_song_gate), getString(R.string.cluster_song_gate_description),
+                BydOutputSettings.clusterSongGate(this), enabled = !adbSwitchChangePending) {
+                BydOutputSettings.setClusterSongGate(this, it)
+            }
         }
         toggle(card, getString(R.string.cluster_song_on_change), getString(R.string.cluster_song_on_change_description),
             BydOutputSettings.clusterSongOnChange(this), enabled = !adbSwitchChangePending) {

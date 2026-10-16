@@ -222,6 +222,21 @@ class BydVehicleDataSettingsTest {
         assertTrue(BydOutputSettings.clusterSong(context))
     }
 
+    @Test fun gateSwitchShowsOnlyWhenClusterSongIsOn() {
+        shadowOf(context.packageManager).installPackage(PackageInfo().apply { packageName = "com.byd.amapservice" })
+        openSettings()
+        openCategory(R.string.settings_navigation)
+
+        assertEquals(1, switches().count { it.contentDescription == activity.getString(R.string.cluster_song) })
+        assertEquals(0, switches().count { it.contentDescription == activity.getString(R.string.cluster_song_gate) })
+
+        vehicleSwitch(R.string.cluster_song).performClick()
+        shadowOf(Looper.getMainLooper()).idle()
+
+        assertEquals(1, switches().count { it.contentDescription == activity.getString(R.string.cluster_song_gate) })
+        assertTrue(BydOutputSettings.clusterSongGate(context))
+    }
+
     @Test fun scheduledValidationCannotLeaveAUserProbeStuck() {
         BydVehicleFieldStore.save(context, supportedCapabilities(BydVehicleFieldStore.firmwareKey()))
         backend.checkStateResult = BydAdbAccess.State.READY

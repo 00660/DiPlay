@@ -540,6 +540,8 @@
     <string name="center_map_usage_missing">Доступ до даних використання: не дозволено, тому картка показується поверх усіх застосунків. Через ADB: adb shell appops set %1$s GET_USAGE_STATS allow</string>
     <string name="cluster_song">Пісня на панелі приладів</string>
     <string name="cluster_song_description">Назва й виконавець пісні з CarPlay показуються в музичній картці на панелі приладів, разом із відтворенням і паузою. Картка показується як джерело BYD «Інше», бо панель приладів не малює власне джерело CarPlay. Застосовується одразу. Потрібен ADB через мережу на головному пристрої.</string>
+    <string name="cluster_song_gate">Автоактивація музичної картки</string>
+    <string name="cluster_song_gate_description">Картка не з’являється, доки медіастек авто не буде відкрито. Відкриття шлюзу робить це: на мить з’являється екран медіа, потім повернення в DiPlay. Залиште вимкненим, щоб уникнути миготіння. Застосовується одразу.</string>
     <string name="launcher_map_sharing">Ділитися живою картою з іншими лаунчерами</string>
     <string name="launcher_map_sharing_description">Лаунчери з підтримкою DiPlay можуть показувати живу карту панелі приладів на своєму головному екрані. Типово вимкнено, бо тоді карту зможе запитати будь-який застосунок на головному пристрої. Див. docs/LAUNCHER_INTEGRATION.md.</string>
     <string name="location_reporting_reconnects">Зміна цього налаштування перепідключає активний сеанс CarPlay.</string>
