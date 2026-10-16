@@ -700,6 +700,10 @@
     <string name="wheel_key_in_use">Quel tasto è già il tasto %1$s. Scegli un altro tasto.</string>
     <string name="wheel_siri_key">Tasto Siri sul volante</string>
     <string name="wheel_siri_key_description">Apre Siri con un tasto del volante a tua scelta mentre CarPlay è sullo schermo. Un tasto che l’auto tiene per sé funziona solo con il servizio dei tasti del volante, che funziona anche quando CarPlay è in background. Senza CarPlay, o durante una chiamata, il tasto mantiene l’azione propria dell’auto.</string>
+    <string name="wheel_siri_double_press">Doppia pressione per Siri</string>
+    <string name="wheel_siri_double_press_description">Con una pressione singola il tasto mantiene l’azione dell’auto. Premilo due volte entro l’intervallo selezionato: DiPlay apre Siri dopo il ritardo impostato. Se l’assistente dell’auto prende il controllo dello schermo, è necessario il servizio dei tasti del volante. Si applica subito.</string>
+    <string name="wheel_siri_double_press_interval">Intervallo tra le pressioni</string>
+    <string name="wheel_siri_trigger_delay">Ritardo di attivazione di Siri</string>
     <string name="wheel_siri_long_press_only">Siri solo con pressione prolungata</string>
     <string name="wheel_siri_long_press_only_description">Solo una pressione prolungata del pulsante vocale del volante apre Siri. Una pressione breve non fa nulla in DiPlay.</string>
     <string name="wheel_key_role_back">indietro</string>
@@ -955,4 +959,15 @@
     <string name="settings_write_settings_allow">Consenti l’accesso</string>
     <string name="settings_wifi_direct_scan_pause">Metti in pausa la ricerca Wi-Fi dell’auto durante CarPlay · richiede ADB</string>
     <string name="settings_wifi_direct_scan_pause_description">Con Wi-Fi Direct l’auto cerca reti Wi-Fi ogni pochi secondi e ogni ricerca fa scattare musica e video. Con questa opzione attiva, DiPlay mette in pausa la ricerca mentre CarPlay è in funzione. Finché CarPlay non termina, l’auto non si collega da sola a una rete nota, come l’hotspot del tuo telefono; puoi comunque collegarti a una dalle impostazioni Wi-Fi dell’auto. Disattivala per lasciare che l’auto si colleghi automaticamente. Si applica alla prossima connessione.</string>
+    <string name="temporary_system_bars">Barre di sistema temporanee (5 secondi)</string>
+    <string name="temporary_system_bars_description">Opzionale: scorri verso l’alto con il numero di dita configurato per il gesto delle impostazioni per mostrare per cinque secondi le barre di stato e di navigazione nascoste dell’auto; scorrendo verso il basso si aprono comunque le impostazioni di DiPlay. Disattiva l’opzione sulle head unit con gesti in conflitto. Alcuni firmware potrebbero ignorare la richiesta.</string>
+    <string name="wheel_media_play_pause">Tasto play/pausa sul volante</string>
+    <string name="wheel_media_play_pause_description">Assegna un tasto disponibile del volante o della tastiera per avviare o mettere in pausa la musica di CarPlay. Funziona mentre CarPlay è attivo, anche in background se è abilitato il servizio dei tasti del volante. Durante le chiamate o quando non è connessa, l’auto mantiene il controllo del tasto. Un tasto riservato dal firmware potrebbe non essere rilevato da DiPlay.</string>
+    <string name="wheel_key_role_media_play_pause">Play/pausa</string>
+    <string name="wheel_media_navigation_reserved">I tasti di navigazione, Home, volume, assistente vocale e riproduzione del telecomando mantengono la loro funzione originale. Scegli un tasto libero.</string>
+    <string name="black_corner_overlay">Angoli arrotondati neri</string>
+    <string name="black_corner_overlay_description">Copre di nero gli angoli dell’immagine di CarPlay. Scegli tra disattivato, un raggio manuale o la maschera dell’iPhone (sperimentale). La modalità iPhone richiede una nuova connessione e usa 24 dp se non riceve una maschera valida. Le modifiche manuali sono applicate subito; Salva conserva la selezione.</string>
+    <string name="black_corner_overlay_off">Disattivato</string>
+    <string name="black_corner_overlay_value">%1$d dp</string>
+    <string name="iphone_corner_mask_mode">Maschera iPhone (sperimentale)</string>
 </resources>
