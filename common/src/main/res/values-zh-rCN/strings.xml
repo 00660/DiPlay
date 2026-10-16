@@ -953,4 +953,11 @@
     <string name="black_corner_overlay_off">关闭</string>
     <string name="black_corner_overlay_value">%1$d dp</string>
     <string name="iphone_corner_mask_mode">iPhone 遮罩（实验性）</string>
+    <string name="settings_launcher_bubble">桌面悬浮球（实验性）</string>
+    <string name="settings_launcher_bubble_description">在车机桌面显示一个 DiPlay 悬浮球：点它直接回到 CarPlay，可拖动位置；打开 DiPlay 时自动隐藏，离开后重新出现。长按锁定位置，再次长按解锁。需要“显示在其他应用上层”权限。</string>
+    <string name="settings_launcher_bubble_size">悬浮球大小</string>
+    <string name="settings_launcher_bubble_locked">位置已锁定</string>
+    <string name="settings_launcher_bubble_unlocked">位置已解锁</string>
+    <string name="settings_launcher_bubble_hold_to_lock">长按 锁定</string>
+    <string name="settings_launcher_bubble_hold_to_unlock">长按 解锁</string>
 </resources>

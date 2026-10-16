@@ -995,4 +995,11 @@
     <string name="black_corner_overlay_off">オフ</string>
     <string name="black_corner_overlay_value">%1$d dp</string>
     <string name="iphone_corner_mask_mode">iPhoneのマスク（実験的機能）</string>
+    <string name="settings_launcher_bubble">ホーム画面のバブル（実験的機能）</string>
+    <string name="settings_launcher_bubble_description">車載機のホーム画面に DiPlay のアイコンをバブルとして表示します。タップすると CarPlay に戻り、ドラッグでどこへでも移動できます。DiPlay の画面を開くと隠れ、離れると再び表示されます。長押しで位置をロックし、もう一度長押しで解除します。「他のアプリの上に重ねて表示」が必要です。</string>
+    <string name="settings_launcher_bubble_size">バブルのサイズ</string>
+    <string name="settings_launcher_bubble_locked">位置をロック中</string>
+    <string name="settings_launcher_bubble_unlocked">位置のロックを解除</string>
+    <string name="settings_launcher_bubble_hold_to_lock">長押しでロック</string>
+    <string name="settings_launcher_bubble_hold_to_unlock">長押しで解除</string>
 </resources>
