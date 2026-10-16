@@ -1,5 +1,7 @@
 package com.shilapi.xcertplay
 
+import android.content.pm.ApplicationInfo
+import android.content.pm.PackageInfo
 import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
@@ -9,10 +11,13 @@ import android.graphics.Canvas
 import com.shilapi.xcertplay.host.R
 import java.io.File
 import org.junit.Assert.*
+import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.Robolectric
 import org.robolectric.RobolectricTestRunner
+import org.robolectric.RuntimeEnvironment
+import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
 import org.robolectric.util.ReflectionHelpers
@@ -20,6 +25,16 @@ import org.robolectric.util.ReflectionHelpers
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [29], qualifiers = "en", manifest = Config.NONE)
 class BydCallPopupSettingsTest {
+    @Before fun installBydSettingsPackage() {
+        shadowOf(RuntimeEnvironment.getApplication().packageManager).installPackage(PackageInfo().apply {
+            packageName = "com.byd.carsettings"
+            applicationInfo = ApplicationInfo().apply {
+                packageName = "com.byd.carsettings"
+                flags = ApplicationInfo.FLAG_SYSTEM
+            }
+        })
+    }
+
     @Test
     @Config(sdk = [29, 32])
     fun popupOptInDefaultsOffAndChangesOnlyItsPreferenceWithoutReconnect() {
@@ -47,6 +62,22 @@ class BydCallPopupSettingsTest {
     fun popupControlIsHiddenBelowAndroid10() {
         val activity = Robolectric.buildActivity(DiPlayActivity::class.java).get()
         activity.setTheme(android.R.style.Theme_Material_NoActionBar)
+        ReflectionHelpers.setField(activity, "settingsSectionFilter", setOf(SettingsSection.ADVANCED_MEDIA))
+        val content = LinearLayout(activity)
+        ReflectionHelpers.callInstanceMethod<Unit>(activity, "allSettingsSections",
+            ReflectionHelpers.ClassParameter.from(LinearLayout::class.java, content))
+        assertTrue(switches(content).none {
+            it.contentDescription == activity.getString(R.string.settings_hide_byd_call_popup)
+        })
+    }
+
+    @Test
+    @Config(sdk = [29, 32])
+    fun popupControlIsHiddenOnNonBydHeadUnits() {
+        val activity = Robolectric.buildActivity(DiPlayActivity::class.java).get()
+        activity.setTheme(android.R.style.Theme_Material_NoActionBar)
+        shadowOf(activity.packageManager).removePackage("com.byd.carsettings")
+        assertFalse(CarHotspotSetup.isBydHeadUnit(activity))
         ReflectionHelpers.setField(activity, "settingsSectionFilter", setOf(SettingsSection.ADVANCED_MEDIA))
         val content = LinearLayout(activity)
         ReflectionHelpers.callInstanceMethod<Unit>(activity, "allSettingsSections",
