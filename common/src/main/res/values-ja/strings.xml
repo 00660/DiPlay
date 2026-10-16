@@ -745,7 +745,7 @@
     <string name="split_screen_areas">車載端末の分割画面でCarPlayを表示</string>
     <string name="split_screen_areas_description">車載端末でDiPlayを分割画面にしたとき、黒帯を付けて縮小する代わりにウィンドウの大きさに合わせてCarPlayを描画します。再接続せずに全画面へ戻せます。初回にウィンドウサイズを記録するため、次回の接続から正確なサイズで表示します。Dockが「自動」の場合は下側に配置されます。次回の接続から反映されます。</string>
     <string name="carplay_rotation">再接続せず画面の向きに合わせてCarPlayを回転</string>
-    <string name="carplay_rotation_description">画面を回転できる車載端末向けです。縦画面と横画面を含む正方形の映像を使用し、向きが変わってもCarPlayを再接続せずに描画します。正方形の映像が大きいほど処理負荷が増え、特に大画面の「高画質」では滑らかさが低下する場合があります。画面をほとんど回転しない場合はオフもお試しください。カスタム安全領域は正方形の映像に適用されません。次回の接続から反映されます。</string>
+    <string name="carplay_rotation_description">画面を回転できる車載端末向けです。縦画面と横画面を含む正方形の映像を使用し、向きが変わってもCarPlayを再接続せずに描画します。正方形の映像が大きいほど処理負荷が増え、特に大画面の「高画質」では滑らかさが低下する場合があります。画面をほとんど回転しない場合はオフもお試しください。カスタム安全領域は正方形の映像に適用されません。iPhoneで撮ったCarPlayのスクリーンショットには、この画面に表示されない部分も含めて正方形全体が写ります。次回の接続から反映されます。</string>
     <string name="carplay_rotation_picture">正方形の映像</string>
     <string name="carplay_rotation_smoother">滑らか（1920）</string>
     <string name="carplay_rotation_sharper">鮮明（画面サイズに合わせる）</string>
