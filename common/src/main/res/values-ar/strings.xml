@@ -911,6 +911,8 @@
     <string name="auto_grant_incomplete">لم يتحقق الإعداد من جميع الأذونات المطلوبة. راجع حالة كل إذن أدناه؛ وفعّل ADB عبر الشبكة ثم أعد المحاولة، أو استخدم الإعداد اليدوي. تُحفظ الأذونات الحالية.</string>
     <string name="connection_help_reset_wifi">قد تمنع مجموعة Wi-Fi Direct سابقة الاتصال. اضغط على إعادة ضبط Wi-Fi الخاص بـ CarPlay أدناه ثم حاول الاتصال مجددًا.</string>
     <string name="connection_help_bluetooth_unusable">لا يستطيع بلوتوث هذه الوحدة إرسال البيانات إلى iPhone، لذا لن يعمل CarPlay اللاسلكي هنا. استخدم كابل USB لنقل البيانات.</string>
+    <string name="connection_help_wifi_direct_beside_hotspot">أوقف نقطة اتصال السيارة ثم اضغط «إعادة محاولة الاتصال»، أو اختر «نقطة اتصال السيارة المدمجة» في «إعداد الاتصال» واحفظ اسمها وكلمة مرورها.</string>
+    <string name="wifi_direct_refused_beside_hotspot">نقطة اتصال السيارة قيد التشغيل، ولا يمكن تشغيل Wi-Fi Direct معها في الوقت نفسه</string>
     <string name="connection_help_hotspot">تأكد من تشغيل نقطة اتصال السيارة وأن اسمها وكلمة مرورها يطابقان إعدادات DiPlay. استخدم تردد 5 غيغاهرتز إن توفر ثم أعد المحاولة.</string>
     <string name="connection_help_iphone_wifi">أبقِ Wi-Fi وبلوتوث قيد التشغيل. اتصل بنقطة اتصال السيارة من iPhone وفعّل الانضمام التلقائي ثم حاول مجددًا. احفظ تقرير تشخيص إذا استمر الفشل.</string>
     <string name="connection_help_permissions">اسمح لـ DiPlay بأذونات USB أو الأجهزة القريبة أو الموقع المطلوبة على وحدة السيارة، ثم أعد المحاولة.</string>
