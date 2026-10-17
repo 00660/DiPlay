@@ -736,13 +736,13 @@
     <string name="split_screen_areas">CarPlay nello schermo diviso della head unit</string>
     <string name="split_screen_areas_description">Quando la head unit mostra DiPlay in schermo diviso, CarPlay si ridisegna per quella finestra invece di rimpicciolirsi con bande nere, e torna a schermo intero senza riconnettere. La dimensione della finestra viene appresa la prima volta, così l’immagine si adatta esattamente dalla connessione successiva. Con il dock su Automatico, CarPlay lo mette in basso. Si applica alla prossima connessione.</string>
     <string name="carplay_rotation">Ruota CarPlay con lo schermo senza riconnettere</string>
-    <string name="carplay_rotation_description">Per head unit con schermo orientabile. CarPlay riceve un’immagine quadrata che contiene uno schermo orizzontale e uno verticale, così ruotando lo schermo CarPlay si ridisegna invece di riconnettersi. Un quadrato più grande può aumentare il carico video e ridurre la fluidità, soprattutto con Più nitido su uno schermo grande. Se ruoti raramente lo schermo, lasciarlo disattivato può aiutare. L’area sicura personalizzata non si applica a un’immagine quadrata. Si applica alla prossima connessione.</string>
+    <string name="carplay_rotation_description">Per head unit con schermo orientabile. CarPlay riceve un’immagine quadrata che contiene uno schermo orizzontale e uno verticale, così ruotando lo schermo CarPlay si ridisegna invece di riconnettersi. Un quadrato più grande può aumentare il carico video e ridurre la fluidità, soprattutto con Più nitido su uno schermo grande. Se ruoti raramente lo schermo, lasciarlo disattivato può aiutare. L’area sicura personalizzata non si applica a un’immagine quadrata. Uno screenshot di CarPlay fatto sull’iPhone mostra l’intero quadrato, compresa la parte che questo schermo non mostra. Si applica alla prossima connessione.</string>
     <string name="carplay_rotation_picture">Immagine quadrata</string>
     <string name="carplay_rotation_smoother">Più fluido (1920)</string>
     <string name="carplay_rotation_sharper">Più nitido (dimensione dello schermo)</string>
     <string name="auto_grant_incomplete">La configurazione non ha verificato tutti i permessi richiesti. Controlla ogni stato qui sotto; attiva ADB via rete e riprova, oppure usa la configurazione manuale. I permessi esistenti vengono mantenuti.</string>
-    <string name="carplay_call_controls_experimental">Tasti chiamata di CarPlay (sperimentale)</string>
-    <string name="carplay_call_controls_experimental_description">Attiva i tasti chiamata, vocale e riproduci/pausa di DiLink 3 non verificati. Servono ancora test sul veicolo. Mentre una chiamata CarPlay squilla, brano successivo risponde e brano precedente rifiuta. Disattivato per impostazione predefinita; le schede chiamata sul cruscotto sono un’impostazione separata.</string>
+    <string name="carplay_call_controls_experimental">Tasti chiamata, Siri e multimediali di CarPlay (sperimentale)</string>
+    <string name="carplay_call_controls_experimental_description">Il tasto telefono risponde alle chiamate CarPlay in arrivo; i tasti riaggancia/modalità rifiutano o terminano le chiamate. Mentre una chiamata squilla, brano successivo risponde e brano precedente rifiuta; nessuno dei due termina una chiamata in corso. Attiva anche i tasti Siri e riproduci/pausa specifici di DiLink 3. Disattivato per impostazione predefinita; il supporto va verificato sul tuo veicolo e firmware. Le schede chiamata sul cruscotto sono un’impostazione separata.</string>
     <string name="side_panel">Pannello laterale accanto a CarPlay (sperimentale)</string>
     <string name="side_panel_description">CarPlay può spostarsi su due terzi dello schermo mentre DiPlay mostra un pannello nello spazio restante: sul lato del passeggero di uno schermo orizzontale, in basso su uno verticale (orologio e, dove viene letta, la batteria). Mostralo e nascondilo dal menu della sessione. Si applica alla prossima connessione.</string>
     <string name="side_panel_show">Pannello laterale</string>
@@ -994,4 +994,8 @@
     <string name="settings_launcher_bubble_unlocked">Posizione sbloccata</string>
     <string name="settings_launcher_bubble_hold_to_lock">Tieni premuto per bloccare</string>
     <string name="settings_launcher_bubble_hold_to_unlock">Tieni premuto per sbloccare</string>
+    <string name="settings_hotspot_interface">Interfaccia dell’hotspot (facoltativa)</string>
+    <string name="settings_hotspot_interface_description">Solo per head unit che usano per l’hotspot un’interfaccia di rete che Android non riconosce come hotspot Wi-Fi, per esempio eth0.3 su alcune unità Geely, Lynk &amp; Co e altre Qualcomm. Lascia vuoto per trovarla automaticamente.</string>
+    <string name="wifi_direct_refused_beside_hotspot">L’hotspot dell’auto è attivo e Wi-Fi Direct non può avviarsi insieme a esso</string>
+    <string name="connection_help_wifi_direct_beside_hotspot">Disattiva l’hotspot dell’auto e riprova, oppure scegli Hotspot integrato dell’auto in Configurazione connessione e salva nome e password.</string>
 </resources>
