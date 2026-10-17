@@ -624,6 +624,57 @@ class CarPlayHostSettingsTest {
         assertFalse(field("reconnectScheduled") as Boolean)
     }
 
+    // #873: a second CarPlay mode request failed while the iPhone was already switching, the switch
+    // completed and the same attempt reached its control loop; the retry then tore that session down.
+    @Test fun aRetryDoesNotTearDownAnAttemptThatRecoveredAfterItsFailure() {
+        attachController()
+        report(CarPlayStatus.Failed("CarPlay configuration request transferred -1 of 1 bytes"))
+        assertTrue(field("reconnectScheduled") as Boolean)
+        report(CarPlayStatus.RunningControl)
+        shadowOf(Looper.getMainLooper()).idleFor(java.time.Duration.ofSeconds(3))
+        assertEquals(0, field("restartGeneration"))
+        assertFalse(field("reconnectScheduled") as Boolean)
+    }
+
+    @Test fun aRetryStillRestartsAnAttemptThatDidNotRecover() {
+        attachController()
+        report(CarPlayStatus.Failed("CarPlay configuration request transferred -1 of 1 bytes"))
+        report(CarPlayStatus.WaitingForIphone)
+        shadowOf(Looper.getMainLooper()).idleFor(java.time.Duration.ofSeconds(3))
+        assertEquals(1, field("restartGeneration"))
+    }
+
+    // A loss after the recovery, inside the retry's delay, is dropped because a retry is pending,
+    // so that retry has to restart: otherwise nothing would reconnect.
+    @Test fun aRetryStillRestartsWhenTheRecoveredAttemptFailsAgain() {
+        attachController()
+        report(CarPlayStatus.Failed("CarPlay configuration request transferred -1 of 1 bytes"))
+        report(CarPlayStatus.RunningControl)
+        report(CarPlayStatus.Failed("USBMUX write transferred -1 of 218 bytes"))
+        shadowOf(Looper.getMainLooper()).idleFor(java.time.Duration.ofSeconds(3))
+        assertEquals(1, field("restartGeneration"))
+    }
+
+    @Test fun aRetryStillRestartsWhenTheRecoveredAttemptsControlEnds() {
+        attachController()
+        report(CarPlayStatus.Failed("CarPlay configuration request transferred -1 of 1 bytes"))
+        report(CarPlayStatus.RunningControl)
+        report(CarPlayStatus.ControlEnded)
+        shadowOf(Looper.getMainLooper()).idleFor(java.time.Duration.ofSeconds(3))
+        assertEquals(1, field("restartGeneration"))
+    }
+
+    @Test fun aRetryStillRestartsWhenTheRecoveredAttemptLosesItsTransport() {
+        attachController()
+        report(CarPlayStatus.Failed("CarPlay configuration request transferred -1 of 1 bytes"))
+        report(CarPlayStatus.RunningControl)
+        val listener = activity.javaClass.getDeclaredMethod("createSessionListener", Int::class.javaPrimitiveType)
+            .apply { isAccessible = true }.invoke(activity, 0) as AirPlaySessionListener
+        listener.onTransportError("transport lost")
+        shadowOf(Looper.getMainLooper()).idleFor(java.time.Duration.ofSeconds(3))
+        assertEquals(1, field("restartGeneration"))
+    }
+
     @Test fun savingWirelessAfterWifiResetFailureStillRequiresManualRecovery() {
         attachController()
         AirPlayPersistence.saveWirelessEnabled(activity, true)
