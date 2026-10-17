@@ -764,8 +764,8 @@
     <string name="carplay_rotation_smoother">滑らか（1920）</string>
     <string name="carplay_rotation_sharper">鮮明（画面サイズに合わせる）</string>
     <string name="auto_grant_incomplete">要求した権限をすべて確認できませんでした。下の状態を確認し、ネットワークADBを有効にして再試行するか、手動で設定してください。既存の権限は維持されます。</string>
-    <string name="carplay_call_controls_experimental">CarPlayの通話キー（実験的機能）</string>
-    <string name="carplay_call_controls_experimental_description">未検証のDiLink 3の通話・音声・再生キーを使用します。実車での検証が必要です。CarPlayの着信中は「次の曲」で応答、「前の曲」で拒否します。標準ではオフです。</string>
+    <string name="carplay_call_controls_experimental">CarPlayの通話・Siri・メディアキー（実験的機能）</string>
+    <string name="carplay_call_controls_experimental_description">電話キーでCarPlayの着信に応答し、終話／モードキーで着信を拒否または通話を終了します。着信中は「次の曲」でも応答、「前の曲」で拒否できます。通話開始後、この2つの曲送りキーでは通話を終了しません。DiLink 3専用のSiriと再生／一時停止キーも有効にします。標準ではオフです。車種とファームウェアへの対応は実車で確認してください。メーターパネルの通話表示は別の設定です。</string>
     <string name="side_panel">CarPlay横のサイドパネル（実験的機能）</string>
     <string name="side_panel_description">CarPlayを画面の約3分の2に表示し、残りにDiPlayのパネルを表示できます。横画面では助手席側、縦画面では下側に配置し、時計や取得できる場合はバッテリーを表示します。接続中のメニューから表示・非表示を切り替えられます。次回のCarPlay接続から反映されます。</string>
     <string name="side_panel_show">サイドパネル</string>

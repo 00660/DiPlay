@@ -664,8 +664,8 @@
     <string name="carplay_rotation_picture">الصورة المربعة</string>
     <string name="carplay_rotation_smoother">أكثر سلاسة (1920)</string>
     <string name="carplay_rotation_sharper">أكثر وضوحًا (حجم الشاشة)</string>
-    <string name="carplay_call_controls_experimental">أزرار مكالمات CarPlay (تجريبي)</string>
-    <string name="carplay_call_controls_experimental_description">تفعيل أزرار المكالمات والصوت والتشغيل/الإيقاف المؤقت غير المتحقق منها في DiLink 3. لا يزال يلزم اختبارها في السيارة. أثناء رنين مكالمة CarPlay، يجيب زر المقطع التالي ويرفض زر المقطع السابق. معطلة افتراضيًا؛ بطاقات مكالمات لوحة العدادات لها إعداد منفصل.</string>
+    <string name="carplay_call_controls_experimental">أزرار مكالمات CarPlay وSiri والوسائط (تجريبي)</string>
+    <string name="carplay_call_controls_experimental_description">يجيب زر الهاتف عن مكالمات CarPlay الواردة؛ ويرفض زر إنهاء المكالمة أو زر الوضع المكالمة أو ينهيها. أثناء الرنين، يجيب زر المقطع التالي أيضًا ويرفض زر المقطع السابق؛ ولا ينهي أي منهما مكالمة متصلة. يفعّل أيضًا أزرار Siri والتشغيل/الإيقاف المؤقت الخاصة بـ DiLink 3. معطل افتراضيًا؛ يجب التحقق من الدعم في سيارتك وإصدار برنامجها الثابت. عرض المكالمات على لوحة العدادات له إعداد منفصل.</string>
     <string name="side_panel">لوحة جانبية بجوار CarPlay (تجريبي)</string>
     <string name="side_panel_description">يمكن نقل CarPlay إلى ثلثي الشاشة بينما يعرض DiPlay لوحة في الباقي: على جانب الراكب في الشاشة الأفقية، وفي الأسفل في الشاشة العمودية (الساعة، والبطارية إذا تمت قراءتها). أظهرها وأخفها من قائمة الجلسة. يُطبَّق عند الاتصال التالي.</string>
     <string name="side_panel_show">اللوحة الجانبية</string>
