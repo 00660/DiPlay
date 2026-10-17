@@ -2985,8 +2985,14 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
     // car's configuration cannot be read the write path runs instead, after a warning: it keeps the
     // car's name and password, or creates new details when nothing is saved on either side.
     private fun importCarHotspotConfig() {
+        // The driver just turned the switch on, so the read may ask the car to approve DiPlay's ADB key,
+        // as the other ADB switches do. Without asking it could only fail on a car that never saw the key.
+        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.N_MR1) {
+            carHotspotConfigStatus = R.string.adb_checking_may_ask
+            render()
+        }
         Thread({
-            val read = CarHotspotConfigRead.read(applicationContext, log = { Log.i("DiPlay-Hotspot", it) })
+            val read = CarHotspotConfigRead.read(applicationContext, mayAsk = true, log = { Log.i("DiPlay-Hotspot", it) })
             Log.i("DiPlay-Hotspot", "car hotspot config read: credentials=${read.credentials != null} reason=${read.reason}")
             val saved = read.credentials
             if (saved != null) {
@@ -3010,24 +3016,28 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
                         }
                         render()
                     }
-                    else -> AlertDialog.Builder(this)
-                        .setTitle(getString(R.string.settings_car_hotspot_config_dialog_title))
-                        .setMessage(getString(
-                            // With nothing saved yet the write creates the details, so the warning
-                            // must say that instead of only announcing an overwrite.
-                            if (hasSavedHotspotDetails()) R.string.settings_car_hotspot_config_dialog_message
-                            else R.string.settings_car_hotspot_config_dialog_generate_message,
-                        ))
-                        .setPositiveButton(getString(R.string.settings_car_hotspot_config_dialog_confirm)) { _, _ -> writeCarHotspotConfigNow() }
-                        .setNegativeButton(getString(R.string.cancel)) { _, _ ->
-                            CarHotspotSettings.setConfigWrite(this, false)
-                            render()
-                        }
-                        .setOnCancelListener {
-                            CarHotspotSettings.setConfigWrite(this, false)
-                            render()
-                        }
-                        .show()
+                    else -> {
+                        carHotspotConfigStatus = null
+                        render()
+                        AlertDialog.Builder(this)
+                            .setTitle(getString(R.string.settings_car_hotspot_config_dialog_title))
+                            .setMessage(getString(
+                                // With nothing saved yet the write creates the details, so the warning
+                                // must say that instead of only announcing an overwrite.
+                                if (hasSavedHotspotDetails()) R.string.settings_car_hotspot_config_dialog_message
+                                else R.string.settings_car_hotspot_config_dialog_generate_message,
+                            ))
+                            .setPositiveButton(getString(R.string.settings_car_hotspot_config_dialog_confirm)) { _, _ -> writeCarHotspotConfigNow() }
+                            .setNegativeButton(getString(R.string.cancel)) { _, _ ->
+                                CarHotspotSettings.setConfigWrite(this, false)
+                                render()
+                            }
+                            .setOnCancelListener {
+                                CarHotspotSettings.setConfigWrite(this, false)
+                                render()
+                            }
+                            .show()
+                    }
                 }
             }
         }, "diplay-hotspot-config-read").start()
