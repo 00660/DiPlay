@@ -910,6 +910,7 @@
     <string name="setup_iphone_none">iPhoneがまだ選択されていません</string>
     <string name="setup_features_title">機能</string>
     <string name="setup_features_description">%1$sにおすすめの機能です。使いたい機能をオンにしてください。後から設定画面で変更できます。</string>
+    <string name="setup_features_description_unknown">使いたい機能をオンにしてください。後から設定画面で変更できます。</string>
     <string name="setup_cluster_route_conflict">DiLink 4のメーター経路がオンです。DiLink 3ではメーターのCarPlay地図が停止します。</string>
     <string name="setup_cluster_route_turn_off">オフにする</string>
     <string name="setup_badge_tested">一部の車で動作確認済み</string>

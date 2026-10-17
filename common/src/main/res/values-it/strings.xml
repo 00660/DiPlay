@@ -885,6 +885,7 @@
     <string name="setup_iphone_none">Nessun iPhone ancora scelto</string>
     <string name="setup_features_title">Funzioni</string>
     <string name="setup_features_description">Suggerite per %1$s. Attiva ora quelle che vuoi; tutto resta nelle Impostazioni e può essere cambiato in seguito.</string>
+    <string name="setup_features_description_unknown">Attiva ora quelle che vuoi; tutto resta nelle Impostazioni e può essere cambiato in seguito.</string>
     <string name="setup_cluster_route_conflict">L’instradamento sul quadro strumenti DiLink 4 è attivo. Su DiLink 3 ferma la mappa di CarPlay sul cruscotto.</string>
     <string name="setup_cluster_route_turn_off">Disattivalo</string>
     <string name="setup_badge_tested">Testato su alcune auto</string>

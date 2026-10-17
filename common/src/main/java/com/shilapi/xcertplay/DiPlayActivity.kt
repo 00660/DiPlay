@@ -3359,8 +3359,10 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
 
     private fun setupFeaturesStep(content: LinearLayout) {
         val generation = DiLinkGeneration.current(this)
-        setupTitle(content, R.string.setup_features_title, getString(R.string.setup_features_description,
-            dilinkLabel(generation)))
+        // "Suggested for Not sure" names no car; most head units that are not BYD's land here.
+        setupTitle(content, R.string.setup_features_title,
+            if (generation == DiLinkGeneration.UNKNOWN) getString(R.string.setup_features_description_unknown)
+            else getString(R.string.setup_features_description, dilinkLabel(generation)))
         if (SetupGuide.hasConflictingClusterRoute(generation, AirPlayPersistence.loadDiLink4ClusterRouteEnabled(this))) {
             val warning = card()
             clusterRouteConflict(warning)
