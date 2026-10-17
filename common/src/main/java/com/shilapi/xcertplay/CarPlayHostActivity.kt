@@ -2957,7 +2957,7 @@ class CarPlayHostActivity : ComponentActivity() {
                 ViewGroup.LayoutParams.WRAP_CONTENT,
             ).apply { topMargin = dp(12) },
         )
-        if (Build.VERSION.SDK_INT == 32) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && CarHotspotSetup.isBydHeadUnit(this)) {
             content.addView(settingsSwitchRow(
                 label = getString(R.string.settings_hide_byd_call_popup),
                 checked = hideBydCallPopup,
