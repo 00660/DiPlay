@@ -588,9 +588,11 @@ class CarPlayHostActivity : ComponentActivity() {
     private var startAfterHandshakeReset = false
     private var restartGeneration = 0
     private var reconnectScheduled = false
-    // How often the current controller reached its control loop. A retry scheduled before it went up
-    // finds the same attempt running again and leaves it alone (#873).
+    // How often the current controller reached its control loop, and whether a loss came after the
+    // last time. A retry scheduled before the count went up leaves the attempt alone only while it is
+    // still running when the retry fires (#873).
     private var controlRunningCount = 0
+    private var lossSinceControlRunning = false
     private var requestedSmallWindowForStream: Boolean? = null
     @Volatile private var adbNaviMode: com.shilapi.xcertplay.hud.BydClusterNaviMode? = null
     private var sessionLog: SessionLogFile? = null
@@ -5303,7 +5305,12 @@ class CarPlayHostActivity : ComponentActivity() {
         controllerGeneration: Int,
     ): (CarPlayStatus) -> Unit = report@{ status ->
         if (controllerGeneration != restartGeneration) return@report
-        if (status is CarPlayStatus.RunningControl || status is CarPlayStatus.RunningWireless) controlRunningCount++
+        if (status is CarPlayStatus.RunningControl || status is CarPlayStatus.RunningWireless) {
+            controlRunningCount++
+            lossSinceControlRunning = false
+        } else if (status is CarPlayStatus.Failed || status is CarPlayStatus.ControlEnded) {
+            lossSinceControlRunning = true
+        }
         if (status is CarPlayStatus.Failed || status is CarPlayStatus.ControlEnded) {
             callPopupSessionReady = false
             updateCallPopupGuard()
@@ -5851,6 +5858,8 @@ class CarPlayHostActivity : ComponentActivity() {
         englishReason: String = reason,
     ) {
         if (!CarPlayBackgroundSession.isOwner(this)) return
+        // Also when a retry is already pending and this loss is dropped: that retry must not skip.
+        lossSinceControlRunning = true
         if (menuOpen) recoveryPendingAfterMenu = true
         if (shuttingDown.get() || menuOpen || handshakeResetInProgress || startupRetryStopped) return
         if (reconnectScheduled) return
@@ -5900,7 +5909,8 @@ class CarPlayHostActivity : ComponentActivity() {
                 }
                 // A wired attempt can report a failure and still go on: a second CarPlay mode request
                 // failed while the iPhone was already switching, and the switch then completed (#873).
-                if (controlRunningCount != controlRunsAtFailure) {
+                // Leave it alone only if it is still running; a loss after its recovery still restarts.
+                if (controlRunningCount != controlRunsAtFailure && !lossSinceControlRunning) {
                     appendLog("Not reconnecting after $reason: the same attempt is running again")
                     return@postDelayed
                 }
