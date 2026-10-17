@@ -4703,7 +4703,8 @@ class CarPlayHostActivity : ComponentActivity() {
 
     private fun updateResolutionMenu() {
         resolutionValueView?.text = "${displayScalePercent}%"
-        val native = activeDisplaySize ?: currentActivitySize()
+        // The size the request starts from (see createAirPlayConfig), so the preview names what is requested.
+        val native = (activeDisplaySize ?: currentActivitySize())?.let(::evenDisplaySize)
         val resolution = if (native == null) {
             getString(R.string.handshake_resolution_waiting_for_display)
         } else {
@@ -4722,11 +4723,12 @@ class CarPlayHostActivity : ComponentActivity() {
         val transport = if (!sessionHevc) {
             "H.264"
         } else {
-            "HEVC (H.265, ${if (hevcSoftwareDecoderEnabled) "software" else "hardware"})"
+            getString(R.string.preview_transport_hevc, getString(
+                if (hevcSoftwareDecoderEnabled) R.string.preview_decoder_software else R.string.preview_decoder_hardware))
         }
         val fullscreen = buildString {
             append(if (hideTopBar) getString(R.string.fullscreen_top_hidden) else getString(R.string.fullscreen_top_shown))
-            append(", ")
+            append(getString(R.string.preview_list_separator))
             append(if (hideBottomBar) getString(R.string.fullscreen_bottom_hidden) else getString(R.string.fullscreen_bottom_shown))
         }
         resolutionPreviewView?.text = buildString {
@@ -4813,9 +4815,7 @@ class CarPlayHostActivity : ComponentActivity() {
     private fun createAirPlayConfig(size: DisplaySize): AirPlayConfig {
         // The home settings page can change the name while this host stays alive.
         if (!menuOpen) oemLabel = AirPlayPersistence.loadOemLabel(this)
-        val safeWidth = (size.width / 2 * 2).coerceAtLeast(2)
-        val safeHeight = (size.height / 2 * 2).coerceAtLeast(2)
-        val alignedSize = DisplaySize(safeWidth, safeHeight)
+        val alignedSize = evenDisplaySize(size)
         val physical = resolvePhysicalSize(alignedSize)
         val knobPrimary = AndroidTvInputMode.shouldUseKnobAsPrimaryInput(this)
         val baseDisplay = AirPlayDisplayConfig(
@@ -6768,6 +6768,10 @@ class CarPlayHostActivity : ComponentActivity() {
     }
 
     private data class DisplaySize(val width: Int, val height: Int)
+
+    /** Video decoders need even dimensions; an odd window side gives up its last pixel. */
+    private fun evenDisplaySize(size: DisplaySize) =
+        DisplaySize((size.width / 2 * 2).coerceAtLeast(2), (size.height / 2 * 2).coerceAtLeast(2))
     private data class LogEntry(val timestampMillis: Long, val text: String)
     private data class HotspotStatus(
         val state: String,
