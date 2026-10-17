@@ -139,6 +139,8 @@ class CarPlayHostActivity : ComponentActivity() {
     private data class SettingsBaseline(
         val safeAreaRects: MutableMap<DisplaySize, SafeAreaRect?>,
         val customIconBytes: ByteArray?,
+        // Statuses wait while the menu is open, so the line it showed before is still the session's.
+        val hotspotStatus: HotspotStatus,
     )
 
     private data class PendingAssignedSiriDoublePress(
@@ -3505,6 +3507,7 @@ class CarPlayHostActivity : ComponentActivity() {
                 safeAreaSize?.let { put(it, AirPlayPersistence.loadSafeAreaRect(this@CarPlayHostActivity, it.width, it.height)) }
             },
             customIconBytes = customIconBytes,
+            hotspotStatus = hotspotStatus,
         )
     }
 
@@ -3538,7 +3541,7 @@ class CarPlayHostActivity : ComponentActivity() {
         }
         settingsBaseline = null
         locationPermissionAvailable = hasFineLocationPermission()
-        hotspotStatus = HotspotStatus(state = if (wirelessEnabled) getString(R.string.hotspot_state_stopped) else getString(R.string.hotspot_state_off))
+        hotspotStatus = baseline.hotspotStatus
         syncMfiSettingsControls()
         updateManualHotspotFields()
         updateAirPlayIconPreview()
