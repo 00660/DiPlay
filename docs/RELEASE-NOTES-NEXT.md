@@ -22,6 +22,7 @@ Changes through DiPlay 0.2.20 are documented in [0.2.20 release notes](RELEASE-N
 - DiPlay finds a car hotspot that runs on a network interface Android does not report as a Wi-Fi hotspot, such as `eth0.3` on a 2023 Lynk & Co 03 ([#573](https://github.com/shihabal3amri/DiPlay/issues/573)). That interface can also be entered by hand in the car hotspot details (**Hotspot interface (optional)**). Head units whose hotspot Android reports are unchanged. Pending in-car acceptance. [#885](https://github.com/shihabal3amri/DiPlay/pull/885)
 - When Bluetooth is still turning on, DiPlay waits up to 3 s for it instead of stopping wireless CarPlay at once ([#750](https://github.com/shihabal3amri/DiPlay/issues/750)), and the report includes the Bluetooth adapter state. [#822](https://github.com/shihabal3amri/DiPlay/pull/822)
 - **Save and reconnect** in the CarPlay quick menu works again for drivers on USB who never set up a car hotspot. It checked the empty hotspot details, refused to save, and showed the error on another page of the menu, so the button seemed to do nothing ([#848](https://github.com/shihabal3amri/DiPlay/issues/848)). The hotspot details are now checked only when they or the wireless switch change, and a refused save opens the page with the error. [#853](https://github.com/shihabal3amri/DiPlay/pull/853)
+- Wired CarPlay no longer stays on "connecting" forever when the iPhone accepts the start request but never opens CarPlay ([#889](https://github.com/shihabal3amri/DiPlay/issues/889), [#890](https://github.com/shihabal3amri/DiPlay/issues/890)). That happened after reopening DiPlay with the cable still plugged in, and on a first attempt on an Android 9 head unit, and only a replug recovered it. DiPlay now waits at most 30 s, the same as wireless (working head units open CarPlay 2–13 s after the request), then starts a new attempt itself. The report then counts what arrived from the iPhone on the USB network link. Pending in-car acceptance. [#907](https://github.com/shihabal3amri/DiPlay/pull/907)
 
 ## Display
 
@@ -37,6 +38,10 @@ Changes through DiPlay 0.2.20 are documented in [0.2.20 release notes](RELEASE-N
 - Navigation guidance attenuation now lowers the guidance audio itself instead of the Android track volume, which a DiLink 3.0 head unit ignored ([#719](https://github.com/shihabal3amri/DiPlay/issues/719)). [#841](https://github.com/shihabal3amri/DiPlay/pull/841)
 - **Hide BYD call popup (experimental)** is offered on BYD head units running Android 10 and later, not only on Android 12L. [#845](https://github.com/shihabal3amri/DiPlay/pull/845)
 - The setting for the phone, hang-up, Siri and media keys during CarPlay calls is now named **CarPlay call, Siri and media keys (experimental)**, and its description says what each key does. [#842](https://github.com/shihabal3amri/DiPlay/pull/842)
+
+## Dashboard
+
+- On BYD head units, DiPlay hands the instrument cluster back to the car 15 s after CarPlay's cluster map stops, for example when the driver leaves with the iPhone. It used to keep its window on the cluster, and when the car stopped DiPlay soon after, a 2023 Song Plus (DiLink 3.0) showed BYD's "instrument simple mode running" until the head unit restarted ([#883](https://github.com/shihabal3amri/DiPlay/issues/883), [#803](https://github.com/shihabal3amri/DiPlay/issues/803)). The next CarPlay map takes the cluster again, and a quicker reconnect keeps it. DiLink 5.1's own cluster layers are unchanged. Pending in-car acceptance. [#909](https://github.com/shihabal3amri/DiPlay/pull/909)
 
 ## Home screen and ambient lighting
 
