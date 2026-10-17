@@ -216,6 +216,7 @@ class CarPlayHostActivity : ComponentActivity() {
         manualHotspotBand = manualHotspotBand,
         manualHotspotChannel = manualHotspotChannel,
         manualHotspotSecurity = manualHotspotSecurity,
+        manualHotspotInterface = manualHotspotInterface,
         existingWifiSsid = existingWifiSsid,
         existingWifiPassphrase = existingWifiPassphrase,
         locationReportingEnabled = locationReportingEnabled,
@@ -541,6 +542,7 @@ class CarPlayHostActivity : ComponentActivity() {
     private var manualHotspotBand = ManualHotspotBand.AUTO
     private var manualHotspotChannel = 0
     private var manualHotspotSecurity = ManualHotspotSecurity.OPEN
+    private var manualHotspotInterface = ""
     private var awaitingVpnConsent = false
     private var vpnAdbConsentTried = false
     private var awaitingWirelessPermissions = false
@@ -926,6 +928,7 @@ class CarPlayHostActivity : ComponentActivity() {
         manualHotspotBand = AirPlayPersistence.loadManualHotspotBand(this)
         manualHotspotChannel = AirPlayPersistence.loadManualHotspotChannel(this)
         manualHotspotSecurity = AirPlayPersistence.loadManualHotspotSecurity(this)
+        manualHotspotInterface = AirPlayPersistence.loadManualHotspotInterface(this)
     }
 
     private fun requestStartupPrerequisites() {
@@ -3418,6 +3421,7 @@ class CarPlayHostActivity : ComponentActivity() {
         AirPlayPersistence.saveManualHotspotBand(this, manualHotspotBand)
         AirPlayPersistence.saveManualHotspotChannel(this, manualHotspotChannel)
         AirPlayPersistence.saveManualHotspotSecurity(this, manualHotspotSecurity)
+        AirPlayPersistence.saveManualHotspotInterface(this, manualHotspotInterface)
         AirPlayPersistence.saveLocationReportingEnabled(this, locationReportingEnabled)
         AirPlayPersistence.saveAutoStartOnBoot(this, autoStartOnBoot)
         AirPlayPersistence.saveAdvancedAudioChannelMapping(this, advancedAudioChannelMapping)
