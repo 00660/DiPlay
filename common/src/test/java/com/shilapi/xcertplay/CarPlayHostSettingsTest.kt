@@ -538,6 +538,63 @@ class CarPlayHostSettingsTest {
         assertTrue(field("handshakeResetInProgress") as Boolean)
     }
 
+    // #848: a fresh install keeps the default car hotspot mode, and a driver on USB never sets it up.
+    @Test fun savingWorksWhileTheUnusedCarHotspotIsNotSetUp() {
+        AirPlayPersistence.saveWirelessEnabled(activity, false)
+        AirPlayPersistence.saveWirelessHotspotMode(activity, WirelessHotspotMode.MANUAL)
+        AirPlayPersistence.saveManualHotspotSsid(activity, "")
+        invoke("loadPersistedSettings")
+        attachController()
+        invoke("openSettingsMenu")
+        resolutionSlider().progress = 0
+        saveButton().performClick()
+        assertFalse("Save and reconnect left the menu open", field("menuOpen") as Boolean)
+        assertEquals(CarPlayDisplayScale.MIN_TENTHS, AirPlayPersistence.loadDisplayScaleTenths(activity))
+        assertEquals(1, field("restartGeneration"))
+    }
+
+    // Switching to wireless puts the hotspot to use, so its details are checked although nobody touched them.
+    @Test fun switchingToWirelessChecksTheUnsetHotspot() {
+        AirPlayPersistence.saveWirelessEnabled(activity, false)
+        AirPlayPersistence.saveWirelessHotspotMode(activity, WirelessHotspotMode.MANUAL)
+        AirPlayPersistence.saveManualHotspotSsid(activity, "")
+        invoke("loadPersistedSettings")
+        attachController()
+        invoke("openSettingsMenu")
+        setField("wirelessEnabled", true)
+        saveButton().performClick()
+        assertTrue("Save stored wireless CarPlay without a hotspot", field("menuOpen") as Boolean)
+        assertEquals("connection", field("settingsMenuCategoryKey"))
+        val message = field("manualHotspotErrorView") as TextView
+        assertEquals(View.VISIBLE, message.visibility)
+        assertEquals(activity.getString(R.string.hotspot_ssid_is_required), message.text.toString())
+        assertFalse(AirPlayPersistence.loadWirelessEnabled(activity))
+        assertEquals(0, field("restartGeneration"))
+    }
+
+    @Test fun aRejectedHotspotEditOpensTheConnectionPageWithItsMessage() {
+        AirPlayPersistence.saveWirelessHotspotMode(activity, WirelessHotspotMode.MANUAL)
+        AirPlayPersistence.saveManualHotspotSsid(activity, "Car hotspot")
+        AirPlayPersistence.saveManualHotspotPassphrase(activity, "password1")
+        AirPlayPersistence.saveManualHotspotSecurity(activity, ManualHotspotSecurity.WPA2)
+        invoke("loadPersistedSettings")
+        attachController()
+        invoke("openSettingsMenu")
+        views(menu()).filterIsInstance<Button>().first { it.text == activity.getString(R.string.settings_more) }
+            .performClick()
+        setField("manualHotspotSsid", "")
+        saveButton().performClick()
+        assertTrue(field("menuOpen") as Boolean)
+        assertEquals("connection", field("settingsMenuCategoryKey"))
+        assertEquals(View.VISIBLE, views(menu()).first { it.tag == "connection" }.visibility)
+        assertEquals(View.GONE, views(menu()).first { it.tag == "more" }.visibility)
+        val message = field("manualHotspotErrorView") as TextView
+        assertEquals(View.VISIBLE, message.visibility)
+        assertEquals(activity.getString(R.string.hotspot_ssid_is_required), message.text.toString())
+        assertEquals("Car hotspot", AirPlayPersistence.loadManualHotspotSsid(activity))
+        assertEquals(0, field("restartGeneration"))
+    }
+
     @Test fun failedStartupWhileMenuIsOpenRecoversOnCancel() {
         attachController()
         invoke("openSettingsMenu")
@@ -872,6 +929,8 @@ class CarPlayHostSettingsTest {
     }
 
     private fun menu() = field("settingsMenu") as View
+    private fun saveButton() = views(menu()).filterIsInstance<Button>()
+        .single { it.text == activity.getString(R.string.save_and_reconnect) }
     private fun resolutionSlider() = views(menu()).filterIsInstance<SeekBar>()
         .first { it.max == CarPlayDisplayScale.MAX_PERCENT - CarPlayDisplayScale.MIN_PERCENT }
     private fun gestureButton() = views(menu()).filterIsInstance<Button>()
