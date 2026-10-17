@@ -1005,4 +1005,7 @@
     <string name="settings_launcher_bubble_unlocked">位置のロックを解除</string>
     <string name="settings_launcher_bubble_hold_to_lock">長押しでロック</string>
     <string name="settings_launcher_bubble_hold_to_unlock">長押しで解除</string>
+
+    <string name="settings_hotspot_interface">ホットスポットのインターフェース（任意）</string>
+    <string name="settings_hotspot_interface_description">Android が Wi-Fi ホットスポットとして報告しないネットワークインターフェースでホットスポットを動かすヘッドユニット専用です。一部の Geely、Lynk &amp; Co、その他の Qualcomm ユニットでは eth0.3 です。空欄のままにすると自動で検出します。</string>
 </resources>
