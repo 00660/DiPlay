@@ -834,6 +834,9 @@
     <string name="settings_ambient_parked_notice">Configura con l’auto ferma. Supporto sperimentale per alcune interfacce delle luci BYD; la compatibilità non è garantita per ogni modello o firmware. Il livello 0 indica il livello OEM più basso, non lo spegnimento.</string>
     <string name="settings_ambient_checking">Verifica in corso…</string>
     <string name="settings_ambient_unavailable">Verifica in sola lettura non riuscita: l’autorizzazione ADB già esistente o un’interfaccia luci supportata non è disponibile. Nessuna impostazione delle luci è stata salvata. Configura l’accesso separatamente con l’auto ferma; questa funzione non abilita ADB né richiede l’autorizzazione.</string>
+    <string name="settings_ambient_car_rhythm">Ritmo musicale dell’auto</string>
+    <string name="settings_ambient_car_rhythm_description">Durante la riproduzione di musica su CarPlay, si attiva il ritmo musicale delle luci ambientali dell’auto, con i colori e gli effetti impostati nel menu delle luci ambientali dell’auto; il ritmo musicale deve essere attivo. Nel frattempo DiPlay non controlla direttamente le luci. La disponibilità viene verificata all’attivazione. Richiede ADB di rete dell’auto solo se la head unit non consente a DiPlay di avviare direttamente il ritmo.</string>
+    <string name="settings_ambient_car_rhythm_unavailable">Il ritmo musicale dell’auto non è disponibile: DiPlay non può avviarlo direttamente e manca l’accesso ADB di rete di DiPlay oppure la chiamata al servizio audio della head unit. Non è stato salvato nulla.</string>
     <string name="settings_interface_size">Dimensione dell’interfaccia</string>
     <string name="settings_interface_size_auto">Automatica</string>
     <string name="settings_interface_size_hint">Dimensione di testo e controlli sulle schermate di DiPlay. Automatica li ingrandisce sugli schermi grandi con bassa densità. CarPlay non è interessato.</string>
@@ -954,6 +957,20 @@
     <string name="settings_navigation_attenuation_description">Riduce le indicazioni di navigazione di CarPlay senza cambiare il volume di musica o chiamate. Si applica subito; il volume di navigazione della head unit continua a funzionare.</string>
     <string name="settings_car_hotspot_control">Hotspot dell’auto</string>
     <string name="settings_auto_car_hotspot_system_description">Accende l’hotspot dell’auto salvato quando DiPlay si apre e prima di una connessione wireless. DiPlay richiede l’accesso “Modifica impostazioni di sistema” di Android; ADB non è necessario. Per avere l’hotspot dopo un riavvio completo, attiva anche l’apertura di DiPlay dopo l’avvio dell’auto. L’hotspot non viene spento automaticamente.</string>
+    <string name="settings_car_hotspot_config_title">Importa i dati dell’hotspot dell’auto (sperimentale)</string>
+    <string name="settings_car_hotspot_config_description">Non devi inserire nulla: le impostazioni dell’hotspot dell’auto vengono importate. Se l’auto non ne ha, DiPlay vi scrive i propri dati dopo la tua conferma; i dispositivi che usano questo hotspot potrebbero dover riconnettersi. Richiede ADB su Android 11 e successivi; non è disponibile da Android 8 a 10.</string>
+    <string name="settings_car_hotspot_config_unsupported">L’importazione dei dati dell’hotspot dell’auto non è supportata da questa versione di Android.</string>
+    <string name="settings_car_hotspot_config_written">La password dell’hotspot dell’auto ora è quella di DiPlay.</string>
+    <string name="settings_car_hotspot_config_imported">Impostazioni dell’hotspot dell’auto importate.</string>
+    <string name="settings_car_hotspot_config_dialog_title">Sovrascrivere le impostazioni dell’hotspot dell’auto?</string>
+    <string name="settings_car_hotspot_config_dialog_message">Non è stato possibile leggere la configurazione dell’hotspot salvata nell’auto. Continuando, verrà sostituita con i dati dell’hotspot di DiPlay: il nome potrebbe cambiare, la password verrà sostituita e gli altri dispositivi dovranno inserirla di nuovo.</string>
+    <string name="settings_car_hotspot_config_dialog_generate_message">Non è stato possibile leggere i dati dell’auto e DiPlay non ha ancora i dati dell’hotspot. Continuando, verranno creati nell’auto un nuovo nome e una nuova password; gli altri dispositivi dovranno inserire la nuova password.</string>
+    <string name="settings_car_hotspot_config_dialog_save_message">La password dell’hotspot di DiPlay verrà scritta nelle impostazioni dell’hotspot dell’auto. I dispositivi che lo usano potrebbero dover inserire di nuovo la password.</string>
+    <string name="settings_car_hotspot_config_dialog_confirm">Sovrascrivi e continua</string>
+    <string name="settings_car_hotspot_config_effect">Applicato al prossimo avvio dell’hotspot dell’auto</string>
+    <string name="settings_car_hotspot_config_failed">DiPlay non è riuscito a scrivere le impostazioni dell’hotspot dell’auto. Il nome e la password restano invariati.</string>
+    <string name="settings_car_hotspot_config_open">Un hotspot DiPlay senza password non sovrascrive quella dell’auto.</string>
+    <string name="settings_car_hotspot_config_wpa3">Un hotspot WPA3 non viene modificato. Per scrivere i dati nell’auto, salva l’hotspot con WPA2.</string>
     <string name="settings_write_settings_granted">Accesso “Modifica impostazioni di sistema”: consentito</string>
     <string name="settings_write_settings_missing">L’accesso “Modifica impostazioni di sistema” non è ancora consentito. Consentilo così DiPlay può accendere l’hotspot.</string>
     <string name="settings_write_settings_allow">Consenti l’accesso</string>
@@ -970,4 +987,11 @@
     <string name="black_corner_overlay_off">Disattivato</string>
     <string name="black_corner_overlay_value">%1$d dp</string>
     <string name="iphone_corner_mask_mode">Maschera iPhone (sperimentale)</string>
+    <string name="settings_launcher_bubble">Bolla nella schermata Home (sperimentale)</string>
+    <string name="settings_launcher_bubble_description">Mostra l’icona di DiPlay in una bolla sopra la schermata Home della head unit: toccala per tornare a CarPlay e trascinala dove vuoi. Scompare quando è aperta una schermata di DiPlay e riappare quando la lasci. Tienila premuta per bloccarne la posizione e premila di nuovo a lungo per sbloccarla. Richiede il permesso “Mostra sopra altre app”.</string>
+    <string name="settings_launcher_bubble_size">Dimensione della bolla</string>
+    <string name="settings_launcher_bubble_locked">Posizione bloccata</string>
+    <string name="settings_launcher_bubble_unlocked">Posizione sbloccata</string>
+    <string name="settings_launcher_bubble_hold_to_lock">Tieni premuto per bloccare</string>
+    <string name="settings_launcher_bubble_hold_to_unlock">Tieni premuto per sbloccare</string>
 </resources>
