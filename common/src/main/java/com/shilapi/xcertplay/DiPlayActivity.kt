@@ -75,6 +75,7 @@ import com.shilapi.xcertplay.media.AmbientMusicSettings
 import com.shilapi.xcertplay.media.MtkDecoderTuning
 import com.shilapi.xcertplay.network.CarHotspotConfigRead
 import com.shilapi.xcertplay.network.CarHotspotConfigWrite
+import com.shilapi.xcertplay.network.CarHotspotSavedCredentials
 import com.shilapi.xcertplay.network.CarHotspotSettings
 import com.shilapi.xcertplay.network.CarHotspotTethering
 import com.shilapi.xcertplay.network.HotspotCredentials
@@ -2980,6 +2981,9 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
     }
 
     private var carHotspotConfigStatus: Int? = null
+    // What the import last read from the car. Saving exactly these writes nothing new to the car, so
+    // it gets no overwrite warning.
+    private var importedCarHotspot: CarHotspotSavedCredentials? = null
 
     // Copies the car's saved hotspot details into our settings without touching the car. When the
     // car's configuration cannot be read the write path runs instead, after a warning: it keeps the
@@ -3001,6 +3005,7 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
                 AirPlayPersistence.saveManualHotspotSecurity(applicationContext, saved.security)
                 runOnUiThread {
                     carHotspotConfigStatus = null
+                    importedCarHotspot = saved
                     toast(getString(R.string.settings_car_hotspot_config_imported))
                     render()
                 }
@@ -3708,7 +3713,8 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
         AirPlayPersistence.saveManualHotspotChannel(this, 0)
         AirPlayPersistence.saveManualHotspotInterface(this, interfaceName)
         markReconnectNeeded()
-        if (CarHotspotConfigWrite.supported() && CarHotspotSettings.configWrite(this)) {
+        val fromCar = importedCarHotspot == CarHotspotSavedCredentials(ssid, password, security)
+        if (CarHotspotConfigWrite.supported() && CarHotspotSettings.configWrite(this) && !fromCar) {
             AlertDialog.Builder(this)
                 .setTitle(getString(R.string.settings_car_hotspot_config_dialog_title))
                 .setMessage(getString(R.string.settings_car_hotspot_config_dialog_save_message))
