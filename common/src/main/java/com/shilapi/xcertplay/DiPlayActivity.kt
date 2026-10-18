@@ -1908,7 +1908,7 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
                 { AirPlayPersistence.loadDisplayScalePercent(this) }, reconnects = true,
                 save = { AirPlayPersistence.saveDisplayScalePercent(this, it) },
             )
-            choice(card, getString(R.string.frame_rate), listOf(getString(R.string.s_30_fps_lighter_load), getString(R.string.s_60_fps_smoother_motion)), if (AirPlayPersistence.loadFps(this) == 60) 1 else 0) { AirPlayPersistence.saveFps(this, if (it == 1) 60 else 30) }
+            frameRateControl(card)
             carPlayDockControl(card)
             addSystemBarControls(
                 hideTopBar = AirPlayPersistence.loadHideTopBar(this),
@@ -5558,6 +5558,21 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
         parent.addView(label(getString(R.string.changes_the_size_of_carplay_icons_and_text_applying_a_size), 14, MUTED).apply {
             setPadding(0, 0, 0, dp(18))
         })
+    }
+
+    // The CarPlay menu's slider also saves the steps between 30 and 60 fps. Such a rate is listed as it is, so the
+    // row shows the rate in use and 30 or 60 can still be chosen from it.
+    private fun frameRateControl(parent: LinearLayout) {
+        val current = AirPlayPersistence.loadFps(this)
+        val rates = listOf(30, current, 60).distinct()
+        val labels = rates.map {
+            when (it) {
+                30 -> getString(R.string.s_30_fps_lighter_load)
+                60 -> getString(R.string.s_60_fps_smoother_motion)
+                else -> "$it fps"
+            }
+        }
+        choice(parent, getString(R.string.frame_rate), labels, rates.indexOf(current)) { AirPlayPersistence.saveFps(this, rates[it]) }
     }
 
     private fun scheduleTimeControl(parent: LinearLayout, start: Boolean) {
