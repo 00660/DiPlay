@@ -203,7 +203,7 @@
     <string name="rect_fill_disable_safe_area_description">Chiede all’iPhone un’immagine a schermo intero con gli angoli squadrati. Provalo quando CarPlay lascia una striscia su un bordo o mostra il colore dello sfondo negli angoli arrotondati. L’area sicura qui sopra non viene usata finché questa opzione è attiva. Si applica dopo Salva e riconnetti.</string>
     <string name="safe_area_disabled_rect_fill_summary">Area sicura: disattivata (angoli squadrati, schermo intero)</string>
     <string name="driving_side">Lato di guida</string>
-    <string name="efficient_video">Video efficiente</string>
+    <string name="efficient_video">Video efficiente (HEVC)</string>
     <string name="enable_the_car_s_bluetooth_and_pair_your_iphone_first">Attiva prima il Bluetooth dell’auto e associa l’iPhone.</string>
     <string name="error">Errore</string>
     <string name="exit_application">ESCI DALL’APPLICAZIONE</string>

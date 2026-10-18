@@ -317,6 +317,23 @@ class AdaptiveSettingsUiTest {
         assertEquals("settings", ReflectionHelpers.getField<String>(screen, "page"))
     }
 
+    // #965: the CarPlay menu calls this switch HEVC (H.265), and search matches titles only.
+    @Test fun searchFindsTheHevcSwitchByItsCodec() {
+        val screen = openSettings()
+        val index = ReflectionHelpers.callInstanceMethod<List<Any>>(screen, "buildSettingsSearchIndex")
+        val results = ReflectionHelpers.callInstanceMethod<List<Any>>(screen, "searchSettings",
+            ReflectionHelpers.ClassParameter(List::class.java, index),
+            ReflectionHelpers.ClassParameter(String::class.java, "hevc"))
+        val hevc = results.single {
+            ReflectionHelpers.getField<String>(it, "title") == screen.getString(R.string.efficient_video)
+        }
+
+        ReflectionHelpers.callInstanceMethod<Unit>(screen, "openSearchResult",
+            ReflectionHelpers.ClassParameter(hevc.javaClass, hevc))
+
+        assertTrue(texts(screen).any { it.text == screen.getString(R.string.efficient_video) })
+    }
+
     @Test fun searchOpensTheCategoryThatOwnsTheSetting() {
         val screen = openSettings()
         val index = ReflectionHelpers.callInstanceMethod<List<Any>>(screen, "buildSettingsSearchIndex")
