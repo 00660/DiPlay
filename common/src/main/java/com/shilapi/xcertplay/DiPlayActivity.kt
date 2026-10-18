@@ -531,6 +531,9 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
             startupHotspotCancelled = false
             startCarHotspotOnLaunch()
         }
+        // The background check runs two minutes after opening, usually while CarPlay is in front: what it
+        // found shows when DiPlay comes back, not only after the activity is created again.
+        availableUpdate = UpdateAvailability.available(this, version())
         // Back from the car settings: refresh the car hotspot reminder on the home page.
         if (!initialLaunch && !adbSwitchChangePending && !pausedForAdbSwitchChange &&
             (page == "home" || page == "settings" || page == "connection" || page == "setup")) render()
