@@ -288,6 +288,7 @@ class CarPlayController(
     @Volatile private var firstTcpWatchdog: FirstTcpWatchdog? = null
     @Volatile private var wiredStartWatchdog: WiredStartWatchdog? = null
     @Volatile private var wiredSessionActive = false
+    @Volatile private var wiredStartSentAtNanos: Long? = null
     @Volatile private var wirelessPublishedAddress: InetAddress? = null
     @Volatile private var wirelessAlternateAddress: InetAddress? = null
     @Volatile private var wirelessAddressRecovery: HotspotAddressRecovery? = null
@@ -2325,6 +2326,7 @@ class CarPlayController(
             )
             onStatus(CarPlayStatus.RunningControl)
             wiredSessionActive = false
+            wiredStartSentAtNanos = null
             lateinit var startWatchdog: WiredStartWatchdog
             startWatchdog = WiredStartWatchdog(
                 schedule = { delay, action ->
@@ -2362,6 +2364,7 @@ class CarPlayController(
                     if (message == Iap2WiredControlClient.START_SESSION_AGAIN_PROGRESS) {
                         startWatchdog.startSessionSentAgain()
                     } else if (message.startsWith(START_SESSION_PROGRESS)) {
+                        if (wiredStartSentAtNanos == null) wiredStartSentAtNanos = System.nanoTime()
                         wiredDeviceName?.let(WiredSessionMemory::started)
                         startWatchdog.startSessionSent()
                     }
@@ -2371,6 +2374,7 @@ class CarPlayController(
                     val opened = ncm.linkOpenedAtNanos
                     WiredStartAgain.decide(
                         nowNanos = System.nanoTime(),
+                        startSentAtNanos = wiredStartSentAtNanos ?: System.nanoTime(),
                         linkOpenedAtNanos = opened,
                         sessionActive = wiredSessionActive,
                         connectionAttemptSinceLinkOpened =
