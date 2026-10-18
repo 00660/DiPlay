@@ -332,6 +332,9 @@ class CarPlayController(
     private data class SessionCornerMask(val session: AirPlaySession, val png: ByteArray, val width: Int)
     @Volatile private var currentCornerMask: SessionCornerMask? = null
 
+    /** The live AirPlay session, for a new host that adopts the running stream without a session-active callback. */
+    fun activeAirPlaySession(): AirPlaySession? = activeSession?.takeIf { !closed && !it.isClosed }
+
     /** The video session can outlive its Activity; the new host must be able to replay the mask. */
     fun activeIphoneCornerMask(): Triple<AirPlaySession, ByteArray, Int>? {
         val current = currentCornerMask ?: return null

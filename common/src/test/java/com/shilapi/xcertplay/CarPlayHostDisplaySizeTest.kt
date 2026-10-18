@@ -546,6 +546,28 @@ class CarPlayHostDisplaySizeTest {
         }
     }
 
+    @Test fun anAdoptedSessionStillGetsDayAndNight() {
+        // A recreated host (for example after a change of the app language) adopts the running stream and
+        // gets no session-active callback; day/night must still reach the iPhone.
+        val session = org.mockito.Mockito.mock(AirPlaySession::class.java)
+        val controller = org.mockito.Mockito.mock(CarPlayController::class.java)
+        org.mockito.Mockito.`when`(controller.nowPlayingSnapshot()).thenReturn(CarPlayNowPlaying())
+        org.mockito.Mockito.`when`(controller.activeAirPlaySession()).thenReturn(session)
+        val sink = AndroidMediaSink()
+        try {
+            CarPlayBackgroundSession.store(controller, sink, 1920, 990, Any(),
+                CarPlaySessionDisplay(1920, 990, Surface.ROTATION_0, true, true, 1920, 990)) {}
+            assertEquals(true, invoke("adoptBackgroundSession"))
+            assertSame(session, getField("activeAirPlaySession"))
+            setField("darkMode", true)
+            activity.javaClass.getDeclaredMethod("syncAirPlayDarkMode", ThemeModeDiagnostics.Source::class.java)
+                .apply { isAccessible = true }.invoke(activity, ThemeModeDiagnostics.Source.CARPLAY_MODE)
+            org.mockito.Mockito.verify(session, org.mockito.Mockito.timeout(2_000)).setNightMode(true)
+        } finally {
+            sink.close()
+        }
+    }
+
     private fun startSession(
         rotation: Int = Surface.ROTATION_0,
         windowWidth: Int = 1920,
