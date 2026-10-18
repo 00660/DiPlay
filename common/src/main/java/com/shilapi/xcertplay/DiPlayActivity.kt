@@ -2427,6 +2427,18 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
                             }
                         }
                         if (!diLink4) {
+                            if (BydOutputSettings.projectionShapeAvailable(this)) {
+                                // DiPlay switches the cluster to half screen whenever the map appears,
+                                // which overrides the shape picked on the car, so the choice lives here.
+                                val shapes = com.shilapi.xcertplay.hud.BydClusterProjectionShape.entries
+                                choice(card, getString(R.string.cluster_projection_shape), listOf(
+                                    getString(R.string.cluster_projection_shape_half),
+                                    getString(R.string.cluster_projection_shape_full),
+                                ), shapes.indexOf(BydOutputSettings.clusterProjectionShape(this)), reconnects = false) {
+                                    BydOutputSettings.setClusterProjectionShape(this, shapes[it])
+                                }
+                                card.addView(label(getString(R.string.cluster_projection_shape_description), 14, MUTED))
+                            }
                             toggle(card, getString(R.string.dashboard_map_only_in_small_and_full_navi),
                                 getString(R.string.dashboard_map_only_in_small_and_full_navi_description),
                                 BydOutputSettings.clusterStreamPause(this)) {
