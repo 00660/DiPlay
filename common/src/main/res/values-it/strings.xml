@@ -711,6 +711,8 @@
     <string name="wheel_key_service_description">Filtraggio facoltativo dei tasti del volante per il volume di navigazione durante la guida vocale, lo zoom della mappa del cruscotto, il joystick di CarPlay e i controlli delle chiamate. Non viene letto alcun contenuto dello schermo.</string>
     <string name="cluster_song_on_change">Brano solo quando cambia</string>
     <string name="cluster_song_on_change_description">Un nuovo brano compare sul cruscotto per 5 secondi, poi la scheda viene svuotata. Pausa e riproduzione da sole non lo mostrano di nuovo.</string>
+    <string name="cluster_song_gate">Attiva automaticamente la scheda musicale</string>
+    <string name="cluster_song_gate_description">La scheda musicale non è visibile di default e appare solo dopo che lo stack multimediale dell’auto è stato attivato. Attivando questa opzione DiPlay lo attiva per te: durante l’operazione la schermata multimediale copre brevemente lo schermo, poi si torna a DiPlay. Disattivandola eviti questo lampeggio; l’effetto è immediato.</string>
     <string name="carplay_calls_on_dashboard">Chiamate CarPlay sul cruscotto</string>
     <string name="carplay_calls_on_dashboard_description">Le chiamate CarPlay in arrivo e in corso mostrano chi chiama sul quadro strumenti, con la durata della chiamata sul quadro strumenti e sull’head-up display, come l’app CarPlay di BYD. Durante la chiamata l’auto abbassa anche la ventola. Si applica subito. Richiede ADB via rete sulla head unit.</string>
     <string name="cluster_safe_area_edit">Area sicura del quadro strumenti · modifica riquadro</string>

@@ -1,6 +1,7 @@
 package com.shilapi.xcertplay.hud
 
 import android.annotation.SuppressLint
+import android.app.ActivityManager
 import android.content.Context
 import android.content.Intent
 import android.os.Looper
@@ -288,24 +289,37 @@ internal object BydClusterSong {
         }
 
         try {
+            // CarPlay runs in its own task (root activity com.shilapi.xcertplay.CarPlayHostActivity,
+            // affinity .carplay), so after the gate we return the driver there — not to the DiPlay
+            // launcher or BYD's desktop. getRunningTasks is unreliable here (it reports BYD's desktop as
+            // foreground), so pick the CarPlay task from our own tasks by its root activity class.
+            val carplayTask = (app.getSystemService(Context.ACTIVITY_SERVICE) as? ActivityManager)
+                ?.appTasks?.firstOrNull { task ->
+                    val cls = task.taskInfo?.baseActivity?.className
+                        ?: task.taskInfo?.topActivity?.className ?: ""
+                    cls.endsWith("CarPlayHostActivity")
+                }
             // 1) Open the gate: launch the local music main UI to activate ECU display mode.
             val gate = Intent().apply {
                 setClassName(GATE_PKG, GATE_ACT)
                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             }
             app.startActivity(gate)
-
             // 2) Wait for a while so the ECU enters display mode and the property becomes true.
             Thread.sleep(RETURN_DELAY_MS)
 
-            // 3) Return to this app: launch our own launcher to bring the task to the foreground.
-            val self = app.packageManager.getLaunchIntentForPackage(app.packageName)
-            if (self != null) {
-                self.addFlags(
-                    Intent.FLAG_ACTIVITY_NEW_TASK
-                            or Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED
-                )
-                app.startActivity(self)
+            // 3) Return to the CarPlay task if it is running, otherwise fall back to the DiPlay launcher.
+            if (carplayTask != null) {
+                carplayTask.moveToFront()
+            } else {
+                val self = app.packageManager.getLaunchIntentForPackage(app.packageName)
+                if (self != null) {
+                    self.addFlags(
+                        Intent.FLAG_ACTIVITY_NEW_TASK
+                                or Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED
+                    )
+                    app.startActivity(self)
+                }
             }
         } catch (t: Throwable) {
             Log.w(TAG, "gate open failed: $t")

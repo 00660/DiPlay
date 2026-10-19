@@ -90,7 +90,7 @@ object BydOutputSettings {
      * to DiPlay. Off keeps the write but the card may stay hidden unless the media stack was already
      * active. Applies at once. Defaults on so the song keeps showing as before.
      */
-    fun clusterSongGate(context: Context): Boolean = prefs(context).getBoolean(KEY_CLUSTER_SONG_GATE, true)
+    fun clusterSongGate(context: Context): Boolean = prefs(context).getBoolean(KEY_CLUSTER_SONG_GATE, false)
 
     fun setClusterSongGate(context: Context, enabled: Boolean) =
         prefs(context).edit().putBoolean(KEY_CLUSTER_SONG_GATE, enabled).apply()
