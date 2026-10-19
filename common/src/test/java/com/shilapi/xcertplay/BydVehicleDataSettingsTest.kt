@@ -234,7 +234,7 @@ class BydVehicleDataSettingsTest {
         shadowOf(Looper.getMainLooper()).idle()
 
         assertEquals(1, switches().count { it.contentDescription == activity.getString(R.string.cluster_song_gate) })
-        assertTrue(BydOutputSettings.clusterSongGate(context))
+        assertFalse(BydOutputSettings.clusterSongGate(context)) // default false
     }
 
     @Test fun scheduledValidationCannotLeaveAUserProbeStuck() {
