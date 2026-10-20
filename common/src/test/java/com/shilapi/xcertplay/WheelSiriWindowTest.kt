@@ -357,6 +357,27 @@ class WheelSiriWindowTest {
         assertEquals(learned, WheelZoomSettings.key(settings, WheelZoomSettings.Role.MEDIA_PLAY_PAUSE))
     }
 
+    @Test fun aKeyThatReachesOnlyThisWindowIsLearntWhileTheServiceRuns() {
+        settings.setTheme(android.R.style.Theme_Material_NoActionBar)
+        WheelZoomSettings.setMediaPlayPause(settings, true)
+        val service = boundService()
+        try {
+            for ((role, code) in listOf(WheelZoomSettings.Role.SIRI to KeyEvent.KEYCODE_F7,
+                WheelZoomSettings.Role.MEDIA_PLAY_PAUSE to KeyEvent.KEYCODE_F9)) {
+                val assign = assignButton(role)
+                assign.performClick()
+                assertTrue(WheelKeyService.isLearning())
+                settings.dispatchKeyEvent(key(code, true))
+                settings.dispatchKeyEvent(key(code, false))
+                val learnt = WheelKey(code, 0, "?")
+                assertEquals(learnt, WheelZoomSettings.key(settings, role))
+                assertEquals(assignText(role, learnt), assign.text.toString())
+            }
+        } finally {
+            service.onDestroy()
+        }
+    }
+
     @Test fun nonBydUnitWithThePreviouslySupportedClusterDisplayKeepsWheelControls() {
         settings.setTheme(android.R.style.Theme_Material_NoActionBar)
         WheelZoomSettings.setSiriKey(settings, false)
@@ -390,6 +411,20 @@ class WheelSiriWindowTest {
     private fun wheelControls() = LinearLayout(settings).also { controls ->
         settings.javaClass.getDeclaredMethod("wheelKeysSettings", LinearLayout::class.java)
             .apply { isAccessible = true }.invoke(settings, controls)
+    }
+
+    private fun assignText(role: WheelZoomSettings.Role, key: WheelKey?) = settings.getString(R.string.wheel_key_assign,
+        settings.getString(when (role) {
+            WheelZoomSettings.Role.SIRI -> R.string.wheel_key_role_siri
+            WheelZoomSettings.Role.MEDIA_PLAY_PAUSE -> R.string.wheel_key_role_media_play_pause
+            else -> error("no assign label for $role")
+        }), key?.toString() ?: settings.getString(R.string.wheel_key_none))
+
+    private fun assignButton(role: WheelZoomSettings.Role) = views(wheelControls()).filterIsInstance<android.widget.Button>()
+        .single { it.text.toString() == assignText(role, WheelZoomSettings.key(settings, role)) }
+
+    private fun boundService() = Robolectric.buildService(WheelKeyService::class.java).create().get().also {
+        it.javaClass.getDeclaredMethod("onServiceConnected").apply { isAccessible = true }.invoke(it)
     }
 
     private fun assertSharedServiceSetupOnce(controls: View) {
