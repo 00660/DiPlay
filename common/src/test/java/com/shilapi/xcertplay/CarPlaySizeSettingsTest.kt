@@ -7,6 +7,8 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.LinearLayout
+import android.widget.SeekBar
+import android.widget.TextView
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -50,7 +52,7 @@ class CarPlaySizeSettingsTest {
         assertEquals("CarPlay size · Medium · 300 mm", sizeControl().text.toString())
         sizeControl().performClick()
         val dialog = ShadowAlertDialog.getLatestAlertDialog()
-        assertEquals(listOf("Large · 250 mm", "Medium · 300 mm", "Small · 350 mm"), items(dialog))
+        assertEquals(listOf("Large · 250 mm", "Medium · 300 mm", "Small · 350 mm", "Custom…"), items(dialog))
         assertEquals(1, dialog.listView.checkedItemPosition)
         dialog.listView.performItemClick(null, 0, 0L)
         dialog.getButton(AlertDialog.BUTTON_POSITIVE).performClick()
@@ -79,6 +81,71 @@ class CarPlaySizeSettingsTest {
             assertEquals(mm, prefs.getInt("display_width_physical_mm", -1))
         }
     }
+
+    @Test fun customLengthIsSetWithASliderInFiveMillimetreSteps() {
+        val control = sizeControl()
+        control.performClick()
+        val dialog = ShadowAlertDialog.getLatestAlertDialog()
+        dialog.listView.performItemClick(null, 3, 3L)
+        dialog.getButton(AlertDialog.BUTTON_POSITIVE).performClick()
+        val slider = lengthSlider()
+        assertEquals(60, slider.max)
+        assertEquals((300 - 100) / 5, slider.progress)
+        assertTrue(texts(ShadowAlertDialog.getLatestAlertDialog()).contains("300 mm"))
+        drag(slider, (285 - 100) / 5)
+        assertTrue(texts(ShadowAlertDialog.getLatestAlertDialog()).contains("285 mm"))
+        ShadowAlertDialog.getLatestAlertDialog().getButton(AlertDialog.BUTTON_POSITIVE).performClick()
+        shadowOf(Looper.getMainLooper()).idle()
+        assertEquals(285, AirPlayPersistence.loadWidthPhysicalMm(activity))
+        assertEquals("CarPlay size · Custom · 285 mm", control.text.toString())
+        control.performClick()
+        assertEquals(listOf("Large · 250 mm", "Medium · 300 mm", "Small · 350 mm", "Custom · 285 mm"), items(ShadowAlertDialog.getLatestAlertDialog()))
+    }
+
+    @Test fun cancellingTheLengthSliderKeepsTheSavedLength() {
+        val control = sizeControl()
+        control.performClick()
+        val dialog = ShadowAlertDialog.getLatestAlertDialog()
+        dialog.listView.performItemClick(null, 3, 3L)
+        dialog.getButton(AlertDialog.BUTTON_POSITIVE).performClick()
+        drag(lengthSlider(), 0)
+        ShadowAlertDialog.getLatestAlertDialog().getButton(AlertDialog.BUTTON_NEGATIVE).performClick()
+        shadowOf(Looper.getMainLooper()).idle()
+        assertEquals(300, AirPlayPersistence.loadWidthPhysicalMm(activity))
+        assertEquals("CarPlay size · Medium · 300 mm", control.text.toString())
+    }
+
+    @Test fun theLengthSliderStartsAtASavedCustomLengthAndReachesBothEnds() {
+        AirPlayPersistence.saveWidthPhysicalMm(activity, 275)
+        sizeControl().performClick()
+        val dialog = ShadowAlertDialog.getLatestAlertDialog()
+        dialog.getButton(AlertDialog.BUTTON_POSITIVE).performClick()
+        val slider = lengthSlider()
+        assertEquals((275 - 100) / 5, slider.progress)
+        assertTrue(texts(ShadowAlertDialog.getLatestAlertDialog()).contains("275 mm"))
+        drag(slider, slider.max)
+        ShadowAlertDialog.getLatestAlertDialog().getButton(AlertDialog.BUTTON_POSITIVE).performClick()
+        shadowOf(Looper.getMainLooper()).idle()
+        assertEquals(400, AirPlayPersistence.loadWidthPhysicalMm(activity))
+    }
+
+    private fun lengthSlider(): SeekBar {
+        shadowOf(Looper.getMainLooper()).idle()
+        val dialog = ShadowAlertDialog.getLatestAlertDialog()
+        return views(dialog.window!!.decorView).filterIsInstance<SeekBar>().single()
+    }
+
+    private fun texts(dialog: AlertDialog) = views(dialog.window!!.decorView).filterIsInstance<TextView>().map { it.text.toString() }
+
+    private fun drag(slider: SeekBar, progress: Int) {
+        val listener = SeekBar::class.java.getDeclaredField("mOnSeekBarChangeListener")
+            .apply { isAccessible = true }.get(slider) as SeekBar.OnSeekBarChangeListener
+        slider.progress = progress
+        listener.onProgressChanged(slider, progress, true)
+    }
+
+    private fun views(view: View): List<View> =
+        listOf(view) + if (view is ViewGroup) (0 until view.childCount).flatMap { views(view.getChildAt(it)) } else emptyList()
 
     private fun items(dialog: AlertDialog) =
         (0 until dialog.listView.adapter.count).map { dialog.listView.adapter.getItem(it).toString() }
