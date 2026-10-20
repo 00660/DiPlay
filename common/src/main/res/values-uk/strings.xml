@@ -429,6 +429,8 @@
     <string name="option_size_large">Великий</string>
     <string name="option_size_medium">Середній</string>
     <string name="option_size_small">Малий</string>
+    <string name="option_size_custom">Власний</string>
+    <string name="size_option_millimeters">%1$s · %2$d mm</string>
     <string name="option_theme_scenario">Сценарій · карта збоку</string>
     <string name="option_theme_map">Карта · повна карта</string>
     <string name="option_theme_simple">Проста · карта збоку</string>

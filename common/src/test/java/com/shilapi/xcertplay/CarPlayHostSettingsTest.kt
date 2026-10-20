@@ -504,6 +504,23 @@ class CarPlayHostSettingsTest {
         }
     }
 
+    @Test fun physicalLengthMovesInFiveMillimetreSteps() {
+        for ((saved, label) in listOf(275 to "275 mm", 225 to "225 mm", 300 to "300 mm")) {
+            AirPlayPersistence.saveWidthPhysicalMm(activity, saved)
+            invoke("loadPersistedSettings")
+            invoke("openSettingsMenu")
+            val slider = lengthSlider()
+            assertEquals(60, slider.max)
+            assertEquals((saved - 100) / 5, slider.progress)
+            assertTrue(views(menu()).filterIsInstance<TextView>().any { it.text == label })
+            val listener = SeekBar::class.java.getDeclaredField("mOnSeekBarChangeListener")
+                .apply { isAccessible = true }.get(slider) as SeekBar.OnSeekBarChangeListener
+            listener.onProgressChanged(slider, slider.progress + 1, true)
+            assertEquals(saved + 5, field("widthPhysicalMm"))
+            invoke("cancelSettingsEdits")
+        }
+    }
+
     @Test fun resolutionEndpointLabelsMatchTheActualSliderRange() {
         invoke("openSettingsMenu")
         val labels = views(menu()).filterIsInstance<TextView>().map { it.text.toString() }.toList()
@@ -1008,6 +1025,7 @@ class CarPlayHostSettingsTest {
         .single { it.text == activity.getString(R.string.save_and_reconnect) }
     private fun resolutionSlider() = views(menu()).filterIsInstance<SeekBar>()
         .first { it.max == CarPlayDisplayScale.MAX_PERCENT - CarPlayDisplayScale.MIN_PERCENT }
+    private fun lengthSlider() = views(menu()).filterIsInstance<SeekBar>().first { it.max == 60 }
     private fun gestureButton() = views(menu()).filterIsInstance<Button>()
         .first { it.text == activity.getString(R.string.settings_gesture_fingers, field("gestureFingerCount")) }
     private fun fullSettingsButton() = views(menu()).filterIsInstance<Button>()

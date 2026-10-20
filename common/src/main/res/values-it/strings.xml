@@ -462,6 +462,8 @@
     <string name="option_size_large">Grande</string>
     <string name="option_size_medium">Medio</string>
     <string name="option_size_small">Piccolo</string>
+    <string name="option_size_custom">Personalizzato</string>
+    <string name="size_option_millimeters">%1$s · %2$d mm</string>
     <string name="option_theme_scenario">Scenario · mappa laterale</string>
     <string name="option_theme_map">Mappa · mappa intera</string>
     <string name="option_theme_simple">Semplice · mappa laterale</string>

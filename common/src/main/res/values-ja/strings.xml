@@ -468,6 +468,8 @@
     <string name="option_size_large">大</string>
     <string name="option_size_medium">中</string>
     <string name="option_size_small">小</string>
+    <string name="option_size_custom">カスタム</string>
+    <string name="size_option_millimeters">%1$s · %2$d mm</string>
     <string name="option_theme_scenario">シナリオ · サイドマップ</string>
     <string name="option_theme_map">地図 · 全画面</string>
     <string name="option_theme_simple">シンプル · サイドマップ</string>

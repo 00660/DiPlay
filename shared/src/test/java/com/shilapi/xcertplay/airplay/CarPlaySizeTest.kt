@@ -1,18 +1,20 @@
 package com.shilapi.xcertplay.airplay
 
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.Test
 
 class CarPlaySizeTest {
     @Test
     fun `presets map back to themselves`() {
-        CarPlaySize.entries.forEach { assertEquals(it, CarPlaySize.fromWidthMillimeters(it.widthMillimeters)) }
+        CarPlaySize.entries.forEach { assertEquals(it, CarPlaySize.exact(it.widthMillimeters)) }
     }
 
     @Test
-    fun `older widths snap to the nearest preset`() {
-        assertEquals(CarPlaySize.LARGE, CarPlaySize.fromWidthMillimeters(200))
-        assertEquals(CarPlaySize.SMALL, CarPlaySize.fromWidthMillimeters(400))
+    fun `only the three preset widths count as a preset`() {
+        assertNull(CarPlaySize.exact(200))
+        assertNull(CarPlaySize.exact(275))
+        assertNull(CarPlaySize.exact(400))
     }
 
     @Test

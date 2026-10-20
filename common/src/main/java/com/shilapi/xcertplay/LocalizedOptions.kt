@@ -13,6 +13,17 @@ internal fun CarPlaySize.localizedLabel(context: Context): String = context.getS
     CarPlaySize.SMALL -> R.string.option_size_small
 })
 
+internal data class CarPlaySizeChoice(val label: String, val widthMillimeters: Int)
+
+/** The three presets with their lengths, plus the saved length when it is none of them. */
+internal fun carPlaySizeChoices(context: Context, savedMillimeters: Int): List<CarPlaySizeChoice> {
+    fun named(name: String, millimeters: Int) =
+        CarPlaySizeChoice(context.getString(R.string.size_option_millimeters, name, millimeters), millimeters)
+    val presets = CarPlaySize.entries.map { named(it.localizedLabel(context), it.widthMillimeters) }
+    return if (CarPlaySize.exact(savedMillimeters) != null) presets
+    else presets + named(context.getString(R.string.option_size_custom), savedMillimeters)
+}
+
 internal fun DiLink51ClusterLayout.Theme.localizedLabel(context: Context): String = context.getString(when (this) {
     DiLink51ClusterLayout.Theme.SCENARIO -> R.string.option_theme_scenario
     DiLink51ClusterLayout.Theme.MAP -> R.string.option_theme_map
