@@ -195,7 +195,7 @@ internal class ClusterMusicView(context: Context) : View(context) {
     companion object {
         // Sample once when artwork changes, never on animation frames. Reuse the album hue
         // selector; monochrome covers fall back to their average instead of an unrelated hue.
-        private fun coverFrameColor(artwork: Bitmap?): Int {
+        internal fun coverFrameColor(artwork: Bitmap?): Int {
             if (artwork == null || artwork.isRecycled) return Color.rgb(28, 32, 40)
             val sample = Bitmap.createScaledBitmap(artwork, 24, 24, true)
             val pixels = IntArray(24 * 24)

@@ -970,4 +970,6 @@
 
     <string name="settings_hotspot_interface">热点网络接口（可选）</string>
     <string name="settings_hotspot_interface_description">仅用于把热点放在 Android 不认为是 Wi-Fi 热点的网络接口上的车机，例如部分吉利、领克及其它高通车机上的 eth0.3。留空则自动查找。</string>
+    <string name="settings_cluster_speedometer_album_color">速度表背景使用专辑颜色</string>
+    <string name="settings_cluster_speedometer_album_color_description">平滑过渡到专辑边框的颜色，并保留所选的不透明度。</string>
 </resources>

@@ -1013,4 +1013,6 @@
 
     <string name="settings_hotspot_interface">Hotspot interface (optional)</string>
     <string name="settings_hotspot_interface_description">Only for head units that run their hotspot on a network interface Android does not report as a Wi-Fi hotspot, for example eth0.3 on some Geely, Lynk &amp; Co and other Qualcomm units. Leave empty to find it automatically.</string>
+    <string name="settings_cluster_speedometer_album_color">Use album color for speedometer background</string>
+    <string name="settings_cluster_speedometer_album_color_description">Match the album frame color with smooth transitions. Keeps the selected opacity.</string>
 </resources>

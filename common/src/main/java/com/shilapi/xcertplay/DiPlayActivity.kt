@@ -3874,6 +3874,11 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
             render()
         }
         if (AirPlayPersistence.loadClusterSpeedometerEnabled(this)) {
+            toggle(card, getString(R.string.settings_cluster_speedometer_album_color),
+                getString(R.string.settings_cluster_speedometer_album_color_description),
+                AirPlayPersistence.loadClusterSpeedometerAlbumColor(this)) {
+                AirPlayPersistence.saveClusterSpeedometerAlbumColor(this, it)
+            }
             card.addView(overlaySliderRow(
                 getString(R.string.settings_cluster_speedometer_horizontal), ClusterSpeedometerOverlay.xPercents,
                 AirPlayPersistence.loadClusterSpeedometerX(this),

@@ -905,6 +905,14 @@ object AirPlayPersistence {
             .putBoolean("cluster_speedometer_enabled", enabled).apply()
     }
 
+    fun loadClusterSpeedometerAlbumColor(context: Context): Boolean =
+        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getBoolean("cluster_speedometer_album_color", false)
+
+    fun saveClusterSpeedometerAlbumColor(context: Context, enabled: Boolean) {
+        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit()
+            .putBoolean("cluster_speedometer_album_color", enabled).apply()
+    }
+
     internal fun observeClusterSpeedometer(context: Context, changed: () -> Unit): () -> Unit {
         val prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
         val listener = android.content.SharedPreferences.OnSharedPreferenceChangeListener { _, key ->

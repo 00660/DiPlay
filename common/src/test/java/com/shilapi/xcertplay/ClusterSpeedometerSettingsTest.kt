@@ -33,6 +33,7 @@ class ClusterSpeedometerSettingsTest {
 
     @Test fun defaultsPersistAndAttachedViewUpdatesWithoutReconnection() {
         assertFalse(AirPlayPersistence.loadClusterSpeedometerEnabled(context))
+        assertFalse(AirPlayPersistence.loadClusterSpeedometerAlbumColor(context))
         val controller = Robolectric.buildActivity(Activity::class.java).setup().visible()
         var changed: ((Int?) -> Unit)? = null
         var stopped = 0
@@ -88,21 +89,84 @@ class ClusterSpeedometerSettingsTest {
             Intent(context, DiPlayActivity::class.java).putExtra("page", "settings")).setup()
         val activity = controller.get()
         ReflectionHelpers.setField(activity, "settingsCategory", SettingsCategory.ADVANCED)
-        fun hasToggle(): Boolean {
+        fun hasToggle(id: Int = com.shilapi.xcertplay.host.R.string.settings_cluster_speedometer): Boolean {
             fun texts(view: View): List<String> = if (view is android.view.ViewGroup)
                 (0 until view.childCount).flatMap { texts(view.getChildAt(it)) }
                 else if (view is android.widget.TextView) listOf(view.text.toString()) else emptyList()
-            return texts(activity.window.decorView).contains(activity.getString(com.shilapi.xcertplay.host.R.string.settings_cluster_speedometer))
+            return texts(activity.window.decorView).contains(activity.getString(id))
         }
         ReflectionHelpers.callInstanceMethod<Unit>(activity, "render")
         assertFalse(hasToggle())
         AirPlayPersistence.saveClusterMapEnabled(context, true)
         ReflectionHelpers.callInstanceMethod<Unit>(activity, "render")
         assertTrue(hasToggle())
+        val colorSetting = com.shilapi.xcertplay.host.R.string.settings_cluster_speedometer_album_color
+        assertFalse(hasToggle(colorSetting))
+        AirPlayPersistence.saveClusterSpeedometerEnabled(context, true)
+        ReflectionHelpers.callInstanceMethod<Unit>(activity, "render")
+        assertTrue(hasToggle(colorSetting))
+        AirPlayPersistence.saveClusterSpeedometerEnabled(context, false)
+        ReflectionHelpers.callInstanceMethod<Unit>(activity, "render")
+        assertFalse(hasToggle(colorSetting))
         AirPlayPersistence.saveClusterMapEnabled(context, false)
         ReflectionHelpers.callInstanceMethod<Unit>(activity, "render")
         assertFalse(hasToggle())
         controller.pause().stop().destroy()
+    }
+
+    @Test fun albumBackgroundFadesRetainsOpacityAndRestoresDefaultWithoutRestartingSpeed() {
+        ClusterMusicState.publish(com.shilapi.xcertplay.media.CarPlayNowPlaying(), null)
+        shadowOf(Looper.getMainLooper()).idle()
+        AirPlayPersistence.saveClusterSpeedometerEnabled(context, true)
+        AirPlayPersistence.saveClusterSpeedometerOpacity(context, 40)
+        val controller = Robolectric.buildActivity(Activity::class.java).setup().visible()
+        var subscriptions = 0
+        val view = ClusterSpeedometerView(controller.get()) { subscriptions++; { } }
+        controller.get().setContentView(view)
+        shadowOf(Looper.getMainLooper()).idle()
+        view.layout(0, 0, 1280, 480)
+        view.setSpeedKmh(188)
+        val output = Bitmap.createBitmap(1280, 480, Bitmap.Config.ARGB_8888)
+        fun color(): Int {
+            view.draw(Canvas(output))
+            return ReflectionHelpers.getField<android.graphics.Paint>(view, "backgroundPaint").color
+        }
+        val original = color()
+        val red = Bitmap.createBitmap(24, 24, Bitmap.Config.ARGB_8888).apply { eraseColor(Color.RED) }
+        val blue = Bitmap.createBitmap(24, 24, Bitmap.Config.ARGB_8888).apply { eraseColor(Color.BLUE) }
+        fun publish(art: Bitmap?) {
+            ClusterMusicState.publish(com.shilapi.xcertplay.media.CarPlayNowPlaying(title = "Track"), art)
+            shadowOf(Looper.getMainLooper()).idle()
+        }
+        publish(red)
+        assertEquals(original, color()) // opt-in only
+        AirPlayPersistence.saveClusterSpeedometerAlbumColor(context, true)
+        shadowOf(Looper.getMainLooper()).idle()
+        shadowOf(Looper.getMainLooper()).idleFor(java.time.Duration.ofMillis(400))
+        assertEquals(ClusterMusicView.coverFrameColor(red) and 0xffffff, color() and 0xffffff)
+        assertEquals(102, Color.alpha(color()))
+        publish(blue)
+        shadowOf(Looper.getMainLooper()).idleFor(java.time.Duration.ofMillis(200))
+        val middle = color()
+        assertTrue(Color.red(middle) > 0 && Color.blue(middle) > 0)
+        publish(null) // metadata-only update must not reset the transition
+        shadowOf(Looper.getMainLooper()).idleFor(java.time.Duration.ofMillis(200))
+        assertEquals(ClusterMusicView.coverFrameColor(blue) and 0xffffff, color() and 0xffffff)
+        AirPlayPersistence.saveClusterSpeedometerAlbumColor(context, false)
+        shadowOf(Looper.getMainLooper()).idle()
+        shadowOf(Looper.getMainLooper()).idleFor(java.time.Duration.ofMillis(400))
+        assertEquals(original, color())
+        assertEquals(1, subscriptions)
+        assertEquals(Color.WHITE, ReflectionHelpers.getField<android.graphics.Paint>(view, "speedPaint").color)
+        AirPlayPersistence.saveClusterSpeedometerAlbumColor(context, true)
+        shadowOf(Looper.getMainLooper()).idle()
+        ClusterMusicState.publish(com.shilapi.xcertplay.media.CarPlayNowPlaying(), null)
+        shadowOf(Looper.getMainLooper()).idle()
+        shadowOf(Looper.getMainLooper()).idleFor(java.time.Duration.ofMillis(400))
+        assertEquals(original, color())
+        controller.pause().stop().destroy()
+        assertNull(ReflectionHelpers.getField<Any?>(view, "stopObservingArtwork"))
+        output.recycle()
     }
 
     @Test fun squareSpeedCardFitsThreeDigitsAtEverySize() {
@@ -162,7 +226,7 @@ class ClusterSpeedometerSettingsTest {
             card.measure(View.MeasureSpec.makeMeasureSpec(px, View.MeasureSpec.EXACTLY),
                 View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED))
             card.layout(0, 0, card.measuredWidth, card.measuredHeight)
-            assertEquals(5, card.childCount)
+            assertEquals(6, card.childCount)
             for (i in 0 until card.childCount) assertTrue(card.getChildAt(i).height > 0)
             val bitmap = Bitmap.createBitmap(card.width, card.height, Bitmap.Config.ARGB_8888)
             card.draw(Canvas(bitmap))
