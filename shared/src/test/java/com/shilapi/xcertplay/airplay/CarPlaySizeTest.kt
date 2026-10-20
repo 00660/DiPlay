@@ -23,11 +23,17 @@ class CarPlaySizeTest {
     }
 
     @Test
-    fun `physical length keeps 25 mm steps between the old 50 mm ones`() {
-        // #489: 225 mm sat between the old 200 and 250 mm choices.
-        assertEquals(225, AirPlayDisplaySettings.sanitizeWidthPhysicalMm(225))
-        assertEquals(225, AirPlayDisplaySettings.sanitizeWidthPhysicalMm(231))
-        assertEquals(250, AirPlayDisplaySettings.sanitizeWidthPhysicalMm(240))
-        assertEquals(5, AirPlayDisplaySettings.widthPhysicalMmProgress(225))
+    fun `physical length moves in 5 mm steps`() {
+        assertEquals(275, AirPlayDisplaySettings.sanitizeWidthPhysicalMm(275))
+        assertEquals(275, AirPlayDisplaySettings.sanitizeWidthPhysicalMm(277))
+        assertEquals(280, AirPlayDisplaySettings.sanitizeWidthPhysicalMm(278))
+        assertEquals(25, AirPlayDisplaySettings.widthPhysicalMmProgress(225))
+    }
+
+    @Test
+    fun `lengths saved with the earlier 25 mm steps stay as they were`() {
+        (AirPlayDisplaySettings.MIN_WIDTH_PHYSICAL_MM..AirPlayDisplaySettings.MAX_WIDTH_PHYSICAL_MM step 25).forEach {
+            assertEquals(it, AirPlayDisplaySettings.sanitizeWidthPhysicalMm(it))
+        }
     }
 }
