@@ -3856,7 +3856,7 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
             Triple("size", R.string.settings_cluster_music_size, ClusterMusicSettings.size(this)),
         ).forEach { (key, title, value) ->
             card.addView(overlaySliderRow(getString(title),
-                (if (key == "size") 50..150 step 5 else 5..95 step 5).toList(), value) { "$it%" }.also {
+                (if (key == "size") 50..300 else 5..95).toList(), value) { "$it%" }.also {
                 it.onSave = { percent -> ClusterMusicSettings.save(this, key, percent) }
                 val head = it.getChildAt(0) as LinearLayout
                 val value = head.getChildAt(head.childCount - 1)
