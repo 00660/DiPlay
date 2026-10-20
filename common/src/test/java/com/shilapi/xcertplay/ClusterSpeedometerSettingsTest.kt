@@ -105,21 +105,39 @@ class ClusterSpeedometerSettingsTest {
         controller.pause().stop().destroy()
     }
 
-    @Test fun speedCardRendersCenteredAtDifferentSizes() {
-        for (size in listOf(50, 75)) {
-            val view = ClusterSpeedometerView(context) { { } }
-            view.setLayout(82, 30, size)
-            view.setSpeedKmh(72)
-            view.measure(View.MeasureSpec.makeMeasureSpec(1920, View.MeasureSpec.EXACTLY),
-                View.MeasureSpec.makeMeasureSpec(720, View.MeasureSpec.EXACTLY))
-            view.layout(0, 0, 1920, 720)
-            val bitmap = Bitmap.createBitmap(1920, 720, Bitmap.Config.ARGB_8888)
-            view.draw(Canvas(bitmap))
-            val directory = File("build/reports/cluster-speedometer-ui").apply { mkdirs() }
-            File(directory, "card-$size.png").outputStream().use {
-                assertTrue(bitmap.compress(Bitmap.CompressFormat.PNG, 100, it))
+    @Test fun squareSpeedCardFitsThreeDigitsAtEverySize() {
+        val directory = File("build/reports/cluster-speedometer-ui").apply { mkdirs() }
+        for ((width, height) in listOf(1280 to 480, 1920 to 720, 60 to 200)) {
+            for (size in listOf(30, 50, 75, 95)) {
+                val view = ClusterSpeedometerView(context) { { } }
+                view.setLayout(82, 30, size)
+                view.layout(0, 0, width, height)
+                val rect = com.shilapi.xcertplay.airplay.ClusterSpeedometerOverlay.rect(width, height, 82, 30, size)
+                assertEquals(rect.width, rect.height)
+                assertTrue(rect.left >= 0 && rect.top >= 0)
+                assertTrue(rect.left + rect.width <= width && rect.top + rect.height <= height)
+                for (speed in listOf(8, 88, 188, 300)) {
+                    view.setSpeedKmh(speed)
+                    val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+                    view.draw(Canvas(bitmap))
+                    val paint = ReflectionHelpers.getField<android.graphics.Paint>(view, "speedPaint")
+                    val unit = ReflectionHelpers.getField<android.graphics.Paint>(view, "unitPaint")
+                    assertTrue("$speed must fit with 5% clearance on each side at size $size",
+                        paint.measureText(speed.toString()) <= rect.width * .90f)
+                    assertTrue(unit.measureText("km/h") < rect.width * .8f)
+                    val numberBounds = android.graphics.Rect()
+                    val unitBounds = android.graphics.Rect()
+                    paint.getTextBounds(speed.toString(), 0, speed.toString().length, numberBounds)
+                    unit.getTextBounds("km/h", 0, 4, unitBounds)
+                    assertTrue(numberBounds.height() + unitBounds.height() + rect.height * .06f < rect.height * .8f)
+                    if (width == 1280 && size in listOf(30, 50, 95) && speed in listOf(188, 300)) {
+                        File(directory, "square-$size-$speed.png").outputStream().use {
+                            assertTrue(bitmap.compress(Bitmap.CompressFormat.PNG, 100, it))
+                        }
+                    }
+                    bitmap.recycle()
+                }
             }
-            bitmap.recycle()
         }
     }
 

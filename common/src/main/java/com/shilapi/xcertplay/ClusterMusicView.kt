@@ -27,12 +27,15 @@ internal class ClusterMusicView(context: Context) : View(context) {
     private var snapshot = ClusterMusicState.Snapshot()
     private var previousArtwork: Bitmap? = null
     private var previousInfo: CarPlayNowPlaying? = null
+    private var frameColor = Color.rgb(28, 32, 40)
+    private var previousFrameColor = frameColor
     private var artworkChangedAt = 0L
     private var textChangedAt = 0L
     private var visibleUntil = 0L
     private var lastTrackRevision: Long? = null
     private val expire = Runnable { updateVisibility() }
     private var captionVisible = false
+    private val colorEvaluator = android.animation.ArgbEvaluator()
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG or Paint.FILTER_BITMAP_FLAG)
     private val textPaint = android.text.TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
         color = Color.WHITE
@@ -51,6 +54,8 @@ internal class ClusterMusicView(context: Context) : View(context) {
             val now = SystemClock.elapsedRealtime()
             if (snapshot.artwork !== it.artwork) {
                 previousArtwork = snapshot.artwork
+                previousFrameColor = frameColor
+                frameColor = coverFrameColor(it.artwork)
                 artworkChangedAt = now
             }
             if (snapshot.info.title != it.info.title || snapshot.info.artist != it.info.artist ||
@@ -117,9 +122,9 @@ internal class ClusterMusicView(context: Context) : View(context) {
         val radius = side * .22f
         paint.shader = null
         paint.style = Paint.Style.FILL
-        paint.color = Color.argb(217, 12, 14, 18)
+        paint.color = colorEvaluator.evaluate(artProgress, previousFrameColor, frameColor) as Int
         canvas.drawRoundRect(rect, radius, radius, paint)
-        val inset = side * .05f
+        val inset = side * .015f
         val artRect = RectF(left + inset, top + inset, rect.right - inset, rect.bottom - inset)
         val clipped = canvas.save()
         canvas.clipPath(Path().apply { addRoundRect(artRect, radius - inset, radius - inset, Path.Direction.CW) })
@@ -150,11 +155,6 @@ internal class ClusterMusicView(context: Context) : View(context) {
             drawCaption(canvas, snapshot.info, artRect, side, captionAlpha * textProgress)
         }
         canvas.restoreToCount(clipped)
-        paint.style = Paint.Style.STROKE
-        paint.strokeWidth = side * .012f
-        paint.color = Color.argb(35, 255, 255, 255)
-        canvas.drawRoundRect(rect, radius, radius, paint)
-        paint.style = Paint.Style.FILL
         canvas.restoreToCount(cardLayer)
         if (artProgress >= 1f) previousArtwork = null
         if (textProgress >= 1f) previousInfo = null
@@ -193,6 +193,22 @@ internal class ClusterMusicView(context: Context) : View(context) {
     }
 
     companion object {
+        // Sample once when artwork changes, never on animation frames. Reuse the album hue
+        // selector; monochrome covers fall back to their average instead of an unrelated hue.
+        private fun coverFrameColor(artwork: Bitmap?): Int {
+            if (artwork == null || artwork.isRecycled) return Color.rgb(28, 32, 40)
+            val sample = Bitmap.createScaledBitmap(artwork, 24, 24, true)
+            val pixels = IntArray(24 * 24)
+            try { sample.getPixels(pixels, 0, 24, 0, 0, 24, 24) }
+            finally { if (sample !== artwork) sample.recycle() }
+            com.shilapi.xcertplay.media.AmbientAlbumPalette.dominantRgb(pixels)?.let { return it }
+            var red = 0; var green = 0; var blue = 0; var count = 0
+            for (pixel in pixels) if (Color.alpha(pixel) >= 128) {
+                red += Color.red(pixel); green += Color.green(pixel); blue += Color.blue(pixel); count++
+            }
+            return if (count == 0) Color.rgb(28, 32, 40) else Color.rgb(red / count, green / count, blue / count)
+        }
+
         const val FADE_MILLIS = 400L
         internal fun progress(now: Long, started: Long): Float =
             ((now - started).toFloat() / FADE_MILLIS).coerceIn(0f, 1f)
