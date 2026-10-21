@@ -7,6 +7,7 @@ import java.net.URL
 import java.util.concurrent.atomic.AtomicReference
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -431,6 +432,16 @@ class SettingsBackupServerTest {
             Socket("127.0.0.1", endpoint.port).use { it.getOutputStream().write(1) }
         }.exceptionOrNull()
         assertNotNull(failure)
+    }
+
+    // The listener can outlive close() until the accept loop wakes; once stop() returns it is gone, so the
+    // next start() can take the same typed port again.
+    @Test
+    fun stopReturnsOnlyOnceTheAcceptLoopHasEnded() {
+        val accepting = SettingsBackupServer::class.java.getDeclaredField("thread").apply { isAccessible = true }
+            .get(server) as Thread
+        server.stop()
+        assertFalse(accepting.isAlive)
     }
 
     @Test
