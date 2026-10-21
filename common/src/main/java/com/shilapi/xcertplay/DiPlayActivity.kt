@@ -2936,7 +2936,7 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
                     if (permissions.isEmpty()) R.string.adb_access_ready else R.string.hotspot_permission_granted
                 } else when (access) {
                     LocalAdb.Access.NOT_APPROVED -> R.string.adb_not_approved
-                    LocalAdb.Access.UNREACHABLE -> R.string.adb_off
+                    LocalAdb.Access.UNREACHABLE -> adbOffText()
                     LocalAdb.Access.UNSUPPORTED -> R.string.adb_pairing_only
                     else -> R.string.hotspot_permission_failed
                 }
@@ -3006,7 +3006,7 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
                         carHotspotConfigStatus = when (read.access) {
                             LocalAdb.Access.NOT_APPROVED -> R.string.adb_not_approved
                             LocalAdb.Access.UNSUPPORTED -> R.string.adb_pairing_only
-                            else -> R.string.adb_off
+                            else -> adbOffText()
                         }
                         render()
                     }
@@ -3071,7 +3071,7 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
                     CarHotspotConfigWrite.Result.ADB_UNAVAILABLE -> when (access) {
                         LocalAdb.Access.NOT_APPROVED -> R.string.adb_not_approved
                         LocalAdb.Access.UNSUPPORTED -> R.string.adb_pairing_only
-                        else -> R.string.adb_off
+                        else -> adbOffText()
                     }
                     else -> R.string.settings_car_hotspot_config_failed
                 }
@@ -5108,10 +5108,16 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
         return true
     }
 
+    private fun adbOffText(): Int {
+        // #1002: on DiLink UI7.0 the developer-options switch can stay on while nothing listens on 5555.
+        val adbEnabled = Settings.Global.getInt(contentResolver, Settings.Global.ADB_ENABLED, 0) == 1
+        return if (adbEnabled) R.string.adb_network_not_answering else R.string.adb_off
+    }
+
     private fun adbLinkStatusText(state: BydAdbAccess.State): String = when (state) {
         BydAdbAccess.State.READY -> getString(R.string.adb_access_ready)
         BydAdbAccess.State.NOT_APPROVED -> getString(R.string.adb_enabled_not_approved)
-        BydAdbAccess.State.ADB_OFF -> getString(R.string.adb_off)
+        BydAdbAccess.State.ADB_OFF -> getString(adbOffText())
         BydAdbAccess.State.PAIRING_ONLY -> getString(R.string.adb_pairing_only)
     }
 
