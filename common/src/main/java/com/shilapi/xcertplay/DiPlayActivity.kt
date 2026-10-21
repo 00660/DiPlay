@@ -6128,6 +6128,8 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
             carRhythmSupportCheck(applicationContext).whenComplete { supported, _ ->
                 runOnUiThread {
                     if (isFinishing || isDestroyed) return@runOnUiThread
+                    // Switched off again while the check ran (over ADB it takes seconds): that was saved last.
+                    if (row?.isChecked != true) return@runOnUiThread
                     if (supported == true) {
                         AmbientMusicSettings.save(this, AmbientMusicSettings.load(this).copy(carRhythm = true))
                     } else {
