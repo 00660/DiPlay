@@ -139,6 +139,8 @@ class CarPlayHostActivity : ComponentActivity() {
     private data class SettingsBaseline(
         val safeAreaRects: MutableMap<DisplaySize, SafeAreaRect?>,
         val customIconBytes: ByteArray?,
+        // Statuses wait while the menu is open, so the line it showed before is still the session's.
+        val hotspotStatus: HotspotStatus,
     )
 
     private data class PendingAssignedSiriDoublePress(
@@ -3505,6 +3507,7 @@ class CarPlayHostActivity : ComponentActivity() {
                 safeAreaSize?.let { put(it, AirPlayPersistence.loadSafeAreaRect(this@CarPlayHostActivity, it.width, it.height)) }
             },
             customIconBytes = customIconBytes,
+            hotspotStatus = hotspotStatus,
         )
     }
 
@@ -3538,7 +3541,7 @@ class CarPlayHostActivity : ComponentActivity() {
         }
         settingsBaseline = null
         locationPermissionAvailable = hasFineLocationPermission()
-        hotspotStatus = HotspotStatus(state = if (wirelessEnabled) getString(R.string.hotspot_state_stopped) else getString(R.string.hotspot_state_off))
+        hotspotStatus = baseline.hotspotStatus
         syncMfiSettingsControls()
         updateManualHotspotFields()
         updateAirPlayIconPreview()
@@ -4645,6 +4648,11 @@ class CarPlayHostActivity : ComponentActivity() {
 
     private fun updateHotspotStatus(status: CarPlayStatus) {
         if (!wirelessEnabled) return
+        when (status) {
+            CarPlayStatus.StartingHotspot -> CarPlayBackgroundSession.hotspotReady = null
+            is CarPlayStatus.HotspotReady -> CarPlayBackgroundSession.hotspotReady = status
+            else -> Unit
+        }
         hotspotStatus = when (status) {
             CarPlayStatus.StartingHotspot -> HotspotStatus(state = getString(R.string.starting))
             is CarPlayStatus.HotspotReady -> HotspotStatus(
@@ -5416,6 +5424,10 @@ class CarPlayHostActivity : ComponentActivity() {
         updateClusterMapShown()
         sink = snapshot.sink
         sessionDisplay = snapshot.display
+        // The hotspot came up under the host that started this session; the menu keeps naming it.
+        CarPlayBackgroundSession.hotspotReady?.let {
+            hotspotStatus = hotspotStatus.copy(ssid = it.ssid, band = it.band, channel = it.channel, backend = it.backend)
+        }
         resetSidePanel()
         if (snapshot.display.viewAreas?.let { it.kindOf(it.current) == CarPlayViewAreas.Kind.SIDE_PANEL } == true) {
             // The live stream can outlast its Activity. Restore the Android view covering its
@@ -6809,6 +6821,8 @@ internal fun statusBarHiddenByAnotherWindow(display: CarPlaySessionDisplay, widt
 internal object CarPlayBackgroundSession {
     @Volatile var active = false
     @Volatile var callPopupReady = false
+    /** The running session's hotspot: a host that adopts the session never saw its HotspotReady. */
+    @Volatile var hotspotReady: CarPlayStatus.HotspotReady? = null
     private var stopAction: (((() -> Unit)) -> Unit)? = null
     private var stopping = false
     private var owner: Any? = null
@@ -6858,7 +6872,10 @@ internal object CarPlayBackgroundSession {
     @Synchronized
     fun store(controller: CarPlayController, sink: AndroidMediaSink, width: Int, height: Int,
         owner: Any, display: CarPlaySessionDisplay, stop: (() -> Unit) -> Unit) {
-        if (this.controller !== controller) callPopupReady = false
+        if (this.controller !== controller) {
+            callPopupReady = false
+            hotspotReady = null
+        }
         this.stopAction = stop
         this.owner = owner
         this.controller = controller
@@ -6876,6 +6893,7 @@ internal object CarPlayBackgroundSession {
         if (!keepOwner) { stopAction = null; owner = null }
         active = false
         callPopupReady = false
+        hotspotReady = null
         width = 0
         height = 0
         display = null

@@ -859,6 +859,19 @@ class CarPlayHostSettingsTest {
         assertEquals(false, method.invoke(activity, Intent(UsbManager.ACTION_USB_DEVICE_DETACHED).putExtra(UsbManager.EXTRA_DEVICE, device)))
     }
 
+    // Galaxy Note20: closing the quick menu with nothing changed left its connection page saying
+    // "Wireless hotspot: stopped" for a session still running on that hotspot.
+    @Test fun closingTheMenuKeepsTheHotspotItShowed() {
+        setField("wirelessEnabled", true)
+        activity.javaClass.getDeclaredMethod("updateHotspotStatus", CarPlayStatus::class.java)
+            .apply { isAccessible = true }
+            .invoke(activity, CarPlayStatus.HotspotReady("DIRECT-dp-test", "5 GHz", 36, "", "192.168.49.1", "Wi-Fi P2P"))
+        val shown = field("hotspotStatus")
+        invoke("openSettingsMenu")
+        invoke("cancelSettingsEdits")
+        assertEquals(shown, field("hotspotStatus"))
+    }
+
     @Test fun cancelRestoresSafeAreaResetAfterTheWindowChangesSize() {
         val original = SafeAreaRect(20, 20, 1800, 900)
         AirPlayPersistence.saveSafeAreaRect(activity, 1920, 942, original)
