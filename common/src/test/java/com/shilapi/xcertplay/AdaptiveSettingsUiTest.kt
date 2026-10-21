@@ -334,6 +334,22 @@ class AdaptiveSettingsUiTest {
         assertTrue(texts(screen).any { it.text.startsWith(screen.getString(R.string.frame_rate) + " · ") })
     }
 
+    @Test fun searchFindsASliderAndOpensItsCategory() {
+        val screen = openSettings()
+        val index = ReflectionHelpers.callInstanceMethod<List<Any>>(screen, "buildSettingsSearchIndex")
+        val results = ReflectionHelpers.callInstanceMethod<List<Any>>(screen, "searchSettings",
+            ReflectionHelpers.ClassParameter(List::class.java, index),
+            ReflectionHelpers.ClassParameter(String::class.java, "guidance volume"))
+        val title = screen.getString(R.string.settings_navigation_attenuation)
+        val slider = results.single { ReflectionHelpers.getField<String>(it, "title") == title }
+
+        ReflectionHelpers.callInstanceMethod<Unit>(screen, "openSearchResult",
+            ReflectionHelpers.ClassParameter(slider.javaClass, slider))
+
+        assertEquals(SettingsCategory.AUDIO, ReflectionHelpers.getField<SettingsCategory>(screen, "settingsCategory"))
+        assertTrue(texts(screen).any { it.text.toString() == title })
+    }
+
     // Android 7.1 and 9 too: the result list once called a PopupWindow method that Android 10 added.
     @Test
     @Config(sdk = [25, 28, 29])
