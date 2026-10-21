@@ -631,6 +631,33 @@ class CarPlayHostSettingsTest {
         assertEquals(0, field("restartGeneration"))
     }
 
+    // Galaxy Note20 in portrait: the menu said "1080 x 2249 -> 1080 x 2250" while DiPlay asked for 1080x2248.
+    @Test fun theDisplaySummaryNamesTheSizeThatIsRequested() {
+        setField("activeDisplaySize", displaySize(1080, 2249))
+        invoke("openSettingsMenu")
+        invoke("updateResolutionMenu")
+        val summary = (field("resolutionPreviewView") as TextView).text.toString()
+        assertTrue(summary, summary.contains("1080 x 2248 -> 1080 x 2248"))
+    }
+
+    @Test @Config(qualifiers = "zh-rTW")
+    fun theDisplaySummaryIsInTheMenuLanguage() {
+        AirPlayPersistence.saveHevcEnabled(activity, true)
+        AirPlayPersistence.saveHevcSoftwareDecoderEnabled(activity, true)
+        setField("hevcDecoders\$delegate", lazyOf(listOf(HevcSupport.Decoder("c2.test.hevc.decoder", hardware = false))))
+        invoke("openSettingsMenu")
+        invoke("updateResolutionMenu")
+        val summary = (field("resolutionPreviewView") as TextView).text.toString()
+        assertTrue(summary, summary.contains("HEVC（H.265，軟體）"))
+        assertTrue(summary, summary.contains("頂部已隱藏，底部已隱藏"))
+        assertFalse(summary, summary.contains("software"))
+    }
+
+    private fun displaySize(width: Int, height: Int): Any =
+        Class.forName("com.shilapi.xcertplay.CarPlayHostActivity\$DisplaySize")
+            .getDeclaredConstructor(Int::class.javaPrimitiveType, Int::class.javaPrimitiveType)
+            .apply { isAccessible = true }.newInstance(width, height)
+
     @Test fun failedStartupWhileMenuIsOpenRecoversOnCancel() {
         attachController()
         invoke("openSettingsMenu")
