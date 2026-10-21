@@ -5453,7 +5453,10 @@ class CarPlayHostActivity : ComponentActivity() {
             createStatusReporter(generation),
         )
         // A new Activity adopts the running stream without another AirPlay SETUP or session-active
-        // callback. Restore iOS's captured mask when the controller still owns that live session.
+        // callback, so it takes the live session from the controller: day/night, the Siri key and the
+        // wheel keys reach the iPhone through it. Restore iOS's captured mask when the controller still
+        // owns that live session.
+        snapshot.controller.activeAirPlaySession()?.let { activeAirPlaySession = it }
         if (blackCornerRadiusDp == CarPlayBlackCornerOverlay.IPHONE_MASK) {
             snapshot.controller.activeIphoneCornerMask()?.let { (session, png, width) ->
                 activeAirPlaySession = session
