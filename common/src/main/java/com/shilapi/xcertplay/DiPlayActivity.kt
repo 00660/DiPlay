@@ -47,6 +47,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import com.shilapi.xcertplay.adb.LocalAdb
+import com.shilapi.xcertplay.airplay.AirPlayDisplaySettings
 import com.shilapi.xcertplay.airplay.CarPlayClusterDisplay
 import com.shilapi.xcertplay.airplay.CarPlayDisplayScale
 import com.shilapi.xcertplay.airplay.ClusterSpeedometerOverlay
@@ -5600,11 +5601,32 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
     }
 
     private fun carPlaySizeControl(parent: LinearLayout) {
-        val sizes = com.shilapi.xcertplay.airplay.CarPlaySize.entries
-        val current = com.shilapi.xcertplay.airplay.CarPlaySize.fromWidthMillimeters(AirPlayPersistence.loadWidthPhysicalMm(this))
-        choice(parent, getString(R.string.carplay_size), sizes.map { it.localizedLabel(this) }, sizes.indexOf(current)) {
-            AirPlayPersistence.saveWidthPhysicalMm(this, sizes[it].widthMillimeters)
+        val title = getString(R.string.carplay_size)
+        fun summary(): String {
+            val saved = AirPlayPersistence.loadWidthPhysicalMm(this)
+            return "$title · ${carPlaySizeChoices(this, saved).first { it.widthMillimeters == saved }.label}"
         }
+        // Built with its title so Settings search indexes the row.
+        val button = button(summary(), false) {}
+        fun refresh() { button.text = summary() }
+        fun apply(millimeters: Int) {
+            AirPlayPersistence.saveWidthPhysicalMm(this, millimeters)
+            refresh()
+            if (CarPlayBackgroundSession.hasSession()) connect(AirPlayPersistence.loadWirelessEnabled(this))
+        }
+        button.setOnClickListener {
+            val saved = AirPlayPersistence.loadWidthPhysicalMm(this)
+            val choices = carPlaySizeChoices(this, saved)
+            var pending = choices.indexOfFirst { it.widthMillimeters == saved }
+            appDialogBuilder().setTitle(title)
+                .setSingleChoiceItems(choices.map { it.label }.toTypedArray(), pending) { _, index -> pending = index }
+                .setPositiveButton(getString(if (CarPlayBackgroundSession.hasSession()) R.string.apply_and_reconnect else R.string.save)) { _, _ ->
+                    val pick = choices[pending]
+                    if (pick.custom) askCarPlayLength(pick.widthMillimeters, ::apply)
+                    else if (pick.widthMillimeters != saved) apply(pick.widthMillimeters)
+                }.setNegativeButton(getString(R.string.cancel), null).show()
+        }
+        parent.addView(button, matchButton(0, 60)); parent.addView(space(12))
         parent.addView(label(getString(R.string.changes_the_size_of_carplay_icons_and_text_applying_a_size), 14, MUTED).apply {
             setPadding(0, 0, 0, dp(18))
         })
@@ -5623,6 +5645,22 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
             }
         }
         choice(parent, getString(R.string.frame_rate), labels, rates.indexOf(current)) { AirPlayPersistence.saveFps(this, rates[it]) }
+    }
+
+    private fun askCarPlayLength(start: Int, onApply: (Int) -> Unit) {
+        val steps = (AirPlayDisplaySettings.MIN_WIDTH_PHYSICAL_MM..AirPlayDisplaySettings.MAX_WIDTH_PHYSICAL_MM
+            step AirPlayDisplaySettings.WIDTH_PHYSICAL_MM_STEP).toList()
+        var length = start
+        val title = getString(R.string.physical_length)
+        val row = overlaySliderRow(title, steps, start) { "$it mm" }
+        row.slider.contentDescription = title
+        row.onSave = { length = it }
+        appDialogBuilder().setTitle(getString(R.string.carplay_size))
+            .setView(row.apply { setPadding(dp(24), 0, dp(24), 0) })
+            .setPositiveButton(getString(if (CarPlayBackgroundSession.hasSession()) R.string.apply_and_reconnect else R.string.save)) { _, _ ->
+                if (length != start) onApply(length)
+            }
+            .setNegativeButton(getString(R.string.cancel), null).show()
     }
 
     private fun scheduleTimeControl(parent: LinearLayout, start: Boolean) {
@@ -5904,7 +5942,7 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
         appendLine("Saved video preference (may differ from active session): ${if (AirPlayPersistence.loadHevcEnabled(appContext)) "HEVC" else "H.264"}; ${AirPlayPersistence.loadFps(appContext)} fps")
         appendLine("Media-key audio focus: ${if (AirPlayPersistence.loadDisableMediaKeyAudioFocus(appContext)) "disabled" else "enabled"}")
         appendLine("MTK decoder tuning preference: ${if (AirPlayPersistence.loadMtkDecoderTuning(appContext)) "enabled" else "disabled"}")
-        appendLine("CarPlay size: ${com.shilapi.xcertplay.airplay.CarPlaySize.fromWidthMillimeters(AirPlayPersistence.loadWidthPhysicalMm(appContext)).label}")
+        appendLine("CarPlay size: ${AirPlayPersistence.loadWidthPhysicalMm(appContext).let { mm -> "${com.shilapi.xcertplay.airplay.CarPlaySize.exact(mm)?.label ?: "Custom"}, $mm mm" }}")
         appendLine("Saved resolution preference (may differ from active session): ${AirPlayPersistence.loadDisplayScalePercent(appContext)}%")
         appendLine("Session: ${if (CarPlayBackgroundSession.active) "active" else if (CarPlayBackgroundSession.hasSession()) "connecting" else "stopped"}")
         appendLine(PhoneWakeDiagnostics.report(appContext))

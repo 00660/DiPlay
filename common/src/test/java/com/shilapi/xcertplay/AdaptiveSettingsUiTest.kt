@@ -410,6 +410,22 @@ class AdaptiveSettingsUiTest {
         assertTrue(descendants(screen.window.decorView).none { it is EditText })
     }
 
+    @Test fun searchFindsTheCarPlaySizeRow() {
+        val screen = openSettings()
+        descendants(screen.window.decorView).single {
+            it.contentDescription == screen.getString(R.string.settings_search)
+        }.performClick()
+        shadowOf(Looper.getMainLooper()).idle()
+        descendants(screen.window.decorView).filterIsInstance<EditText>()
+            .single { it.contentDescription == screen.getString(R.string.settings_search) }
+            .setText(screen.getString(R.string.carplay_size))
+        shadowOf(Looper.getMainLooper()).idle()
+        val popup = ReflectionHelpers.getField<PopupWindow>(screen, "settingsSearchPopup")
+        assertTrue(descendants(popup.contentView).any {
+            it.isClickable && it.contentDescription?.startsWith(screen.getString(R.string.carplay_size) + ", ") == true
+        })
+    }
+
     @Test fun backClosesAnOpenSearchBeforeLeavingSettings() {
         val screen = openSettings()
         fun box() = descendants(screen.window.decorView).filterIsInstance<EditText>()

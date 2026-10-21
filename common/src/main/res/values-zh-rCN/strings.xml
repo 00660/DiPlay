@@ -434,6 +434,8 @@
     <string name="option_size_large">大</string>
     <string name="option_size_medium">中</string>
     <string name="option_size_small">小</string>
+    <string name="option_size_custom">自定义</string>
+    <string name="size_option_millimeters">%1$s · %2$d mm</string>
     <string name="option_theme_scenario">场景 · 侧边地图</string>
     <string name="option_theme_map">地图 · 全屏地图</string>
     <string name="option_theme_simple">简约 · 侧边地图</string>

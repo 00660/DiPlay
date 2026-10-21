@@ -433,6 +433,8 @@
     <string name="option_size_large">大</string>
     <string name="option_size_medium">中</string>
     <string name="option_size_small">小</string>
+    <string name="option_size_custom">自訂</string>
+    <string name="size_option_millimeters">%1$s · %2$d mm</string>
     <string name="option_theme_scenario">場景 · 側邊地圖</string>
     <string name="option_theme_map">地圖 · 全螢幕地圖</string>
     <string name="option_theme_simple">簡約 · 側邊地圖</string>
