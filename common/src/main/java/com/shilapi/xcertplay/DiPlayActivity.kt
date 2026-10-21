@@ -4321,27 +4321,28 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
             getString(R.string.wheel_key_assign, name, key?.toString() ?: getString(R.string.wheel_key_none))
         lateinit var assign: android.widget.Button
         assign = button(current(), false) {
-            val cancelled = { runOnUiThread {
-                assign.text = current()
+            // The first answer ends both listeners, so a later key cannot assign again or toast twice.
+            var listening = true
+            fun answer(show: () -> Unit) = runOnUiThread {
+                if (!listening) return@runOnUiThread
+                listening = false
+                cancelKeyLearning()
+                show()
                 applyPendingAppearanceRender()
-            } }
+            }
+            val cancelled = { answer { assign.text = current() } }
             val refused = { taken: WheelZoomSettings.Role ->
-                runOnUiThread {
+                answer {
                     assign.text = current()
                     toast(getString(R.string.wheel_key_in_use, getString(wheelKeyRoleName(taken))))
-                    applyPendingAppearanceRender()
                 }
             }
-            val started = WheelKeyService.learn(role, cancelled, refused) { _, key -> runOnUiThread {
-                assign.text = current(key)
-                applyPendingAppearanceRender()
-            } } ||
-                // Without the service, keys that reach this window can still be learnt.
-                ((role == WheelZoomSettings.Role.SIRI ||
-                    role == WheelZoomSettings.Role.MEDIA_PLAY_PAUSE) && learnInWindow(role, cancelled, refused) {
-                    assign.text = current(it)
-                    applyPendingAppearanceRender()
-                })
+            val done = { key: WheelKey -> answer { assign.text = current(key) } }
+            // Some cars send a key to this window but never to the service, so both listen. The window
+            // goes first because arming it ends any earlier learning, the service's included.
+            val inWindow = (role == WheelZoomSettings.Role.SIRI ||
+                role == WheelZoomSettings.Role.MEDIA_PLAY_PAUSE) && learnInWindow(role, cancelled, refused, done)
+            val started = WheelKeyService.learn(role, cancelled, refused) { _, key -> done(key) } || inWindow
             if (started) assign.text = getString(R.string.wheel_key_press, name)
             else toast(getString(R.string.wheel_keys_service_off))
         }
@@ -4411,11 +4412,11 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
             val key = WheelKey.of(event)
             val taken = WheelZoomSettings.conflict(this, learning.role, key)
             if (taken != null) {
-                Log.i(WheelKeyService.TAG, "${learning.role} key $key refused: it is the $taken key (learnt without the service)")
+                Log.i(WheelKeyService.TAG, "${learning.role} key $key refused: it is the $taken key (learnt in the settings window)")
                 learning.refused(taken)
             } else {
                 WheelZoomSettings.assign(this, learning.role, key)
-                Log.i(WheelKeyService.TAG, "${learning.role} key is now $key (learnt without the service)")
+                Log.i(WheelKeyService.TAG, "${learning.role} key is now $key (learnt in the settings window)")
                 learning.done(key)
             }
             WheelZoomKeys.Action.CONSUME
