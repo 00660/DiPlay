@@ -2117,7 +2117,7 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
         // A launcher shortcut. Some head units' launchers list only their own cards, so a normally
         // installed app never appears on the home screen; this app draws its own way back instead (#650).
         filteredSection(content, SettingsSection.LAUNCHER_BUBBLE,
-            getString(R.string.settings_launcher_bubble), R.drawable.ic_carplay) { card ->
+            getString(R.string.settings_launcher_bubble), R.drawable.ic_dp_bubble) { card ->
             toggle(card, getString(R.string.settings_launcher_bubble),
                 getString(R.string.settings_launcher_bubble_description),
                 AirPlayPersistence.loadLauncherBubble(this)) { enabled ->
