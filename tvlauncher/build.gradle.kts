@@ -7,7 +7,7 @@ android {
     compileSdk {
         version = release(35)
     }
-    buildToolsVersion = "36.0.3"
+    buildToolsVersion = "36.0.0"
 
     defaultConfig {
         applicationId = "com.shihab.diplay.tvlauncher"
