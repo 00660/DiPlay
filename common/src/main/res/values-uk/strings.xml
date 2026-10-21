@@ -208,7 +208,7 @@
     <string name="rect_fill_disable_safe_area_description">Запитує в iPhone повноекранне зображення з прямими кутами. Спробуйте, якщо CarPlay залишає смугу біля краю екрана або показує колір шпалер у заокруглених кутах. Поки параметр увімкнено, безпечна область вище не використовується. Застосовується після «Зберегти й перепідключити».</string>
     <string name="safe_area_disabled_rect_fill_summary">Безпечна область: вимк. (прямі кути, весь екран)</string>
     <string name="driving_side">Розташування керма</string>
-    <string name="efficient_video">Ефективне відео</string>
+    <string name="efficient_video">Ефективне відео (HEVC)</string>
     <string name="enable_the_car_s_bluetooth_and_pair_your_iphone_first">Увімкніть Bluetooth автомобіля та спочатку спарте iPhone.</string>
     <string name="error">Помилка</string>
     <string name="exit_application">ВИЙТИ ІЗ ЗАСТОСУНКУ</string>

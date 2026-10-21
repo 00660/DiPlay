@@ -203,7 +203,7 @@
     <string name="rect_fill_disable_safe_area_description">يطلب من iPhone صورة بملء الشاشة بزوايا قائمة. جرّبه عندما يترك CarPlay شريطًا عند حافة الشاشة أو يُظهر لون الخلفية في زواياه المستديرة. لا تُستخدم المنطقة الآمنة أعلاه أثناء تشغيله. يُطبّق بعد الحفظ وإعادة الاتصال.</string>
     <string name="safe_area_disabled_rect_fill_summary">المنطقة الآمنة: متوقفة (زوايا قائمة، ملء الشاشة)</string>
     <string name="driving_side">جانب القيادة</string>
-    <string name="efficient_video">فيديو كفؤ</string>
+    <string name="efficient_video">فيديو كفؤ (HEVC)</string>
     <string name="enable_the_car_s_bluetooth_and_pair_your_iphone_first">فعّل بلوتوث السيارة واقترن بـ iPhone أولاً.</string>
     <string name="error">خطأ</string>
     <string name="exit_application">إنهاء التطبيق</string>

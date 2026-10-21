@@ -203,7 +203,7 @@
     <string name="rect_fill_disable_safe_area_description">Pide al iPhone una imagen a pantalla completa con esquinas rectas. Pruébalo si CarPlay deja una franja en un borde o muestra el color del fondo en sus esquinas redondeadas. Mientras esté activado no se usa la zona segura de arriba. Se aplica tras Guardar y reconectar.</string>
     <string name="safe_area_disabled_rect_fill_summary">Zona segura: desactivada (esquinas rectas, pantalla completa)</string>
     <string name="driving_side">Lado de conducción</string>
-    <string name="efficient_video">Vídeo eficiente</string>
+    <string name="efficient_video">Vídeo eficiente (HEVC)</string>
     <string name="enable_the_car_s_bluetooth_and_pair_your_iphone_first">Activa primero el Bluetooth del coche y empareja tu iPhone.</string>
     <string name="error">Error</string>
     <string name="exit_application">SALIR DE LA APLICACIÓN</string>
