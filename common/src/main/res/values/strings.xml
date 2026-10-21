@@ -911,6 +911,7 @@
     <string name="setup_iphone_none">No iPhone chosen yet</string>
     <string name="setup_features_title">Features</string>
     <string name="setup_features_description">Suggested for %1$s. Turn on what you want now; everything stays in Settings and can be changed later.</string>
+    <string name="setup_features_description_unknown">Turn on what you want now; everything stays in Settings and can be changed later.</string>
     <string name="setup_cluster_route_conflict">The DiLink 4 cluster route is on. On DiLink 3 it stops the CarPlay map on the dashboard.</string>
     <string name="setup_cluster_route_turn_off">Turn it off</string>
     <string name="setup_badge_tested">Tested on some cars</string>

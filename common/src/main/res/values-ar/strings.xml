@@ -745,6 +745,7 @@
     <string name="setup_iphone_none">لم يتم اختيار iPhone بعد</string>
     <string name="setup_features_title">الميزات</string>
     <string name="setup_features_description">مقترحة لـ %1$s. فعّل ما تريده الآن؛ تبقى كل الخيارات في الإعدادات ويمكن تغييرها لاحقاً.</string>
+    <string name="setup_features_description_unknown">فعّل ما تريده الآن؛ تبقى كل الخيارات في الإعدادات ويمكن تغييرها لاحقاً.</string>
     <string name="setup_cluster_route_conflict">مسار لوحة العدادات الخاص بـ DiLink 4 مفعّل. في DiLink 3 يمنع ظهور خريطة CarPlay على لوحة العدادات.</string>
     <string name="setup_cluster_route_turn_off">إيقافه</string>
     <string name="setup_badge_tested">تم اختباره على بعض السيارات</string>
