@@ -6066,6 +6066,12 @@ class DiPlayActivity : ComponentActivity(), AppAppearanceOwner {
             AirPlayPersistence.saveAudioFocusAutoYield(this, it)
             markReconnectNeeded()
         }
+        toggle(dependent, getString(R.string.settings_navigation_prompt_audio_focus),
+            getString(R.string.settings_navigation_prompt_audio_focus_description),
+            AirPlayPersistence.loadNavigationPromptAudioFocus(this)) {
+            AirPlayPersistence.saveNavigationPromptAudioFocus(this, it)
+            markReconnectNeeded()
+        }
         parent.addView(dependent)
     }
 

@@ -1,6 +1,7 @@
 package com.shilapi.xcertplay.backup
 
 import android.content.Context
+import com.shilapi.xcertplay.AirPlayPersistence
 import org.json.JSONObject
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -17,6 +18,14 @@ class SettingsBackupCodecTest {
     private val context: Context get() = RuntimeEnvironment.getApplication()
 
     private fun prefs(name: String) = context.getSharedPreferences(name, Context.MODE_PRIVATE)
+
+    @Test
+    fun navigationPromptAudioFocusTravelsWithTheAudioFocusSettings() {
+        AirPlayPersistence.saveNavigationPromptAudioFocus(context, true)
+        val document = JSONObject(String(SettingsBackupCodec.export(context, "0.2.22")))
+        val airplay = document.getJSONObject("settings").getJSONObject("xcertplay_airplay")
+        assertTrue(airplay.getBoolean("navigation_prompt_audio_focus"))
+    }
 
     @Test
     fun exportOmitsSensitiveAndNavigationKeys() {
