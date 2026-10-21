@@ -135,7 +135,7 @@ import kotlin.math.roundToInt
  *
  * Apple devices are discovered by vendor ID; CH341 uses the configured VID/PID below.
  */
-class CarPlayHostActivity : ComponentActivity() {
+open class CarPlayHostActivity : ComponentActivity() {
     private data class SettingsBaseline(
         val safeAreaRects: MutableMap<DisplaySize, SafeAreaRect?>,
         val customIconBytes: ByteArray?,
@@ -169,6 +169,8 @@ class CarPlayHostActivity : ComponentActivity() {
     private var startupFailureGeneration = -1
     private lateinit var airPlayIdentity: AirPlayIdentity
     private var languagePreferenceAtCreate = AppLocale.SYSTEM
+    // The other CarPlay screen declaration opened in this one's place (CarPlayScreen).
+    private var forwarded = false
 
     override fun attachBaseContext(newBase: Context) {
         super.attachBaseContext(AppLocale.wrap(newBase))
@@ -802,6 +804,10 @@ class CarPlayHostActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        if (CarPlayScreen.forwarded(this)) {
+            forwarded = true
+            return
+        }
         NavigationWidgetUpdater.attach(applicationContext)
         CarPlayCallKeys.install(applicationContext)
         CenterMapOverlay.requestShow = ::showCenterMap
@@ -848,7 +854,8 @@ class CarPlayHostActivity : ComponentActivity() {
 
         appendLog(
             "Host started; MFI target=${mfiTargetLabel(mfiTarget)}; " +
-                "transport=${if (wirelessEnabled) "wireless" else "wired"}",
+                "transport=${if (wirelessEnabled) "wireless" else "wired"}; " +
+                "task=$taskId (${if (this is SameTaskCarPlayHostActivity) "DiPlay's task" else "own task"})",
         )
         val reusedBackgroundSession = adoptBackgroundSession()
         microphoneAvailable =
@@ -1809,7 +1816,7 @@ class CarPlayHostActivity : ComponentActivity() {
         }
         if (CenterMapOverlay.shown) return
         val shown = CenterMapOverlay.show(applicationContext, MapMirrors.streamAspect, ::onCenterMapSurface) {
-            OwnScreenStart.start(this, Intent(this, CarPlayHostActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK), ::appendLog)
+            OwnScreenStart.start(this, CarPlayScreen.intent(this).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK), ::appendLog)
         }
         appendLog("Centre map: card ${if (shown) "shown" else "failed"} streamActive=${SCREEN_TYPE_ALT in activeScreenStreamTypes}")
     }
@@ -1866,6 +1873,12 @@ class CarPlayHostActivity : ComponentActivity() {
     }
 
     override fun onDestroy() {
+        // A forwarded screen set nothing up, and must not clear what the open screen registered.
+        if (forwarded) {
+            super.onDestroy()
+            return
+        }
+        CarPlayScreen.destroyed(this)
         mainHandler.removeCallbacks(hideTemporarySystemBars)
         discardLastPicture()
         if (pictureCopyThreadStarted) pictureCopyThread.quitSafely()
